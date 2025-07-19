@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.vue";
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+/* تأكد من عرض القائمة المنسدلة عند التمرير فوق الأيقونة */
+.relative:hover .dropdown-menu {
+    display: block;
+}
+
+/* تحسين المظهر عند التمرير على العنصر */
+.dropdown-menu button:hover {
+    width: 100%;
+    text-align: left;
+    background-color: #3b82f6;
+}
+
+/* التأكد من بقاء القائمة المنسدلة ظاهرة حتى عند التمرير */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #1E40AF;
+    padding: 8px 0;
+    width: 160px;
+    z-index: 10;
+}
+
+/* تحسين المظهر */
+.dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
