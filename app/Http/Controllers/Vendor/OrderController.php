@@ -15,7 +15,7 @@ use function Laravel\Prompts\select;
 
 class OrderController extends Controller
 {
-    public function DashboardOrdersPage()
+    public function index()
     {
         if (!auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
@@ -31,6 +31,9 @@ class OrderController extends Controller
             return redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
+        if ($vendor->id != $id) {
+            abort(403, 'You are not allowed to access this order.');
+        }
         if (intval($id)) {
             $vendor_authorized = DB::table('orders')->where('vendor_id', $vendor->id)->where('id', $id)->count();
             if ($vendor_authorized > 0) {
@@ -49,6 +52,16 @@ class OrderController extends Controller
         if (!Auth::guard('vendors')->check()) {
             redirect()->route('vendor.login');
         }
+        $vendor = Auth::guard('vendors')->user();
+        if ($vendor->id != $id) {
+            abort(403, 'You are not allowed to access this order.');
+        }
+        if (intval($id)) {
+            $vendor_authorized = DB::table('orders')->where('vendor_id', $vendor->id)->where('id', $id)->count();
+            if ($vendor_authorized == 0) {
+                return "UnAuthorized";
+            }
+        }
         $order_details = Order::where('id', $id)->first();
         return view('vendor.orders.edit', ['order' => $order_details]);
     }
@@ -56,6 +69,16 @@ class OrderController extends Controller
     {
         if (!Auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
+        }
+        $vendor = Auth::guard('vendors')->user();
+        if ($vendor->id != $id) {
+            abort(403, 'You are not allowed to access this order.');
+        }
+        if (intval($id)) {
+            $vendor_authorized = DB::table('orders')->where('vendor_id', $vendor->id)->where('id', $id)->count();
+            if ($vendor_authorized == 0) {
+                return "UnAuthorized";
+            }
         }
         $validated = $request->validate([
             'status' => ['required', Rule::in(array_keys(config('order.status')))],
@@ -70,7 +93,6 @@ class OrderController extends Controller
         } else {
             $total_amount = $order->total_amount;
         }
-
         $updated = $order->update([
             'status' => $validated['status'],
             'payment_method' => $validated['payment_method'],
@@ -89,6 +111,16 @@ class OrderController extends Controller
     {
         if (!Auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
+        }
+        $vendor = Auth::guard('vendors')->user();
+        if ($vendor->id != $id) {
+            abort(403, 'You are not allowed to access this order.');
+        }
+        if (intval($id)) {
+            $vendor_authorized = DB::table('orders')->where('vendor_id', $vendor->id)->where('id', $id)->count();
+            if ($vendor_authorized == 0) {
+                return "UnAuthorized";
+            }
         }
         $order = Order::findOrFail($id);
         try {

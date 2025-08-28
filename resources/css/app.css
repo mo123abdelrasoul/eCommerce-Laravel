@@ -1,0 +1,13 @@
+.login-box, .register-box {
+    margin: auto;
+}
+
+.card.latest-members {
+    height: 100%!important;
+}
+.msg-error {
+    color: red;
+}
+.card-body .tables-btn-actions {
+    padding: 0px!important;
+}

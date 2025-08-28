@@ -91,7 +91,6 @@ class AuthController extends Controller
             }
             return redirect()->route('home', ['lang' => app()->getLocale()]);
         }
-
         return back()->with('error', 'Invalid email or password');
     }
     /* End Show Login Form */

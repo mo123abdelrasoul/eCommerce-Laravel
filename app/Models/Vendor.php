@@ -13,10 +13,16 @@ class Vendor extends Authenticatable
         'name',
         'email',
         'password',
-        'phone'
+        'phone',
+        'avatar',
+        'company',
     ];
     public function orders()
     {
         return $this->hasMany(Order::class, 'vendor_id');
+    }
+    public function brands()
+    {
+        return $this->hasMany(Brand::class, 'vendor_id');
     }
 }

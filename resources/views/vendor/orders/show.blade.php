@@ -1,71 +1,106 @@
 @extends('layouts.app')
 
-@section('title', 'Vendor Products')
+@section('title', 'Order Details')
 
 @section('content')
-<div class="dashboard-container flex min-h-screen bg-gray-100">
-    {{-- Sidebar --}}
-    @include('vendor.layouts.Sidebar')
-    {{-- Main Content --}}
-    <div class="flex-1 p-6 overflow-auto">
-        <h1 class="text-2xl font-bold mb-6">Order Details</h1>
+    <div class="container mt-4">
 
-        {{-- Order Info --}}
-        <div class="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 class="text-2xl font-bold mb-4">Order Information</h2>
-            <div class="grid grid-cols-2 gap-4 text-gray-700">
-                <div><strong>Order Number:</strong> {{ $order_details->order_number }}</div>
-                <div><strong>Customer Name:</strong> {{ $customer_name }}</div>
-                <div><strong>Status:</strong> {{ $order_details->status }}</div>
-                <div><strong>Order Date:</strong> {{ $order_details->created_at->format('Y-m-d') }}</div>
-                <div><strong>Payment Method:</strong> {{ $order_details->payment_method }}</div>
-                <div><strong>Payment Status:</strong> {{ $order_details->payment_status }}</div>
-                <div class="col-span-2">
-                    <strong>Shipping Address:</strong> {{ $order_details->shipping_address }}
+        <!-- Order Header -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Order #{{ $order_details->order_number }}</h4>
+            </div>
+            <div class="card-body row">
+                <div class="col-md-6">
+                    <p><strong>Customer:</strong> {{ $customer_name }}</p>
+                    <p><strong>Status:</strong>
+                        <span
+                            class="badge 
+                        @if ($order_details->status == 'pending') bg-warning 
+                        @elseif($order_details->status == 'completed') bg-success 
+                        @else bg-secondary @endif">
+                            {{ ucfirst($order_details->status) }}
+                        </span>
+                    </p>
+                    <p><strong>Payment Status:</strong>
+                        <span
+                            class="badge 
+                        @if ($order_details->payment_status == 'paid') bg-success 
+                        @elseif($order_details->payment_status == 'failed') bg-danger 
+                        @else bg-warning @endif">
+                            {{ ucfirst($order_details->payment_status) }}
+                        </span>
+                    </p>
+                    <p><strong>Shipping Address:</strong> {{ $order_details->shipping_address ?? 'N/A' }}</p>
+                    <p><strong>Shipping Method:</strong> {{ $order_details->shipping_method ?? 'N/A' }}</p>
                 </div>
+                <div class="col-md-6">
+                    <p><strong>Shipping Cost:</strong> {{ number_format($order_details->shipping_cost, 2) }} EGP</p>
+                    <p><strong>Discount Amount:</strong> -%{{ number_format($order_details->discount_amount, 2) }}</p>
+                    <p><strong>Tax Amount:</strong> {{ number_format($order_details->tax_amount, 2) }} EGP</p>
+                    <p><strong>Subtotal:</strong> {{ number_format($order_details->sub_total, 2) }} EGP</p>
+                    <p><strong>Total Amount:</strong> <span
+                            class="fw-bold">{{ number_format($order_details->total_amount, 2) }} EGP</span></p>
+                    <p><strong>Date:</strong> {{ $order_details->created_at->format('d M Y, h:i A') }}</p>
+                </div>
+                @if (!empty($order_details->notes))
+                    <div class="col-12 mt-2">
+                        <p><strong>Notes:</strong> {{ $order_details->notes }}</p>
+                    </div>
+                @endif
             </div>
         </div>
 
-        {{-- Products Table --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Products</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-200 text-left">
-                    <thead class="bg-gray-100">
+        <!-- Order Products Table -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Products</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead class="table-dark">
                         <tr>
-                            <th class="p-3 border-b">Image</th>
-                            <th class="p-3 border-b">Product</th>
-                            <th class="p-3 border-b">Quantity</th>
-                            <th class="p-3 border-b">Price</th>
-                            <th class="p-3 border-b">Total</th>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total Price</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @php
-                        $total_price = 0;
-                    @endphp
-                    @foreach ($order_products as $product)
-                        <tr class="border-b">
-                            <td class="p-3">
-                                <img src="https://via.placeholder.com/50" alt="Product 1" class="w-12 h-12 object-cover rounded" />
-                            </td>
-                            <td class="p-3">{{ $product->product_name }}</td>
-                            <td class="p-3">{{ $product->quantity }}</td>
-                            <td class="p-3">{{ $product->product_price }} EGP</td>
-                            <td class="p-3">{{ $product->total_price }} EGP</td>
-                            @php
-                                $total_price+= $product->total_price;
-                            @endphp
-                        </tr>
-                    @endforeach
+                        @foreach ($order_products as $product)
+                            <tr>
+                                <td>{{ $product->product_name ?? 'N/A' }}</td>
+                                <td>{{ number_format($product->product_price, 2) }} EGP</td>
+                                <td>{{ $product->quantity }}</td>
+                                <td>{{ number_format($product->product_price * $product->quantity, 2) }}EGP</td>
+                            </tr>
+                        @endforeach
                     </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">Subtotal</th>
+                            <th>{{ number_format($order_details->sub_total, 2) }} EGP</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Shipping</th>
+                            <th>{{ number_format($order_details->shipping_cost, 2) }} EGP</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Tax</th>
+                            <th>{{ number_format($order_details->tax_amount, 2) }} EGP</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Discount</th>
+                            <th>- %{{ number_format($order_details->discount_amount, 2) }}</th>
+                        </tr>
+                        <tr class="table-dark">
+                            <th colspan="3" class="text-end">Total</th>
+                            <th>{{ number_format($order_details->total_amount, 2) }} EGP</th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-
-            <div class="text-right mt-4 text-lg font-bold">
-                Grand Total: {{ $total_price }} EGP
-            </div>
         </div>
+
     </div>
-</div>
 @endsection

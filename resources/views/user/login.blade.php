@@ -1,48 +1,106 @@
 @extends('layouts.app')
-
+@section('hideLayout', true)
 @section('title', 'Login')
 
 @section('content')
 
-<h2 class="text-2xl font-bold text-center mb-6 text-gray-700">{{__('home.login-welcome')}}</h2>
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="{{ route('home') }}"><b>Mo</b>AbdElrasoul</a>
+        </div>
+        <!-- /.login-logo -->
 
-@if(session('error'))
-    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">{{ session('error') }}</div>
-@endif
+        <div class="card">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Sign in to start your session</p>
 
-<form action="{{ route('UserLoginForm', app()->getLocale()) }}" method="POST" class="space-y-4">
-    @csrf
-    @if (session('success'))
-    <p class="text-green-500">{{ session('success') }}</p>
-    @endif
-    <div>
-        <label class="block text-gray-700 font-medium mb-2">Email</label>
-        <input type="email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none" required>
-        @error('email')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
+                <form action="{{ route('UserLoginForm', app()->getLocale()) }}" method="POST">
+                    @csrf
+
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <!-- Email Field -->
+                    <div class="input-group mb-3">
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                            placeholder="Email" value="{{ old('email') }}" required>
+                        <div class="input-group-text">
+                            <span class="bi bi-envelope"></span>
+                        </div>
+                        @error('email')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="input-group mb-3">
+                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
+                            placeholder="Password" required>
+                        <div class="input-group-text">
+                            <span class="bi bi-lock-fill"></span>
+                        </div>
+                        @error('password')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!--begin::Row-->
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" value="1"
+                                    id="remember">
+                                <label class="form-check-label" for="remember">
+                                    Remember Me
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-4">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Sign In</button>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!--end::Row-->
+                </form>
+
+                <!-- Social Auth Links (Optional) -->
+                <div class="social-auth-links text-center mb-3 d-grid gap-2">
+                    <p>- OR -</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-facebook me-2"></i> Sign in using Facebook
+                    </a>
+                    <a href="#" class="btn btn-danger">
+                        <i class="bi bi-google me-2"></i> Sign in using Google+
+                    </a>
+                </div>
+                <!-- /.social-auth-links -->
+
+                <p class="mb-1">
+                    <a href="#">I forgot my password</a>
+                </p>
+                <p class="mb-0">
+                    <a href="#" class="text-center">Register a new membership</a>
+                </p>
+            </div>
+            <!-- /.login-card-body -->
+        </div>
     </div>
-
-    <div>
-        <label class="block text-gray-700 font-medium mb-2">Password</label>
-        <input type="password" name="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none" required>
-        @error('password')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div class="flex items-center justify-between">
-        <label class="flex items-center">
-            <input type="checkbox" name="remember" class="text-blue-500">
-            <span class="ml-2 text-gray-600 text-sm">Remember Me</span>
-        </label>
-    </div>
-
-    <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">Login</button>
-
-    <p class="text-center text-sm text-gray-600 mt-4">
-        Don't have an account? <a href="{{ route('register') }}" class="text-blue-500 hover:underline">Sign Up</a>
-    </p>
-</form>
+    <!-- /.login-box -->
 
 @endsection
+
+@section('body-class', 'login-page bg-body-secondary')

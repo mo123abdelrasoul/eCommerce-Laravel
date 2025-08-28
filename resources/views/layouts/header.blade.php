@@ -1,43 +1,120 @@
-<header class="bg-blue-500 text-white py-4 shadow-md">
-    <div class="container mx-auto flex justify-between items-center px-4">
-        <a href="{{ url('/') }}" class="text-2xl font-bold">Mohamed</a>
+<!--begin::Header-->
+<nav class="app-header navbar navbar-expand bg-body">
+    <!--begin::Container-->
+    <div class="container-fluid">
+        <!--begin::Start Navbar Links-->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                    <i class="bi bi-list"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-md-block">
+                <a href="#" class="nav-link">Home</a>
+            </li>
+            <li class="nav-item d-none d-md-block">
+                <a href="#" class="nav-link">Contact</a>
+            </li>
+        </ul>
 
-        <nav class="flex space-x-6">
-            <ul class="flex space-x-6">
-                <li><a href="{{ route('home') }}" class="hover:underline">Home</a></li>
-                <li><a href="{{ route('about') }}" class="hover:underline">About</a></li>
+        <!--begin::End Navbar Links-->
+        <ul class="navbar-nav ms-auto">
+            <!--begin::Navbar Search-->
+            <li class="nav-item">
+                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                    <i class="bi bi-search"></i>
+                </a>
+            </li>
 
-                @auth
-                    <!-- قائمة منسدلة لخيارات المستخدم -->
-                    <li class="relative group">
-                        <!-- أيقونة المستخدم -->
-                        <button class="hover:underline focus:outline-none">
-                            <i class="fas fa-user"></i> <!-- أيقونة المستخدم -->
-                        </button>
+            <!--begin::Messages Dropdown Menu-->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                    <i class="bi bi-chat-text"></i>
+                    <span class="navbar-badge badge text-bg-danger">3</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                    <a href="#" class="dropdown-item">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <img src="{{ asset('assets/images/user1-128x128.jpg') }}" alt="User Avatar"
+                                    class="img-size-50 rounded-circle me-3" />
+                            </div>
+                            <div class="flex-grow-1">
+                                <h3 class="dropdown-item-title">
+                                    Brad Diesel
+                                    <span class="float-end fs-7 text-danger"><i class="bi bi-star-fill"></i></span>
+                                </h3>
+                                <p class="fs-7">Call me whenever you can...</p>
+                                <p class="fs-7 text-secondary">
+                                    <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
+                </div>
+            </li>
 
-                        <!-- قائمة تسجيل الخروج المنسدلة -->
-                        <div class="dropdown-menu absolute right-0 hidden bg-blue-700 text-white rounded shadow-md mt-2 w-32">
-                            <form method="POST" action="{{ route('logout', app()->getLocale()) }}">
-                                @csrf
-                                <button type="submit" class="block px-4 py-2 text-sm hover:bg-blue-600">Logout</button>
-                            </form>
+            <!--begin::Notifications Dropdown Menu-->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                    <i class="bi bi-bell-fill"></i>
+                    <span class="navbar-badge badge text-bg-warning">15</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                    <span class="dropdown-item dropdown-header">15 Notifications</span>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="bi bi-envelope me-2"></i> 4 new messages
+                        <span class="float-end text-secondary fs-7">3 mins</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+                </div>
+            </li>
 
-                            <!-- عرض رابط اللغة بناءً على اللغة الحالية -->
-                            @if (app()->getLocale() == 'ar')
-                                <a href="{{ route('change.language', ['language' => 'en']) }}" class="block px-4 py-2 text-sm hover:bg-blue-600">EN</a>
-                            @else
-                                <a href="{{ route('change.language', ['language' => 'ar']) }}" class="block px-4 py-2 text-sm hover:bg-blue-600">AR</a>
-                            @endif
+            <!--begin::Fullscreen Toggle-->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-lte-toggle="fullscreen">
+                    <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
+                    <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none"></i>
+                </a>
+            </li>
+
+            <!--begin::User Menu Dropdown-->
+            <li class="nav-item dropdown user-menu">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="{{ asset('assets/images/user2-128x128.jpg') }}" class="user-image rounded-circle shadow"
+                        alt="User Image" />
+                    <span class="d-none d-md-inline">{{ auth()->user()->name ?? 'Alexander Pierce' }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                    <li class="user-header text-bg-primary">
+                        <img src="{{ asset('assets/images/user2-128x128.jpg') }}" class="rounded-circle shadow"
+                            alt="User Image" />
+                        <p>
+                            {{ auth()->user()->name ?? 'Alexander Pierce' }} - Web Developer
+                            <small>Member since {{ auth()->user()->created_at ?? 'Nov. 2023' }}</small>
+                        </p>
+                    </li>
+                    <li class="user-body">
+                        <div class="row">
+                            <div class="col-4 text-center"><a href="#">Followers</a></div>
+                            <div class="col-4 text-center"><a href="#">Sales</a></div>
+                            <div class="col-4 text-center"><a href="#">Friends</a></div>
                         </div>
                     </li>
-                @else
-                    <li><a href="{{ route('login') }}" class="hover:underline">Login</a></li>
-                    @if (Route::has('register'))
-                        <li><a href="{{ route('register') }}" class="hover:underline">Register</a></li>
-                    @endif
-                @endauth
-            </ul>
-        </nav>
+                    <li class="user-footer">
+                        <a href="#" class="btn btn-default btn-flat">Profile</a>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-default btn-flat float-end">Sign out</button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
-</header>
-
+</nav>
+<!--end::Header-->

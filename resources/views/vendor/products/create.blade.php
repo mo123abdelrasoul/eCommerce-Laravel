@@ -1,168 +1,177 @@
 @extends('layouts.app')
-
-@section('title', 'Vendor Products')
+@section('title', 'Create Product')
 
 @section('content')
-<div class="dashboard-container flex min-h-screen">
-@include('vendor.layouts.Sidebar')
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-<main class="content flex-1 p-8 bg-gray-100">
-    <header class="mb-6 flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Add New Product</h1>
-        <a href="{{ route('DashboardProductsPage') }}" class="text-blue-600 hover:underline">← Back to Products</a>
-    </header>
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-@endif
-
-    <form action="{{ route('product.store',app()->getLocale()) }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow space-y-4">
-        @csrf
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block font-semibold mb-1">Name</label>
-                <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
-                @error('name')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div class="relative">
-                <label class="block font-semibold mb-1">Image</label>
-                <input type="file" name="image" id="imageInput" class="w-full border rounded px-3 py-2" accept="image/*">
-                @error('image')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <div class="mt-2 relative inline-block">
-                    <img id="imagePreview" src="#" alt="Image Preview" class="w-40 h-40 object-cover rounded cursor-pointer hidden">
-
-                    <!-- زر حذف الصورة -->
-                    <button type="button" id="removeImageBtn"
-                        class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700 hidden"
-                        title="Remove image">
-                        ×
-                    </button>
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+    <div class="dashboard-container flex min-h-screen">
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
+            <!--begin::Container-->
+            <div class="container-fluid">
+                <!--begin::Row-->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h3 class="mb-0">Create New Product</h3>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('products.index') }}">Products</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Create</li>
+                        </ol>
+                    </div>
                 </div>
+                <!--end::Row-->
             </div>
-            <!-- Popup for image preview -->
-            <div id="imagePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
-                <div class="relative">
-                    <button id="closePopup" class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700">×</button>
-                    <img id="popupImage" src="#" alt="Popup Image" class="max-w-full max-h-full object-contain">
+            <!--end::Container-->
+        </div>
+        <!--begin::Form Validation-->
+        <div class="card card-info card-outline mb-4">
+            <!--begin::Form-->
+            <form form action="{{ route('products.store', app()->getLocale()) }}" method="POST"
+                enctype="multipart/form-data" class="needs-validation">
+                @csrf
+                <!--begin::Body-->
+                <div class="card-body">
+                    <!--begin::Row-->
+                    <div class="row g-3">
+                        <!--begin::Col-->
+                        <input type="hidden" name="vendor_id" class="form-control" value="{{ $vendor_id }}" />
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" name="name" value="{{ old('name') }}" class="form-control"
+                                id="name" required />
+                            @error('name')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" name="description" value="{{ old('description') }}" class="form-control"
+                                id="description" required />
+                            @error('description')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6 mb-3 col-md-6">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" name="image" class="form-control" id="image" />
+                            @error('image')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" value="{{ old('price') }}" name="price" id="price"
+                                class="form-control" aria-label="Amount (to the nearest dollar)" required />
+                            @error('price')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" name="quantity" value="{{ old('quantity') }}" class="form-control"
+                                id="quantity" />
+                            @error('quantity')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" name="category_id" id="category">
+                                <option value="">Choose...</option>
+                                @foreach ($cats as $cat)
+                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" name="status" id="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                @error('status')
+                                    <p class="msg-error">{{ $message }}</p>
+                                @enderror
+                            </select>
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="sku" class="form-label">SKU</label>
+                            <input type="text" name="sku" value="{{ old('sku') }}" class="form-control"
+                                id="sku" required />
+                            @error('sku')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="discount" class="form-label">Discount (%)</label>
+                            <input type="number" name="discount" value="{{ old('discount') }}" class="form-control"
+                                id="discount" />
+                            @error('discount')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="tags" class="form-label">Tags (comma separated)</label>
+                            <input type="text" name="tags" value="{{ old('tags') }}" class="form-control"
+                                id="tags" />
+                            @error('tags')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Col-->
+                    </div>
+                    <!--end::Row-->
                 </div>
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Price</label>
-                <input type="number" step="0.01" name="price" class="w-full border rounded px-3 py-2" required>
-                @error('price')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Quantity</label>
-                <input type="number" name="quantity" class="w-full border rounded px-3 py-2" required>
-                @error('quantity')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Category</label>
-                <select name="category_id" class="w-full border rounded px-3 py-2" required>
-                    <option value="" disabled selected>Select a category</option>
-                    @foreach($cats as $cat)
-                        {
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        }
-                    @endforeach
-                    @error('category_id')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </select>
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Status</label>
-                <select name="status" class="w-full border rounded px-3 py-2" required>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-                @error('status')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">SKU</label>
-                <input type="text" name="sku" class="w-full border rounded px-3 py-2" required>
-                @error('sku')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Discount (%)</label>
-                <input type="number" step="0.01" name="discount" class="w-full border rounded px-3 py-2" required>
-                @error('discount')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Vendor</label>
-                <select name="vendor_id" class="w-full border rounded px-3 py-2" required>
-                    <option value="" disabled selected>Select a vendor</option>
-                    @foreach ($vendors as $vendor) {
-                        <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
-                    }
-                    @endforeach
-                </select>
-                @error('vendor_id')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Out of Stock</label>
-                <select name="out_of_stock" class="w-full border rounded px-3 py-2" required>
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
-                </select>
-                @error('out_of_stock')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+                <!--end::Body-->
+                <!--begin::Footer-->
+                <div class="card-footer">
+                    <button class="btn btn-info" type="submit">Create product</button>
+                </div>
+                <!--end::Footer-->
+            </form>
+            <!--end::Form-->
         </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Tags (comma separated)</label>
-            <input type="text" name="tags" class="w-full border rounded px-3 py-2">
-            @error('tags')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Description</label>
-            <textarea name="description" rows="4" class="w-full border rounded px-3 py-2" required></textarea>
-            @error('description')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="pt-4">
-            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">Create Product</button>
-        </div>
-    </form>
-
-</main>
-
-</div>
+        <!--end::Form Validation-->
+    </div>
 @endsection

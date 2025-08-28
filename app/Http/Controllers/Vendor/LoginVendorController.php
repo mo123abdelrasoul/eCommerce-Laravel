@@ -16,7 +16,7 @@ use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 class LoginVendorController extends Controller
 {
 
-    public function ShowVendorLoginForm()
+    public function index()
     {
         return view('vendor.login');
     }

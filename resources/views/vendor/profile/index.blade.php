@@ -3,38 +3,35 @@
 @section('title', 'Vendor Profile')
 
 @section('content')
-<div class="dashboard-container flex min-h-screen bg-gray-100">
-    {{-- Sidebar --}}
-    @include('vendor.layouts.Sidebar')
+    <div class="container-fluid">
+        <!-- Profile Header -->
+        <div class="card card-primary card-outline">
+            <div class="card-body box-profile">
+                <div class="text-center">
+                    <img class="profile-user-img img-fluid img-circle" src="{{ asset('storage/' . $vendor->avatar) }}"
+                        alt="Vendor profile picture" style="width:150px; height:150px; object-fit:cover;border-radius:50%;">
+                </div>
 
-    <div class="flex-1 flex items-center justify-center">
-        <div class="w-full h-full bg-white rounded-lg shadow-lg p-8">
-            <div class="flex items-center space-x-6">
-                <img src="{{ asset('images/vendor-avatar.png') }}" alt="Vendor Avatar" class="w-60 h-60 rounded-full border-4 border-indigo-500 shadow">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">{{ $vendor->name }}</h2>
-                    <p class="text-gray-500">{{ $vendor->email }}</p>
-                    <span class="inline-block mt-2 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">Vendor</span>
-                </div>
-            </div>
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                    <div class="text-lg font-semibold text-indigo-700">Products</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-2">{{ $productsCount }}</div>
-                </div>
-                <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                    <div class="text-lg font-semibold text-indigo-700">Orders</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-2">{{ $ordersCount }}</div>
-                </div>
-                <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                    <div class="text-lg font-semibold text-indigo-700">Revenue</div>
-                    <div class="text-2xl font-bold text-gray-800 mt-2">{{ $revenue }}</div>
-                </div>
-            </div>
-            <div class="mt-8 flex justify-end">
-                <a href="{{ route('profile.edit',app()->getLocale()) }}" class="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">Edit Profile</a>
+                <h3 class="profile-username text-center">{{ $vendor->name }}</h3>
+                <p class="text-muted text-center">{{ $vendor->company ?? 'Business Name' }}</p>
+
+                <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                        <b>Email</b> <span class="float-right">{{ $vendor->email }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <b>Phone</b> <span class="float-right">{{ $vendor->phone ?? 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <b>Joined</b> <span class="float-right">{{ $vendor->created_at->format('d M Y') }}</span>
+                    </li>
+                </ul>
+
+                <a href="{{ route('vendor.profile.edit', ['profile' => $vendor->id, 'lang' => app()->getLocale()]) }}"
+                    class="btn btn-primary btn-block"><b>Edit
+                        Profile</b></a>
             </div>
         </div>
+
     </div>
-</div>
 @endsection

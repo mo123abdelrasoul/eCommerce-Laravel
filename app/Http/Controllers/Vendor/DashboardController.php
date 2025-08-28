@@ -16,7 +16,7 @@ class DashboardController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function vendorDashboard()
+    public function index()
     {
         $vendor = Auth::guard('vendors')->user();
         $orders = Order::with(['customer:id,name'])->where('vendor_id', $vendor->id)->get();
@@ -29,10 +29,6 @@ class DashboardController extends Controller
         $ordersCount = Order::where('vendor_id', $vendor->id)->count();
         $productsCount = Product::where('vendor_id', $vendor->id)->count();
         return view('vendor.dashboard', compact('orders', 'ordersCount', 'productsCount', 'total_orders'));
-    }
-    public function index()
-    {
-        //
     }
 
     /**

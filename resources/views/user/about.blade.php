@@ -1,6 +1,6 @@
-@extends('layouts.app') {{-- لو الـ layout بتاعك اسمه app.blade.php --}}
+{{-- @extends('adminlte::page') --}}
 
-@section('title', 'About Us') {{-- لو حابب تغير التايتل للصفحة دي --}}
+@section('title', 'About Us')
 
 @section('content')
     <div class="text-center p-6">
