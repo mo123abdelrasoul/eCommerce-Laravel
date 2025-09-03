@@ -36,7 +36,7 @@ class CategoryController extends Controller
         }
         $vendor_id = Auth::guard('vendors')->user()->id;
         $categories = Category::where('vendor_id', $vendor_id)->get();
-        return view('categories.create', compact('categories'));
+        return view('vendor.categories.create', compact('categories'));
     }
 
     /**

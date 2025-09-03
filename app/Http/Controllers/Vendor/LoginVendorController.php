@@ -44,4 +44,16 @@ class LoginVendorController extends Controller
         }
         return back()->with('error', 'Invalid email or password');
     }
+
+    public function VendorLogoutForm($lang, Request $request)
+    {
+        $vendor = Auth::guard('vendors')->user();
+        if (!$vendor) {
+            return redirect()->route('vendor.login');
+        }
+        Auth::guard('vendors')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('vendor.login');
+    }
 }

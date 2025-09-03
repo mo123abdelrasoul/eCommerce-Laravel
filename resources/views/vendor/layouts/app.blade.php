@@ -33,8 +33,8 @@
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         @if (!View::getSection('hideLayout'))
-            @include('layouts.header')
-            @include('layouts.sidebar')
+            @include('vendor.layouts.header')
+            @include('vendor.layouts.sidebar')
         @endif
 
         <!--begin::App Main-->
@@ -62,7 +62,7 @@
         </main>
         <!--end::App Main-->
         @if (!View::getSection('hideLayout'))
-            @include('layouts.footer')
+            @include('vendor.layouts.footer')
         @endif
     </div>
     <!--end::App Wrapper-->

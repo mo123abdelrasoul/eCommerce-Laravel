@@ -28,6 +28,9 @@ class ProductController extends Controller
             return redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->hasRole('vendor') && !$vendor->can('view own products')) {
+            abort(403, 'Unauthorized');
+        }
         $vendor_id = $vendor->id;
         $products = Product::where('vendor_id', $vendor_id)->get();
         return view('vendor.products.index', compact('products', 'vendor_id'));
@@ -41,8 +44,11 @@ class ProductController extends Controller
         if (!auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
         }
-        $cats = Category::select('id', 'name')->get();
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
+            abort(403, 'Unauthorized');
+        }
+        $cats = Category::select('id', 'name')->get();
         $vendor_id = $vendor->id;
         return view('vendor.products.create', compact('cats', 'vendor_id'));
     }
@@ -59,7 +65,7 @@ class ProductController extends Controller
             'quantity' => 'nullable|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'status' => 'required|in:active,inactive',
-            'sku' => 'required|unique:products,sku|max:8',
+            'sku' => 'required|unique:products,sku|max:8|min:6',
             'discount' => 'nullable|numeric|min:0',
             'vendor_id' => 'required|exists:vendors,id',
             'tags' => 'nullable|string',
@@ -70,7 +76,7 @@ class ProductController extends Controller
         } else {
             $imgPath = null;
         }
-        $desc = strip_tags($validated['description']);
+        $desc = !empty($validated['description']) ? strip_tags($validated['description']) : null;
         if (!empty($request['tags'])) {
             $tagsArray = explode(',', strip_tags($request['tags']));
             $tags = json_encode($tagsArray);
@@ -82,6 +88,13 @@ class ProductController extends Controller
         }
         if ($validated['discount'] == NULL) {
             $validated['discount'] = 0;
+        }
+        $vendor = Auth::guard('vendors')->user();
+        if ($vendor->id != $validated['vendor_id']) {
+            abort(403, 'Unauthorized');
+        }
+        if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
+            abort(403, 'Unauthorized');
         }
         $store = DB::table('products')->insert([
             'name' => $validated['name'],
@@ -114,6 +127,9 @@ class ProductController extends Controller
             return redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->can('view product')) {
+            abort(403, 'Unauthorized');
+        }
         $vendor_id = $vendor->id;
         $product = Product::findOrFail($id);
         if ($product->vendor_id != $vendor_id) {
@@ -131,6 +147,9 @@ class ProductController extends Controller
             redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->can('edit product')) {
+            abort(403, 'Unauthorized');
+        }
         $vendor_id = $vendor->id;
         $product = Product::findOrFail($id);
         if ($product->vendor_id != $vendor_id) {
@@ -156,6 +175,9 @@ class ProductController extends Controller
         }
         $product = Product::findOrFail($id);
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->can('edit product')) {
+            abort(403, 'Unauthorized');
+        }
         if ($product->vendor_id != $vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
@@ -166,7 +188,7 @@ class ProductController extends Controller
             'quantity' => 'nullable|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'status' => 'required',
-            'sku' => 'required|max:8|unique:products,sku,' . $id,
+            'sku' => 'required|max:8|min:6|unique:products,sku,' . $id,
             'discount' => 'nullable|numeric|min:0',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
@@ -222,6 +244,9 @@ class ProductController extends Controller
         }
         $product = Product::findOrFail($id);
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor->can('delete product')) {
+            abort(403, 'Unauthorized');
+        }
         if ($product->vendor_id != $vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }

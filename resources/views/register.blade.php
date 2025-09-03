@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('vendor.layouts.app')
 @section('hideLayout', true)
 @section('title', 'Register')
 

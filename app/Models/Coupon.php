@@ -11,4 +11,8 @@ class Coupon extends Model
     /** @use HasFactory<\Database\Factories\CouponFactory> */
     use HasFactory;
     use SoftDeletes;
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
 }

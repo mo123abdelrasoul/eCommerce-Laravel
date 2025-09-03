@@ -22,7 +22,7 @@ class LoginAdminController extends Controller
             'email' => [
                 'required',
                 'email',
-                'exists:users,email'
+                'exists:admins,email'
             ],
             'password' => 'required|min:6'
         ]);

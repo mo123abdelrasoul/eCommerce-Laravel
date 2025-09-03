@@ -87,14 +87,15 @@
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img src="{{ asset('assets/images/user2-128x128.jpg') }}" class="user-image rounded-circle shadow"
                         alt="User Image" />
-                    <span class="d-none d-md-inline">{{ auth()->user()->name ?? 'Alexander Pierce' }}</span>
+                    <span
+                        class="d-none d-md-inline">{{ Auth::guard('vendors')->user()->name ?? 'Alexander Pierce' }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                     <li class="user-header text-bg-primary">
                         <img src="{{ asset('assets/images/user2-128x128.jpg') }}" class="rounded-circle shadow"
                             alt="User Image" />
                         <p>
-                            {{ auth()->user()->name ?? 'Alexander Pierce' }} - Web Developer
+                            {{ Auth::guard('vendors')->user()->name ?? 'Alexander Pierce' }} - Web Developer
                             <small>Member since {{ auth()->user()->created_at ?? 'Nov. 2023' }}</small>
                         </p>
                     </li>
@@ -107,8 +108,11 @@
                     </li>
                     <li class="user-footer">
                         <a href="#" class="btn btn-default btn-flat">Profile</a>
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        <form method="POST"
+                            action="{{ route('vendor.logout.submit', ['lang' => app()->getLocale()]) }}"
+                            class="d-inline">
                             @csrf
+                            @method('DELETE')
                             <button type="submit" class="btn btn-default btn-flat float-end">Sign out</button>
                         </form>
                     </li>

@@ -19,6 +19,9 @@ class DashboardController extends Controller
     public function index()
     {
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor) {
+            return redirect()->route('vendor.login');
+        }
         $orders = Order::with(['customer:id,name'])->where('vendor_id', $vendor->id)->get();
         $total_orders = 0;
         if (!$orders->isEmpty()) {

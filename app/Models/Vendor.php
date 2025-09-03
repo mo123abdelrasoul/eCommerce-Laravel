@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vendor extends Authenticatable
 {
     use Notifiable;
+    use HasRoles;
+    use SoftDeletes;
     protected $fillable = [
         'name',
         'email',
@@ -16,6 +20,7 @@ class Vendor extends Authenticatable
         'phone',
         'avatar',
         'company',
+        'status',
     ];
     public function orders()
     {

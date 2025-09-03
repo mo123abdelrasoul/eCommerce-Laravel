@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('vendor.layouts.app')
 @section('title', 'Product Details')
 @section('content')
     <!--begin::App Content Header-->
@@ -50,23 +50,23 @@
                                 <tbody>
                                     <tr>
                                         <th>Name</th>
-                                        <td>{{ $product->name }}</td>
+                                        <td>{{ $product->name ?? '' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Price</th>
-                                        <td>{{ $product->price }} EGP</td>
+                                        <td>{{ $product->price ?? '' }} EGP</td>
                                     </tr>
                                     <tr>
                                         <th>Stock</th>
-                                        <td>{{ $product->quantity }}</td>
+                                        <td>{{ $product->quantity ?? '' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Category</th>
-                                        <td>{{ $product->category->name }}</td>
+                                        <td>{{ $product->category->name ?? '' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Description</th>
-                                        <td>{{ $product->description }}</td>
+                                        <td>{{ $product->description ?? '' }}</td>
                                     </tr>
                                     <tr>
                                         <th>SKU</th>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LoginAdminController;
+use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
@@ -57,6 +58,7 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
 
     // Vendor Login Submission
     Route::post('/LoginDashboard', [LoginVendorController::class, 'VendorLoginForm'])->name('vendor.login.submit');
+    Route::delete('/LogoutDashboard', [LoginVendorController::class, 'VendorLogoutForm'])->name('vendor.logout.submit');
 
     Route::group(['middleware' => 'checkUserRole:vendor'], function () {
         // Show Vendor Dashboard Page
@@ -86,6 +88,10 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
         return view('admin.dashboard');
     })->name('admin.dashboard')->middleware(['checkUserRole:admin']);
 
+    // Vendors Management
+    Route::resource('admin/vendors', AdminVendorController::class)->except(['create', 'store']);
+    Route::get('/admin/pendingVendors', [AdminVendorController::class, 'pending'])->name('vendors.pending');
+    Route::put('/admin/pendingVendors{vendor}', [AdminVendorController::class, 'updateStatus'])->name('vendors.update.status');
 
     // Show Admin Login Page
     Route::get('/AdminLoginDashboard', [LoginAdminController::class, 'ShowAdminLoginForm'])->name('admin.login');

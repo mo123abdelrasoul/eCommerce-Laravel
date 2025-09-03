@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- غيرها لو عندك layout مختلف --}}
+@extends('vendor.layouts.app') {{-- غيرها لو عندك layout مختلف --}}
 
 @section('content')
     <div class="container mt-4">

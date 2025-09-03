@@ -38,7 +38,6 @@ class ProfileController extends Controller
 
     public function update(Request $request, $lang, $profile)
     {
-        dd($profile);
         if (!Auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
         }

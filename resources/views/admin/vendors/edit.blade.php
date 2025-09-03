@@ -1,4 +1,4 @@
-@extends('vendor.layouts.app')
+@extends('admin.layouts.app')
 @section('title', 'Edit Vendor Profile')
 
 @section('content')
@@ -37,8 +37,7 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form form
-                action="{{ route('vendor.profile.update', ['lang' => app()->getLocale(), 'profile' => $vendor->id]) }}"
+            <form form action="{{ route('vendors.update', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                 method="POST" enctype="multipart/form-data" class="needs-validation">
                 @method('PUT')
                 @csrf
@@ -95,7 +94,7 @@
                         <div class="col-md-6">
                             <label for="company" class="form-label">Company</label>
                             <input type="text" name="company" value="{{ old('company', $vendor->company ?? '') }}"
-                                class="form-control" id="company" required />
+                                class="form-control" id="company" />
                             @error('company')
                                 <p class="msg-error">{{ $message }}</p>
                             @enderror
@@ -116,15 +115,29 @@
                             @enderror
                         </div>
                         <!--end::Col-->
+                        <!--begin::Col-->
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                @foreach (config('vendor.status') as $value => $label)
+                                    <option value="{{ $value }}"
+                                        {{ old('status', $vendor->status ?? '') === $value ? 'selected' : '' }}>
+                                        {{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('status')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                            </select>
+                        </div>
+                        <!--end::Col-->
                     </div>
-                    <!--end::Row-->
-                </div>
-                <!--end::Body-->
-                <!--begin::Footer-->
-                <div class="card-footer">
-                    <button class="btn btn-info" type="submit">Update profile</button>
-                </div>
-                <!--end::Footer-->
+                    <!--end::Body-->
+                    <!--begin::Footer-->
+                    <div class="card-footer">
+                        <button class="btn btn-info" type="submit">Update profile</button>
+                    </div>
+                    <!--end::Footer-->
             </form>
             <!--end::Form-->
         </div>

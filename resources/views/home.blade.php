@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('vendor.vendor.layouts.app')
 
 @section('title', 'AdminLTE 4 | Dashboard')
 
