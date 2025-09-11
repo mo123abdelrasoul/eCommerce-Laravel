@@ -48,8 +48,8 @@ class ProductController extends Controller
         if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
             abort(403, 'Unauthorized');
         }
-        $cats = Category::select('id', 'name')->get();
         $vendor_id = $vendor->id;
+        $cats = Category::select('id', 'name')->where('vendor_id', $vendor_id)->get();
         return view('vendor.products.create', compact('cats', 'vendor_id'));
     }
 
@@ -72,7 +72,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
         ]);
         if (!empty($validated['image'])) {
-            $imgPath = $request->file('image')->store('uploads', 'public');
+            $imgPath = $request->file('image')->store('uploads/products', 'public');
         } else {
             $imgPath = null;
         }
@@ -161,7 +161,7 @@ class ProductController extends Controller
         if ($product->discount == NULL) {
             $product->discount = 0;
         }
-        $categories = Category::select('id', 'name')->get();
+        $categories = Category::select('id', 'name')->where('vendor_id', $vendor_id)->get();
         return view('vendor.products.edit', ['product' => $product, 'categories' => $categories]);
     }
 
@@ -197,7 +197,7 @@ class ProductController extends Controller
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);
             }
-            $imgPath = $request->file('image')->store('uploads', 'public');
+            $imgPath = $request->file('image')->store('uploads/products', 'public');
         } else {
             $imgPath = $product->image;
         }

@@ -94,28 +94,4 @@ class AuthController extends Controller
         return back()->with('error', 'Invalid email or password');
     }
     /* End Show Login Form */
-
-
-    /* Start Logout Form */
-
-
-    public function logout(Request $request)
-    {
-        if (Auth::guard('admins')->check()) {
-            Auth::guard('admins')->logout();
-            return redirect()->route('admin.login', ['lang' => app()->getLocale()]);
-        }
-        if (Auth::guard('vendors')->check()) {
-            Auth::guard('vendors')->logout();
-            return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
-        }
-        if (Auth::guard('web')->check()) {
-            Auth::guard('web')->logout();
-            return redirect()->route('login', ['lang' => app()->getLocale()]);
-        }
-        return redirect()->route('login', ['lang' => app()->getLocale()]);
-    }
-
-
-    /* End Logout Form */
 }

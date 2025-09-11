@@ -129,19 +129,20 @@
                         <!--begin::Col-->
                         <div class="col-md-6">
                             <label for="status" class="form-label">Status</label>
-                            <select class="form-select" name="status" id="status" required>
-                                <option value="active" {{ old('status', $product->status) == 'active' ? 'selected' : '' }}>
-                                    Active
-                                </option>
-                                <option value="inactive"
-                                    {{ old('status', $product->status) == 'inactive' ? 'selected' : '' }}>Inactive
-                                </option>
-                                @error('status')
-                                    <p class="msg-error">{{ $message }}</p>
-                                @enderror
+                            <select name="status" id="status" class="form-select">
+                                @foreach (config('product.status') as $value => $label)
+                                    <option value="{{ $value }}"
+                                        {{ old('status', $product->status ?? '') === $value ? 'selected' : '' }}>
+                                        {{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('status')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
                             </select>
                         </div>
                         <!--end::Col-->
+
 
                         <!--begin::Col-->
                         <div class="col-md-6">

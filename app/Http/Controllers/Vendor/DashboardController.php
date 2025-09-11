@@ -37,9 +37,13 @@ class DashboardController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function logout()
     {
-        //
+        if (Auth::guard('vendors')->check()) {
+            Auth::guard('vendors')->logout();
+            return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
+        }
+        return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
     }
 
     /**

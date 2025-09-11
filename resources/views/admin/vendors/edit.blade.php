@@ -25,7 +25,9 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('vendor.profile.index') }}">Profile</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('vendors.show', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}">Profile</a>
+                            </li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $vendor->name }}</li>
                         </ol>
                     </div>
@@ -58,7 +60,7 @@
 
                         <!--begin::Col-->
                         <div class="col-md-6">
-                            <label for="price" class="form-label">E-mail</label>
+                            <label for="email" class="form-label">E-mail</label>
                             <input type="email" value="{{ old('email', $vendor->email ?? '') }}" name="email"
                                 id="email" class="form-control" required />
                             @error('email')

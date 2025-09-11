@@ -53,6 +53,66 @@
                     </ul>
                 </li>
 
+                <!-- Users -->
+                <li class="nav-item {{ request()->is('*admin/users*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*admin/users*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <p>
+                            Users
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('users.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Users</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Products -->
+                <li class="nav-item {{ request()->is('*admin/products*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*admin/products*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <p>
+                            Products
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.products.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->routeIs('admin.products.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Products</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Shipping -->
+                <li class="nav-item {{ request()->is('*admin/shipping*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*admin/shipping*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <p>
+                            Shipping
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('shipping.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->routeIs('admin.shipping.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Shipping</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Brands -->
                 <li class="nav-item {{ request()->is('*/brands*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('*/brands*') ? 'active' : '' }}">

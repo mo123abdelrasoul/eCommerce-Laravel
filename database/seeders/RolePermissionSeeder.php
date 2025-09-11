@@ -35,6 +35,7 @@ class RolePermissionSeeder extends Seeder
             'manage users',
             'manage vendors',
             'manage products',
+            'manage shipping',
             'view all orders',
             'manage settings'
         ];

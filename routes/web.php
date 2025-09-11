@@ -1,9 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\LoginAdminController;
+use App\Http\Controllers\admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ShippingController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\Customer\UserController as CustomerUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
@@ -16,6 +23,7 @@ use App\Http\Controllers\Vendor\LoginVendorController;
 use App\Http\Controllers\Vendor\OrderController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\ProfileController;
+use App\Http\Controllers\Vendor\VendorController as VendorVendorController;
 use App\Http\Controllers\Vendor\vendorDashboard;
 use App\Http\Controllers\VendorController;
 use App\Models\Order;
@@ -26,39 +34,78 @@ use Illuminate\Support\Facades\Redirect;
 
 Route::get('/{language}/change-language', [LanguageController::class, 'changeLanguage'])->name('change.language');
 Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
-    /* ------------------------------- Start Public ---------------------------------------- */
+
+    /* -------------------------------------------- Start Admin ------------------------------------------------------------------------ */
+    Route::get('/admin', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard')->middleware(['checkUserRole:admin']);
+
+    // Vendors Management
+    Route::get('admin/vendors/pending', [AdminVendorController::class, 'pending'])->name('vendors.pending');
+    Route::put('admin/vendors/pending/{vendor}', [AdminVendorController::class, 'updateStatus'])->name('vendors.update.status');
+    Route::resource('admin/vendors', AdminVendorController::class)->except(['create', 'store']);
+
+    // Users Management
+    Route::resource('admin/users', UserController::class)->except(['create', 'store']);
+    Route::put('admin/users/restore/{user}', [UserController::class, 'restore'])->name('users.restore');
+
+    // Products Management
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('products', AdminProductController::class)->except(['create', 'store']);
+        Route::put('products/restore/{product}', [AdminProductController::class, 'restore'])->name('products.restore');
+    });
+
+    // Shipping Management
+    Route::resource('admin/shipping', ShippingController::class);
+
+    // Show Admin Login Page
+    Route::get('/admin/login', [AdminController::class, 'index'])->name('admin.login');
+
+    // Admin Login Submission
+    Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login.submit');
+
+    // Admin Logout Submission
+    Route::post('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout.submit');
+    /* -------------------------------------------- End Admin ------------------------------------------------------------------------- */
+
+    /* -------------------------------------------- Start Public ------------------------------------------------------------------------- */
     // Register
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'registerForm'])->name('registerForm');
+    /* -------------------------------------------- End Public ------------------------------------------------------------------------- */
 
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    /* ------------------------------- End Public ---------------------------------------- */
-
-
-    /* ------------------------------- Start User ---------------------------------------- */
+    /* -------------------------------------------- Start User ------------------------------------------------------------------------- */
     // Home
-    Route::get('/', [HomeController::class, 'index'])->name('home')->middleware(['checkUserRole:user']);
+    Route::get('/', [CustomerUserController::class, 'index'])->name('home')->middleware(['checkUserRole:user']);
 
     // Login For User
-    Route::get('/login', [AuthController::class, 'ShowUserLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'UserLoginForm'])->name('UserLoginForm');
+    Route::get('/login', [CustomerUserController::class, 'index'])->name('user.login');
+    Route::post('/login', [CustomerUserController::class, 'login'])->name('user.login.submit');
+
+    // Logout For User
+    Route::post('/logout', [CustomerUserController::class, 'logout'])->name('user.logout.submit');
+
+    // Add to Cart
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+
 
     // About
     Route::get('/about', function () {
         return view('user.about');
     })->name('about');
-    /* ------------------------------- End User ---------------------------------------- */
+    /* -------------------------------------------- End User ------------------------------------------------------------------------- */
 
-
-    /* ------------------------------- Start Vendor ---------------------------------------- */
-
+    /* -------------------------------------------- Start Vendor ------------------------------------------------------------------------- */
     // Show Vendor Login Page
-    Route::get('/VendorLogin', [LoginVendorController::class, 'index'])->name('vendor.login');
+    Route::get('/VendorLogin', [VendorVendorController::class, 'index'])->name('vendor.login');
 
     // Vendor Login Submission
-    Route::post('/LoginDashboard', [LoginVendorController::class, 'VendorLoginForm'])->name('vendor.login.submit');
-    Route::delete('/LogoutDashboard', [LoginVendorController::class, 'VendorLogoutForm'])->name('vendor.logout.submit');
+    Route::post('/vendor/login', [VendorVendorController::class, 'login'])->name('vendor.login.submit');
+    Route::delete('/vendor/logout', [VendorVendorController::class, 'logout'])->name('vendor.logout.submit');
 
     Route::group(['middleware' => 'checkUserRole:vendor'], function () {
         // Show Vendor Dashboard Page
@@ -71,32 +118,18 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
 
         // Categories
         Route::resource('categories', VendorCategoryController::class);
+
         // Products
         Route::resource('products', VendorProductController::class);
+
         // Brands
         Route::resource('brands', BrandController::class);
+
         // Coupons
         Route::resource('coupons', CouponController::class);
+
         // Orders
         Route::resource('orders', OrderController::class)->except(['create', 'store']);
     });
-    /* ------------------------------- End Vendor ---------------------------------------- */
-
-    /* ------------------------------- Start Admin ---------------------------------------- */
-    // Show Admin Dashboard Page
-    Route::get('/admin', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard')->middleware(['checkUserRole:admin']);
-
-    // Vendors Management
-    Route::resource('admin/vendors', AdminVendorController::class)->except(['create', 'store']);
-    Route::get('/admin/pendingVendors', [AdminVendorController::class, 'pending'])->name('vendors.pending');
-    Route::put('/admin/pendingVendors{vendor}', [AdminVendorController::class, 'updateStatus'])->name('vendors.update.status');
-
-    // Show Admin Login Page
-    Route::get('/AdminLoginDashboard', [LoginAdminController::class, 'ShowAdminLoginForm'])->name('admin.login');
-
-    // Admin Login Submission
-    Route::post('/AdminLoginDashboard', [LoginAdminController::class, 'AdminLoginForm'])->name('admin.login.submit');
     /* ------------------------------- End Vendor ---------------------------------------- */
 });

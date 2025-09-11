@@ -107,7 +107,8 @@
                     </li>
                     <li class="user-footer">
                         <a href="#" class="btn btn-default btn-flat">Profile</a>
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        <form method="POST" action="{{ route('admin.logout.submit', ['lang' => app()->getLocale()]) }}"
+                            class="d-inline">
                             @csrf
                             <button type="submit" class="btn btn-default btn-flat float-end">Sign out</button>
                         </form>

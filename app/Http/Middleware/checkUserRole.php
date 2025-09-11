@@ -26,7 +26,7 @@ class checkUserRole
             return $next($request);
         }
         if ($role == 'user') {
-            return redirect()->guest(route('login'));
+            return redirect()->guest(route('user.login'));
         }
         if ($role == 'vendor') {
             return redirect()->guest(route('vendor.login'));

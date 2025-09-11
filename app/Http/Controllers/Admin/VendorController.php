@@ -114,16 +114,15 @@ class VendorController extends Controller
             if ($vendor->avatar && Storage::disk('public')->exists($vendor->avatar)) {
                 Storage::disk('public')->delete($vendor->avatar);
             }
-            $imgPath = $request->file('avatar')->store('uploads/vendors', 'public');
+            $data['avatar'] = $request->file('avatar')->store('uploads/vendors', 'public');
         } else {
-            $imgPath = $vendor->avatar;
+            unset($data['avatar']);
         }
         if ($data['password'] == NULL) {
             unset($data['password']);
         } else {
             $data['password'] = bcrypt($data['password']);
         }
-        $data['avatar'] = $imgPath;
         $update = $vendor->update($data);
         if ($update) {
             return back()->with('success', 'Profile Updated successfully!');

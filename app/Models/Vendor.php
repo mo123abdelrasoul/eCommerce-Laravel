@@ -30,4 +30,12 @@ class Vendor extends Authenticatable
     {
         return $this->hasMany(Brand::class, 'vendor_id');
     }
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'vendor_id');
+    }
+    public function shipping()
+    {
+        return $this->hasMany(Shipping::class, 'vendor_id');
+    }
 }
