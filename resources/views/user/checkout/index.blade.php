@@ -4,12 +4,27 @@
 @section('content')
 
     <div class="checkout-container">
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <h1>Checkout</h1>
         <div class="checkout-grid">
             <!-- User Details -->
             <div class="checkout-section">
                 <h2>User Details</h2>
-                <form id="checkout-form" action="#" method="POST">
+                <form id="checkout-form" action="{{ route('checkout.process', ['lang' => app()->getLocale()]) }}"
+                    method="POST">
                     @csrf
                     <label for="name">Full Name</label>
                     <input type="text" id="name" name="name" required>
@@ -21,7 +36,18 @@
                     <input type="text" id="phone" name="phone" required>
 
                     <label for="address">Address</label>
-                    <textarea id="address" name="address" required></textarea>
+                    <textarea id="address" name="address"></textarea>
+
+                    <label for="coupon_code">Coupon code</label>
+                    <input type="text" id="coupon_code" name="coupon_code">
+                    <label for="shipping_method">Shipping Method</label>
+                    <select name="shipping_method" id="shipping_method" required>
+                        <option value="">Select Shipping Method</option>
+                        <option value="credit_card">Credit Card</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="cash_on_delivery">Cash on Delivery</option>
+                    </select>
+
             </div>
 
             <!-- Order Summary -->

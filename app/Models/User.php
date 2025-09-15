@@ -60,4 +60,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function couponUser()
+    {
+        return $this->hasMany(CouponUser::class);
+    }
 }

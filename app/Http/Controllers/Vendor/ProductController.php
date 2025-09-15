@@ -66,7 +66,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'status' => 'required|in:active,inactive',
             'sku' => 'required|unique:products,sku|max:8|min:6',
-            'discount' => 'nullable|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0|max:100',
             'vendor_id' => 'required|exists:vendors,id',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
@@ -189,7 +189,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'status' => 'required',
             'sku' => 'required|max:8|min:6|unique:products,sku,' . $id,
-            'discount' => 'nullable|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0|max:100',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
         ]);

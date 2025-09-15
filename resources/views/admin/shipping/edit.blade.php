@@ -1,4 +1,4 @@
-@extends('vendor.layouts.app')
+@extends('admin.layouts.app')
 
 @section('title', 'Edit Shipping Method')
 

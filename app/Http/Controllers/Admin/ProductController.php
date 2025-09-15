@@ -101,7 +101,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'status' => 'required',
             'deleted' => 'nullable|in:0,1',
-            'discount' => 'nullable|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0|max:100',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
             'admin_feedback' => 'nullable|string',
