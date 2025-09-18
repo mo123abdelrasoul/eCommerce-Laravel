@@ -34,7 +34,13 @@
 
                     <label for="phone">Phone</label>
                     <input type="text" id="phone" name="phone" required>
-
+                    <label for="city">City</label>
+                    <select name="city" required>
+                        <option value="">Select City</option>
+                        @foreach ($cities as $city)
+                            <option value="{{ $city['id'] }}">{{ $city['name'] }}</option>
+                        @endforeach
+                    </select>
                     <label for="address">Address</label>
                     <textarea id="address" name="address"></textarea>
 
@@ -43,9 +49,10 @@
                     <label for="shipping_method">Shipping Method</label>
                     <select name="shipping_method" id="shipping_method" required>
                         <option value="">Select Shipping Method</option>
-                        <option value="credit_card">Credit Card</option>
-                        <option value="paypal">PayPal</option>
-                        <option value="cash_on_delivery">Cash on Delivery</option>
+                        @foreach ($shipping_methods as $method)
+                            <option value="{{ $method['id'] }}">{{ $method['name'] }} ({{ $method['description'] }})
+                            </option>
+                        @endforeach
                     </select>
 
             </div>

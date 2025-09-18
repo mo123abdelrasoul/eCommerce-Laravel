@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ShippingMethod extends Model
 {
     use HasFactory;
-    use SoftDeletes;
-    protected $fillable = ['name', 'price', "vendor_id", "delivery_time", 'status'];
-
-    public function vendor()
+    public function orders()
     {
-        return $this->BelongsTo(Vendor::class, 'vendor_id');
+        return $this->hasMany(Order::class);
+    }
+    public function policy()
+    {
+        return $this->belongsTo(ShippingPolicy::class, 'shipping_policy_id');
     }
 }

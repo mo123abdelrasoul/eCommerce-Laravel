@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shipping_methods', function (Blueprint $table) {
+        Schema::create('shipping_regions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 8, 2);
-            $table->unsignedBigInteger('vendor_id')->nullable();
-            $table->string('delivery_time')->nullable();
-            $table->boolean('status')->default(1);
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
         });
     }
 
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shipping_methods');
+        Schema::dropIfExists('shipping_regions');
     }
 };

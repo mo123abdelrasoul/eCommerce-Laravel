@@ -20,22 +20,18 @@ class ShippingMethodFactory extends Factory
     {
         return [
             'name' => $this->faker->randomElement([
-                'Standard Shipping',
-                'Express Delivery',
-                'Same Day Delivery',
-                'Next Day Shipping',
-                'International Shipping'
+                'توصيل عادي',
+                'توصيل سريع',
+                'توصيل فائق'
             ]),
-            'price' => $this->faker->randomFloat(2, 20, 200),
-            'vendor_id' => Vendor::inRandomOrder()->first()?->id ?? Vendor::factory(),
-            'delivery_time' => $this->faker->randomElement([
-                '2-5 days',
-                '1-2 days',
-                'Same day',
-                '3-7 days',
-                'Up to 14 days'
+            'carrier' => $this->faker->randomElement([
+                'مكتب بريد',
+                'شركة الشحن السريع',
+                'أمازون للشحن'
             ]),
-            'status' => $this->faker->boolean(80),
+            'delivery_time' => $this->faker->numberBetween(1, 7),
+            'description' => $this->faker->sentence(),
+            'is_active' => true
         ];
     }
 }

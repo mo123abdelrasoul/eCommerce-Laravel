@@ -24,4 +24,8 @@ class Order extends Model
     {
         return $this->belongsTo(Vendor::class, 'vendor_id');
     }
+    public function order()
+    {
+        return $this->belongsTo(ShippingMethod::class);
+    }
 }
