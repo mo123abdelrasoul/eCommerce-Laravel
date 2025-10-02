@@ -35,7 +35,7 @@
                     <label for="phone">Phone</label>
                     <input type="text" id="phone" name="phone" required>
                     <label for="city">City</label>
-                    <select name="city" required>
+                    <select name="city" id="city" required>
                         <option value="">Select City</option>
                         @foreach ($cities as $city)
                             <option value="{{ $city['id'] }}">{{ $city['name'] }}</option>
@@ -47,7 +47,7 @@
                     <label for="coupon_code">Coupon code</label>
                     <input type="text" id="coupon_code" name="coupon_code">
                     <label for="shipping_method">Shipping Method</label>
-                    <select name="shipping_method" id="shipping_method" required>
+                    <select name="shipping_method" id="shipping_method" id="shipping_method" required>
                         <option value="">Select Shipping Method</option>
                         @foreach ($shipping_methods as $method)
                             <option value="{{ $method['id'] }}">{{ $method['name'] }} ({{ $method['description'] }})
@@ -77,7 +77,10 @@
                         </div>
                     @endforeach
                     <div class="order-total">
-                        <strong>Total:</strong> <strong>${{ number_format($cartTotal, 2) }}</strong>
+                        <strong>SubTotal:</strong> <strong>${{ number_format($cartTotal, 2) }}</strong>
+                    </div>
+                    <div class="order-shipping">
+                        <strong>Shipping:</strong><strong>Not calculated yet</strong>
                     </div>
                 </div>
 
@@ -96,3 +99,6 @@
         </div>
     </div>
 @endsection
+<script>
+    const ShippingUrl = "{{ url(app()->getLocale() . '/checkout/shipping-rate') }}";
+</script>

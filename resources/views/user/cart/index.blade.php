@@ -22,7 +22,7 @@
                     <tr>
                         <th>{{ __('Product') }}</th>
                         <th>{{ __('Quantity') }}</th>
-                        <th>{{ __('Price') }}</th>
+                        <th>{{ __('Product Price') }}</th>
                         <th>{{ __('Total') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
@@ -44,7 +44,7 @@
                             </td>
                             <td>
                                 <input type="number" value="{{ $cart[$product['id']] }}" min="1"
-                                    class="form-control w-50">
+                                    class="form-control w-50 quantity-input" data-product-id="{{ $product['id'] }}">
                             </td>
                             <td>${{ number_format($product['price'], 2) }}</td>
                             <td>${{ number_format($total, 2) }}</td>
@@ -63,10 +63,14 @@
             </table>
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <h3>{{ __('Grand Total') }}: ${{ number_format($grandTotal, 2) }}</h3>
-                <a href="{{ route('checkout.index', ['lang' => app()->getLocale()]) }}" class="btn btn-lg btn-primary">
+                <a href="{{ route('checkout.index', ['lang' => app()->getLocale()]) }}" class="btn btn-lg btn-primary"
+                    id="proceed-to-checkout">
                     {{ __('Proceed to Checkout') }}
                 </a>
             </div>
         @endif
     </div>
 @endsection
+<script>
+    const updateCartQuantity = "{{ url(app()->getLocale() . '/cart/update') }}";
+</script>

@@ -919,7 +919,8 @@
     border-bottom: none;
 }
 
-.order-total {
+.order-total,
+.order-shipping {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;

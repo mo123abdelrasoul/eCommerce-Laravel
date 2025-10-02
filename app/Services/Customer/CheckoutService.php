@@ -32,7 +32,7 @@ class CheckoutService
 
         $cartTotal = $this->calculateCartTotal($cart);
         $couponCode = $checkoutData['coupon'] ?? null;
-        $cartProducts = array_keys($cart);
+        $z = array_keys($cart);
         $cartCategories = Product::whereIn('id', $cartProducts)->pluck('category_id')->toArray();
         $userId = Auth::id();
         $couponResult = $this->applyCoupon($cartTotal, $couponCode, $cartProducts, $cartCategories, $userId);
@@ -50,7 +50,7 @@ class CheckoutService
             ];
         }
     }
-    private function validateCart($cart)
+    public static function validateCart($cart)
     {
         $errors = [];
         $productIds = array_keys($cart);
@@ -77,8 +77,7 @@ class CheckoutService
         }
         return $errors;
     }
-
-    private function calculateCartTotal($cart)
+    public static function calculateCartTotal($cart)
     {
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');

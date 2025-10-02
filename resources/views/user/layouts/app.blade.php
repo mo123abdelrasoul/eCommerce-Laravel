@@ -30,6 +30,8 @@
     {{-- Footer --}}
     @include('user.layouts.footer')
     @vite(['resources/css/home.css', 'resources/js/home.js'])
+    @vite(['resources/js/checkout.js'])
+    @vite(['resources/js/cart.js'])
 
     {{-- JS --}}
     @stack('scripts')

@@ -11,6 +11,8 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/adminlte.js',
                 'resources/js/home.js',
+                'resources/js/checkout.js',
+                'resources/js/cart.js',
             ],
             refresh: true,
         }),

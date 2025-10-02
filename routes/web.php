@@ -10,6 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\Customer\ShippingController as CustomerShippingController;
 use App\Http\Controllers\Customer\UserController as CustomerUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
@@ -88,8 +89,10 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     // Add to Cart
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
 
+    Route::post('/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])->name('checkout.shipping.rate');
     Route::get('/checkout', [CheckoutController::class, 'showCheckoutForm'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
 

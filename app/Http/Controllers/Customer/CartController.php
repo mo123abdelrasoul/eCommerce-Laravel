@@ -32,6 +32,23 @@ class CartController extends Controller
         Session::put('cart', $cart);
         return Redirect::back()->with('success', __('Product added to cart successfully!'));
     }
+    public function update(Request $request)
+    {
+        $cart = Session::get('cart', []);
+        $items = $request->input('items', []);
+        foreach ($items as $item) {
+            $productId = $item['product_id'] ?? null;
+            $quantity = (int)($item['quantity'] ?? 1);
+            if ($quantity < 1) {
+                $quantity = 1;
+            }
+            if ($productId && isset($cart[$productId])) {
+                $cart[$productId] = $quantity;
+            }
+        }
+        Session::put('cart', $cart);
+        return;
+    }
     public function delete($lang, $id)
     {
         $cart = Session::get('cart', []);

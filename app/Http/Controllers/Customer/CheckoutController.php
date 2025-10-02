@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Services\Customer\CheckoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
@@ -31,37 +32,7 @@ class CheckoutController extends Controller
             return back()->with('error', 'You Must Login First.');
         }
         $cart = Session::get('cart', []);
-        if (!empty($errors)) {
-            return back()->withErrors(['cart' => $errors])->withInput();
-        }
-        $productIds = array_map('intval', array_keys($cart));
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-        $errors = [];
-        foreach ($cart as $productId => $qty) {
-            if (!isset($products[$productId])) {
-                $errors[] = "Product with ID {$productId} not found.";
-                continue;
-            }
-            $product = $products[$productId];
-            $validQty = filter_var($qty, FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]);
-            if ($validQty === false) {
-                $errors[] = "Invalid quantity for {$product->name}.";
-                continue;
-            }
-            $qty = (int) $qty;
-            if ($qty > (int) $product->quantity) {
-                $errors[] = "Not enough stock for {$product->name}.";
-                continue;
-            }
-            if ($product->status !== 'approved') {
-                $errors[] = "{$product->name} is not available.";
-                continue;
-            }
-        }
-        if (!empty($errors)) {
-            return back()->withErrors(['cart' => $errors]);
-        }
-        $validatedData = $request->validate([
+        $checkoutData = $request->validate([
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|email',
             'phone' => 'required|digits_between:10,15',
@@ -70,5 +41,6 @@ class CheckoutController extends Controller
             'city' => 'required|integer',
             'shipping_method' => 'required|integer'
         ]);
+        $data = (new CheckoutService())->handle($cart, $checkoutData);
     }
 }

@@ -16,13 +16,15 @@ class ShippingService
         $shippingMethodId = $checkoutData['shipping_method'];
         $method = ShippingMethod::with('policy')->find($shippingMethodId);
         $policy = $method->policy;
-        $policy_id = $method->policy->id;
         $chargeableWeight  = $this->calculateWeights($cart);
         $rate = $this->getRate($regionId, $shippingMethodId, $chargeableWeight, $policy, $cartTotal);
+        return [
+            'success' => true,
+            'rate' => $rate
+        ];
     }
-    private function getRegionIdByCity($checkoutData)
+    private function getRegionIdByCity($cityId)
     {
-        $cityId = $checkoutData['city'];
         return City::where('id', $cityId)->value('region_id');
     }
     private function calculateWeights($cart)
@@ -50,22 +52,17 @@ class ShippingService
             })
             ->first();
         if (!$rate) {
-            $rate = $this->calculateByPolicy($shippingMethodId, $chargeableWeight, $cartTotal);
-            return $rate;
+            return $this->calculateByPolicy($policy, $chargeableWeight, $cartTotal);
         }
-        $rate = $rate->rate;
-        return $rate;
+        return $rate->rate;
     }
-    public function calculateByPolicy($shippingMethodId, $chargeableWeight, $cartTotal)
+    public function calculateByPolicy($policy, $chargeableWeight, $cartTotal)
     {
-        $policyId = ShippingMethod::where('id', $shippingMethodId)->value('shipping_policy_id');
-        $policy = ShippingPolicy::find($policyId);
         if ($policy->type == 'weight') {
             if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $cartTotal) {
-                $rate = 0;
-                return $rate;
+                return 0;
             } elseif ($policy->weight_ranges !== null) {
-                $weights = json_decode($policy->weight_ranges);
+                $weights = json_decode($policy->weight_ranges, true);
                 foreach ($weights as $weight) {
                     if ($weight['min'] <= $chargeableWeight && ($weight['max'] >= $chargeableWeight || $weight['max'] == null)) {
                         $rate = $weight['price'];
@@ -79,13 +76,10 @@ class ShippingService
             return $rate;
         } elseif ($policy->type == 'flat') {
             if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $cartTotal) {
-                return $rate = 0;
+                return 0;
             }
-            $rate = $policy->base_price ?? 0;
-            return $rate;
-        } elseif ($policy->type == 'flat') {
-            $rate = 0;
-            return $rate;
+            return $policy->base_price ?? 0;
         }
+        return 0;
     }
 }
