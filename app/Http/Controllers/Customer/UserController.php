@@ -44,8 +44,6 @@ class UserController extends Controller
             ],
             'password' => 'required|min:6'
         ]);
-        $user = \App\Models\User::where('email', $validatedData['email'])->withTrashed()->first();
-        Log::info('User lookup', ['user' => optional($user)->toArray()]);
         $remember = $request->has('remember');
         if (Auth::guard('web')
             ->attempt(
