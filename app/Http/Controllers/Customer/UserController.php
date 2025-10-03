@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+use Illuminate\Support\Facades\Log;
+use function Pest\Laravel\delete;
+
 class UserController extends Controller
 {
     /**
@@ -37,14 +40,23 @@ class UserController extends Controller
         $validatedData = $request->validate([
             'email' => [
                 'required',
-                'email',
-                'exists:users,email'
+                'email'
             ],
             'password' => 'required|min:6'
         ]);
-
+        $user = \App\Models\User::where('email', $validatedData['email'])->withTrashed()->first();
+        Log::info('User lookup', ['user' => optional($user)->toArray()]);
         $remember = $request->has('remember');
-        if (Auth::guard('web')->attempt(['email' => $validatedData['email'], 'password' => $validatedData['password']], $remember)) {
+        if (Auth::guard('web')
+            ->attempt(
+                [
+                    'email' => $validatedData['email'],
+                    'password' => $validatedData['password'],
+                    'deleted_at' => null
+                ],
+                $remember
+            )
+        ) {
             $user = Auth::guard('web')->user();
             if (!is_null($user->deleted_at)) {
                 Auth::guard('web')->logout();
