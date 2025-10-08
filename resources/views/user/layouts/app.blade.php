@@ -17,13 +17,13 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 min-h-screen flex flex-col">
 
     {{-- Header --}}
     @include('user.layouts.header')
-
+    @include('user.layouts.cart')
     {{-- Main Content --}}
-    <main>
+    <main class="flex-grow">
         @yield('content')
     </main>
 

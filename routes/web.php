@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\LoginAdminController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\UserController;
@@ -93,8 +94,16 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
 
     Route::post('/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])->name('checkout.shipping.rate');
+    Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('apply.coupon');
     Route::get('/checkout', [CheckoutController::class, 'showCheckoutForm'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+
+
+    Route::post('/payment/process', [PaymentController::class, 'paymentProcess'])->name('payment.process');
+    Route::match(['GET', 'POST'], '/payment/callback', [PaymentController::class, 'callBack'])->name('payment.callBack');
+    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
+
 
 
     // About

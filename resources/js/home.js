@@ -24,15 +24,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById('payment-select');
-    const logo = document.getElementById('payment-logo');
-    const logos = JSON.parse(document.getElementById('payment-methods-json').textContent);
-
-    select.addEventListener('change', function() {
-        const key = this.value;
-        if (logos[key]) {
-            logo.src = logos[key];
-        }
-    });
+    if(select) {
+        const logo = document.getElementById('payment-logo');
+        const logos = JSON.parse(document.getElementById('payment-methods-json').textContent);
+        select.addEventListener('change', function() {
+            const key = this.value;
+            if (logos[key]) {
+                logo.src = logos[key];
+            }
+        });
+    }
 });
 
 
