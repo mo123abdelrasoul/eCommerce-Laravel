@@ -10,19 +10,15 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    protected PaymentGatewayInterface $paymentGateway;
-    public function __construct(PaymentGatewayInterface $paymentGateway)
-    {
-        $this->paymentGateway = $paymentGateway;
-    }
     public function paymentProcess(Request $request)
     {
         $gateway = PaymentFactory::make($request->payment_method);
         return $gateway->sendPayment($request);
     }
-    public function callBack(Request $request): RedirectResponse
+    public function callback($lang, Request $request): RedirectResponse
     {
-        $response = $this->paymentGateway->callBack($request);
+        dd('Paymob Callback Data: ' . json_encode($request->all()));
+        // $response = $this->paymentGateway->callBack($request);
         if ($response) {
             return redirect()->route('payment.success');
         }

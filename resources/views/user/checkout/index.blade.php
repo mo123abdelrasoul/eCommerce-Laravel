@@ -52,8 +52,7 @@
                                     <option value="">Select City</option>
                                     @if (!empty($cities))
                                         @foreach ($cities as $city)
-                                            <option value="{{ $city['id'] }}"
-                                                {{ old('city') == $city['id'] ? 'selected' : '' }}>
+                                            <option value="{{ $city['id'] }}">
                                                 {{ $city['name'] }}
                                             </option>
                                         @endforeach
@@ -80,8 +79,8 @@
                         <div class="checkout-form-group full-width">
                             <label for="coupon_code">Coupon Code</label>
                             <div class="checkout-coupon">
-                                <input type="text" id="coupon_code" name="coupon_code" class="checkout-coupon-input"
-                                    value="{{ session('coupon_code') ?? '' }}">
+                                <input type="text" id="coupon_code" name="coupon_code" autocomplete="off"
+                                    class="checkout-coupon-input">
                                 <button type="button" class="checkout-coupon-btn">Apply</button>
                             </div>
                             <div class="coupon-msg"></div>
@@ -92,8 +91,7 @@
                                 <option value="">Select Shipping Method</option>
                                 @if (!empty($shipping_methods))
                                     @foreach ($shipping_methods as $method)
-                                        <option value="{{ $method['id'] }}"
-                                            {{ old('shipping_method') == $method['id'] ? 'selected' : '' }}>
+                                        <option value="{{ $method['id'] }}">
                                             {{ $method['name'] }} ({{ $method['description'] }})
                                         </option>
                                     @endforeach
@@ -112,8 +110,7 @@
                             <option value="">Select Payment Method</option>
                             @if (!empty($payment_methods))
                                 @foreach ($payment_methods as $payment)
-                                    <option value="{{ $payment['id'] }}"
-                                        {{ old('payment_method') == $payment['id'] ? 'selected' : '' }}>
+                                    <option value="{{ $payment['id'] }}">
                                         {{ $payment['name'] }}
                                     </option>
                                 @endforeach
@@ -150,11 +147,10 @@
                         <strong>SubTotal:</strong> <strong>${{ number_format($cartTotal, 2) }}</strong>
                     </div>
                     <div class="checkout-order-shipping">
-                        <strong>Shipping:</strong><strong
-                            id="shipping-cost">{{ session('shipping_rate') ?? 'Not calculated yet' }}</strong>
+                        <strong>Shipping:</strong><strong id="shipping-cost">{{ 'Not calculated yet' }}</strong>
                     </div>
                     <div class="checkout-order-coupon">
-                        <strong>Coupon:</strong><strong>${{ session('discount_value') ?? 0 }}</strong>
+                        <strong>Coupon:</strong><strong>${{ 0 }}</strong>
                     </div>
                 </div>
             </div>

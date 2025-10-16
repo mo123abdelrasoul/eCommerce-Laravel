@@ -21,7 +21,7 @@ if(checkoutForm){
             .then(data => {
                 if(data.status == 'success') {
                     let shipping_cost = document.querySelector("#shipping-cost");
-                    shipping_cost.innerHTML = `${data.shipping_rate}`;
+                    shipping_cost.innerHTML = `${data.total_shipping}`;
                 }else {
                     console.log('failed');
                 }

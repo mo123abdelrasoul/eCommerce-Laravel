@@ -7,20 +7,23 @@ use App\Models\CouponUser;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class CheckoutService
 {
     protected $paymentService;
     protected $orderService;
     protected $shippingService;
+    protected $couponService;
 
-    public function __construct(PaymentService $paymentService, OrderService $orderService, ShippingService $shippingService)
+    public function __construct(PaymentService $paymentService, OrderService $orderService, ShippingService $shippingService, CouponService $couponService)
     {
         $this->paymentService = $paymentService;
         $this->orderService = $orderService;
         $this->shippingService = $shippingService;
+        $this->couponService = $couponService;
     }
-    public function handle($cart, $checkoutData)
+    public function handle($checkoutData, $cart)
     {
         $cartErrors = $this->validateCart($cart);
         if (!empty($cartErrors)) {
@@ -29,29 +32,27 @@ class CheckoutService
                 'errors' => $cartErrors
             ];
         }
-        $cartTotal = $this->calculateCartTotal($cart);
-        $order = $this->orderService->handle($cart, $cartTotal, $checkoutData);
-        // $couponCode = $checkoutData['coupon'] ?? null;
-        // $cartProducts = array_keys($cart);
-        // $cartCategories = Product::whereIn('id', $cartProducts)->pluck('category_id')->toArray();
-        // $userId = Auth::id();
-        // $couponResult = $this->applyCoupon($cartTotal, $couponCode, $cartProducts, $cartCategories, $userId);
-        // if (!$couponResult['success']) {
-        //     return [
-        //         'success' => false,
-        //         'errors' => $couponResult['errors']
-        //     ];
-        // }
-        // $shippingResult = $this->shippingService->calculate($cart, $checkoutData, $cartTotal);
-        // if (!$shippingResult['success']) {
-        //     return [
-        //         'success' => false,
-        //         'errors' => $shippingResult['errors']
-        //     ];
-        // }
+        $vendorCart = $this->shippingService->prepareVendorCarts($cart);
+        $coupon = ['discount' => 0, 'vendor_id' => null];
+        if (!empty($checkoutData['coupon_code'])) {
+            $coupon = $this->couponService->applyCoupon(
+                $vendorCart['totals'],
+                $checkoutData['coupon_code'],
+                $cart
+            );
+        }
+        $shipping = $this->shippingService->calculate($checkoutData);
+        $orders = $this->orderService->createPendingOrder($checkoutData, $coupon, $shipping, $vendorCart);
+        $payment = $this->paymentService->process($orders['totalAmount'], $checkoutData);
+        if ($payment['success']) {
+            return redirect()->away($payment['payment_url']);
+        } else {
+            dd($payment['message']);
+        }
     }
-    public static function validateCart($cart)
+    public function validateCart($cart)
     {
+        $cart = session()->get('cart', []);
         $errors = [];
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
@@ -76,16 +77,5 @@ class CheckoutService
             }
         }
         return $errors;
-    }
-    public static function calculateCartTotal($cart)
-    {
-        $productIds = array_keys($cart);
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-        $total = 0;
-        foreach ($cart as $productId => $qty) {
-            $productAfterDiscount = $products[$productId]->price * (1 - ($products[$productId]->discount / 100));
-            $total += $productAfterDiscount * $qty;
-        }
-        return $total;
     }
 }

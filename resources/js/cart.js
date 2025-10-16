@@ -39,6 +39,7 @@ addCartBtn.forEach((btn) => {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrf
             },
+            credentials: 'include',
             body: JSON.stringify({ product_id: productId, quantity: 1})
         })
         .then(response => response.json())

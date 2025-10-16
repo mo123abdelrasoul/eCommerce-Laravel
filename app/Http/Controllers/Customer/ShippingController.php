@@ -6,22 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Services\CheckoutService;
 use App\Services\ShippingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
-class ShippingController extends Controller
+class ShippingController
 {
+    protected $checkoutService;
+    protected $shippingService;
+
+    public function __construct(CheckoutService $checkoutService, ShippingService $shippingService)
+    {
+        $this->checkoutService = $checkoutService;
+        $this->shippingService = $shippingService;
+    }
     public function getShippingRate(Request $request)
     {
         $validated = $request->validate([
-            'city' => 'required|string|max:255',
-            'shipping_method' => 'required|string|max:255',
+            'city' => 'required|integer',
+            'shipping_method' => 'required|integer',
         ]);
-        session()->forget('shipping_rate');
-        // $checkoutData = [
-        //     'city' => $request->city,
-        //     'shipping_method' => $request->shipping_method
-        // ];
-        $cart = session()->get('cart', []);
-        $cartValidation = CheckoutService::validateCart($cart);
+        $cart = Session::get('cart', []);
+        $cartValidation = $this->checkoutService->validateCart($cart);
         if (!empty($cartValidation)) {
             return response()->json([
                 'status' => 'failed',
@@ -29,8 +33,7 @@ class ShippingController extends Controller
                 'shipping_rate' => null
             ], 422);
         }
-        $cartTotal = CheckoutService::calculateCartTotal($cart);
-        $shippingService = (new ShippingService())->calculate($cart, $validated, $cartTotal);
+        $shippingService = $this->shippingService->calculate($validated);
         if (!$shippingService['success']) {
             return response()->json([
                 'status' => 'failed',
@@ -43,7 +46,7 @@ class ShippingController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Shipping calculated successfully',
-            'shipping_rate' => $shippingService['rate']
+            'total_shipping' => $shippingService['total_shipping']
         ]);
     }
 }

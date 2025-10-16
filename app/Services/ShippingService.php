@@ -7,79 +7,145 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\ShippingPolicy;
 use App\Models\ShippingRate;
+use App\Models\Vendor;
 
 class ShippingService
 {
-    public function calculate($cart, $checkoutData, $cartTotal)
+    public function calculate($checkoutData)
     {
+        $cart = session()->get('cart', []);
+        $vendorsData = $this->prepareVendorCarts($cart);
         $regionId = $this->getRegionIdByCity($checkoutData['city']);
         $shippingMethodId = $checkoutData['shipping_method'];
         $method = ShippingMethod::with('policy')->find($shippingMethodId);
+        if (!$method || !$method->policy) {
+            return ['success' => false, 'message' => 'Shipping policy not found.'];
+        }
         $policy = $method->policy;
-        $chargeableWeight  = $this->calculateWeights($cart);
-        $rate = $this->getRate($regionId, $shippingMethodId, $chargeableWeight, $policy, $cartTotal);
+        $weights = $this->calculateWeights($vendorsData['products']);
+        $rates = $this->calculateVendorRates($regionId, $shippingMethodId, $weights, $policy, $vendorsData['totals']);
         return [
             'success' => true,
-            'rate' => $rate
+            'rate' => $rates,
+            'total_weights' => $weights,
+            'total_shipping' => array_sum($rates),
         ];
     }
-    private function getRegionIdByCity($cityId)
+
+    public function prepareVendorCarts(array $cart): array
     {
-        return City::where('id', $cityId)->value('region_id');
-    }
-    private function calculateWeights($cart)
-    {
+        if (empty($cart)) {
+            return ['products' => [], 'totals' => []];
+        }
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-        $weight = 0;
-        $volumetric_weight = 0;
-        $divisor = config('shipping.default.volumetric_divisor', 5000);
+        $vendorProductsCart = [];
+        $vendorCartTotal = [];
         foreach ($cart as $productId => $qty) {
+            if (!isset($products[$productId])) {
+                continue;
+            }
             $product = $products[$productId];
-            $weight += $product->weight * $qty;
-            $volumetric_weight += (($product->height * $product->width * $product->length) / $divisor) * $qty;
+            $vendorId = $product->vendor_id;
+            $discountedPrice = $product->price - $product->discount;
+            if ($discountedPrice < 0) {
+                $discountedPrice = 0;
+            }
+            $vendorProductsCart[$vendorId][] = [
+                'id' => $productId,
+                'name' => $product->name,
+                'originalPrice' => $product->price,
+                'discountedPrice' => $discountedPrice,
+                'quantity' => $qty,
+                'weight' => $product->weight,
+                'height' => $product->height,
+                'width' => $product->width,
+                'length' => $product->length,
+            ];
+            $vendorCartTotal[$vendorId] = ($vendorCartTotal[$vendorId] ?? 0) + ($discountedPrice * $qty);
         }
-        return max($weight, $volumetric_weight);
+        return [
+            'products' => $vendorProductsCart,
+            'totals' => $vendorCartTotal
+        ];
     }
-    private function getRate($regionId, $shippingMethodId, $chargeableWeight, $policy, $cartTotal)
+
+    private function calculateWeights($vendorProductsCart): array
     {
-        $rate = ShippingRate::where('shipping_region_id', $regionId)
-            ->where('shipping_method_id', $shippingMethodId)
-            ->where('min_weight', '<=', $chargeableWeight)
-            ->where(function ($query) use ($chargeableWeight) {
-                $query->where('max_weight', '>=', $chargeableWeight)
+        $realWeight = [];
+        $volumetricWeight = [];
+        $divisor = config('shipping.default.volumetric_divisor', 5000);
+        foreach ($vendorProductsCart as $vendorId => $cart) {
+            $realWeight[$vendorId] = 0;
+            $volumetricWeight[$vendorId] = 0;
+            foreach ($cart as $item) {
+                $qty = $item['quantity'];
+                $height = $item['height'] ?? 0;
+                $width  = $item['width'] ?? 0;
+                $length = $item['length'] ?? 0;
+                $weight = $item['weight'] ?? 0;
+                $realWeight[$vendorId] += $weight * $qty;
+                $volumetricWeight[$vendorId] += (($height * $width * $length) / $divisor) * $qty;
+            }
+        }
+        $finalWeight = [];
+        foreach ($realWeight as $vendorId => $weight) {
+            $finalWeight[$vendorId] = max($weight, $volumetricWeight[$vendorId]);
+        }
+        return $finalWeight;
+    }
+
+    private function calculateVendorRates($regionId, $methodId, array $weights, $policy, array $totals)
+    {
+        $vendorRates = [];
+        foreach ($weights as $vendorId => $weight) {
+            $rate = $this->getRateForVendor($regionId, $methodId, $weight);
+            $vendorRates[$vendorId] = $rate ? (float) $rate->rate : $this->calculateRateByPolicy($policy, $weight, $totals[$vendorId]);
+        }
+        return $vendorRates;
+    }
+
+    private function getRateForVendor($regionId, $methodId, $weight)
+    {
+        return ShippingRate::where('shipping_region_id', $regionId)
+            ->where('shipping_method_id', $methodId)
+            ->where('min_weight', '<=', $weight)
+            ->where(function ($query) use ($weight) {
+                $query->where('max_weight', '>=', $weight)
                     ->orWhereNull('max_weight');
             })
+            ->orderBy('min_weight', 'desc')
             ->first();
-        if (!$rate) {
-            return $this->calculateByPolicy($policy, $chargeableWeight, $cartTotal);
-        }
-        return $rate->rate;
     }
-    public function calculateByPolicy($policy, $chargeableWeight, $cartTotal)
+
+    public function calculateRateByPolicy($policy, $vendorWeight, $vendorTotal): float
     {
         if ($policy->type == 'weight') {
-            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $cartTotal) {
-                return 0;
+            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $vendorTotal) {
+                return (float) 0;
             } elseif ($policy->weight_ranges !== null) {
                 $weights = json_decode($policy->weight_ranges, true);
                 foreach ($weights as $weight) {
-                    if ($weight['min'] <= $chargeableWeight && ($weight['max'] >= $chargeableWeight || $weight['max'] == null)) {
-                        $rate = $weight['price'];
-                        return $rate;
+                    if ($weight['min'] <= $vendorWeight && ($weight['max'] >= $vendorWeight || $weight['max'] == null)) {
+                        return (float) $weight['price'];
                     }
                 }
             }
             $basePrice = $policy->base_price ?? 0;
             $pricePerKg = $policy->price_per_kg ?? 0;
-            $rate = $basePrice + ($chargeableWeight * $pricePerKg);
-            return $rate;
+            $rate = $basePrice + ($vendorWeight * $pricePerKg);
+            return (float) $rate;
         } elseif ($policy->type == 'flat') {
-            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $cartTotal) {
-                return 0;
+            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $vendorTotal) {
+                return (float) 0;
             }
-            return $policy->base_price ?? 0;
+            return (float) ($policy->base_price ?? 0);
         }
-        return 0;
+        return (float) 0;
+    }
+
+    private function getRegionIdByCity($cityId)
+    {
+        return City::where('id', $cityId)->value('region_id') ?? 0;
     }
 }

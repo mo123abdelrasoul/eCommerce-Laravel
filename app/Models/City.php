@@ -13,4 +13,8 @@ class City extends Model
     {
         return $this->belongsTo(ShippingRegion::class, 'region_id');
     }
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
 }

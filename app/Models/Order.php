@@ -9,12 +9,23 @@ class Order extends Model
 {
     use SoftDeletes;
     protected $fillable = [
+        'customer_id',
+        'order_number',
         'status',
+        'total_amount',
+        'payment_status',
         'payment_method',
-        'shipping_cost',
         'shipping_address',
+        'billing_address',
+        'shipping_cost',
+        'total_weight',
+        'discount_amount',
+        'tax_amount',
         'notes',
-        'total_amount'
+        'vendor_id',
+        'sub_total',
+        'shipping_policy_id',
+        'shipping_method_id',
     ];
     public function customer()
     {
@@ -27,5 +38,9 @@ class Order extends Model
     public function order()
     {
         return $this->belongsTo(ShippingMethod::class);
+    }
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

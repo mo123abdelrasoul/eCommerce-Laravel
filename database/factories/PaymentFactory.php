@@ -14,7 +14,7 @@ class PaymentFactory
     public static function make(string $gateway): PaymentGatewayInterface
     {
         return match ($gateway) {
-            'paymob' => app(PaymobPaymentService::class),
+            'card', 'wallet' => app(PaymobPaymentService::class),
             default => throw new \Exception("Unsupported payment gateway: {$gateway}"),
         };
     }

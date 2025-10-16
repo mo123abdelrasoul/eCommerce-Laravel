@@ -18,4 +18,8 @@ class ShippingMethod extends Model
     {
         return $this->belongsTo(ShippingPolicy::class, 'shipping_policy_id');
     }
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
 }

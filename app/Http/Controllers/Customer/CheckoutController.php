@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Services\CheckoutService;
 use App\Services\CouponService;
+use App\Services\ShippingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
@@ -18,20 +19,30 @@ use Illuminate\Support\Facades\Auth;
 class CheckoutController extends Controller
 {
     protected $checkoutService;
-    public function __construct(CheckoutService $checkoutService)
+    protected $shippingService;
+    protected $couponService;
+    public function __construct(CheckoutService $checkoutService, ShippingService $shippingService, CouponService $couponService)
     {
         $this->checkoutService = $checkoutService;
+        $this->shippingService = $shippingService;
+        $this->couponService = $couponService;
     }
     public function showCheckoutForm($lang)
     {
         $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys(Session::get('cart', [])))->get();
-        $cities = City::select('id', 'name')->where('is_active', true)->get();
-        $shipping_methods = ShippingMethod::select('id', 'name', 'description')->where('is_active', true)->get();
-        $payment_methods = PaymentMethod::select('id', 'name')->get();
         if ($products->isEmpty()) {
             return Redirect::route('cart.index', app()->getLocale())->with('error', __('Your cart is empty. Please add items to your cart before proceeding to checkout.'));
         }
-        return view('user.checkout.index', compact('products', 'cities', 'shipping_methods', 'payment_methods'));
+        return response()
+            ->view('user.checkout.index', [
+                'products' => $products,
+                'cities' => City::active()->select('id', 'name')->get(),
+                'shipping_methods' => ShippingMethod::active()->select('id', 'name', 'description')->get(),
+                'payment_methods' => PaymentMethod::select('id', 'name')->get(),
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
     public function process($lang, Request $request)
     {
@@ -53,31 +64,21 @@ class CheckoutController extends Controller
             'shipping_method' => 'required|integer',
             'payment_method' => 'required|integer'
         ]);
-        $data = $this->checkoutService->handle($cart, $checkoutData);
+        return $this->checkoutService->handle($checkoutData, $cart);
+        // dd($data);
     }
-    public function applyCoupon($lang, Request $request, CheckoutService $checkoutService)
+    public function applyCoupon($lang, Request $request)
     {
         $validation = $request->validate([
             'coupon_code' => 'required|string|max:255',
             'total' => 'required|numeric|min:0'
         ]);
-        if (session('coupon_code') === $validation['coupon_code']) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'This coupon is already applied.'
-            ], 400);
-        }
-        session()->forget(['discount_value', 'coupon_code']);
         $cart = Session::get('cart', []);
-        $cartProducts = array_keys($cart);
-        $cartCategories = Product::whereIn('id', $cartProducts)->pluck('category_id')->toArray();
-        $userId = Auth::id();
-        $couponResult = (new CouponService())->applyCoupon(
-            $validation['total'],
+        $vendorCart = $this->shippingService->prepareVendorCarts($cart);
+        $couponResult = $this->couponService->applyCoupon(
+            $vendorCart['totals'],
             $validation['coupon_code'],
-            $cartProducts,
-            $cartCategories,
-            $userId
+            $cart
         );
         if ($couponResult['status'] === 'failed') {
             return response()->json([
@@ -85,8 +86,6 @@ class CheckoutController extends Controller
                 'message' => $couponResult['message']
             ], 400);
         }
-        session()->put('discount_value', $couponResult['discount']);
-        session()->put('coupon_code', $validation['coupon_code']);
         return response()->json([
             'status' => 'success',
             'message' => $couponResult['message'],

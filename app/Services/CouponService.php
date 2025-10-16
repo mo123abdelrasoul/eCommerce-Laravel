@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CouponService
 {
-    public function applyCoupon($cartTotal, $couponCode = null, $cartProducts = [], $cartCategories = [], $userId = null)
+    public function applyCoupon($vendorCartTotals, $couponCode = null, $cart)
     {
         if (!$couponCode) {
             return [
@@ -18,9 +18,7 @@ class CouponService
                 'message' => 'No coupon code provided',
             ];
         }
-        if (!$userId && Auth::check()) {
-            $userId = Auth::id();
-        }
+        $userId = Auth::id();
         $coupon = Coupon::where('code', $couponCode)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
@@ -33,14 +31,28 @@ class CouponService
                 'message' => 'Invalid or expired coupon code',
             ];
         }
-        $couponErrors = $this->validateCoupon($cartTotal, $coupon, $cartProducts, $cartCategories, $userId);
+        if (!empty($coupon->vendor_id)) {
+            return $this->applyVendorCoupon($vendorCartTotals, $coupon, $cart, $userId);
+        }
+        return $this->applyGlobalCoupon($vendorCartTotals, $coupon, $cart, $userId);
+    }
+
+    private function applyVendorCoupon($vendorCartTotals, $coupon, $cart, $userId)
+    {
+        $vendorProductsData = Product::whereIn('id', array_keys($cart))
+            ->where('vendor_id', $coupon->vendor_id)
+            ->get(['id', 'category_id']);
+        $vendorProducts = $vendorProductsData->pluck('id')->toArray();
+        $vendorCategories = $vendorProductsData->pluck('category_id')->toArray();
+        $vendorTotal = $vendorCartTotals[$coupon->vendor_id] ?? 0;
+        $couponErrors = $this->validateCoupon($vendorTotal, $coupon, $vendorProducts, $vendorCategories, $userId);
         if (!empty($couponErrors)) {
             return [
                 'status' => 'failed',
                 'message' => 'Coupon validation failed',
             ];
         }
-        $discountAmount = $this->calculateDiscountAmount($cartTotal, $coupon, $cartProducts);
+        $discountAmount = $this->calculateDiscountAmount($vendorTotal, $coupon, $vendorProducts);
         if ($discountAmount <= 0) {
             return [
                 'status' => 'failed',
@@ -50,6 +62,34 @@ class CouponService
         return [
             'status' => 'success',
             'message' => 'Coupon applied successfully',
+            'vendor_id' => $coupon->vendor_id,
+            'discount' => $discountAmount,
+        ];
+    }
+
+    private function applyGlobalCoupon($vendorCartTotals, $coupon, $cart, $userId)
+    {
+        $cartProducts = array_keys($cart);
+        $cartCategories = Product::whereIn('id', $cartProducts)->pluck('category_id')->toArray();
+        $cartTotals = array_sum($vendorCartTotals);
+        $couponErrors = $this->validateCoupon($cartTotals, $coupon, $cartProducts, $cartCategories, $userId);
+        if (!empty($couponErrors)) {
+            return [
+                'status' => 'failed',
+                'message' => 'Coupon validation failed',
+            ];
+        }
+        $discountAmount = $this->calculateDiscountAmount($cartTotals, $coupon, $cartProducts);
+        if ($discountAmount <= 0) {
+            return [
+                'status' => 'failed',
+                'message' => 'Coupon not applicable to the current cart.',
+            ];
+        }
+        return [
+            'status' => 'success',
+            'message' => 'Coupon applied successfully',
+            'vendor_id' => null,
             'discount' => $discountAmount,
         ];
     }
@@ -95,17 +135,22 @@ class CouponService
     private function calculateDiscountAmount($total, $coupon, $cartProducts)
     {
         $discountAmount = 0;
-        if ($coupon->discount_type == 'percentage') {
-            $discountAmount = $total * ($coupon->discount_value / 100);
-            if ($coupon->max_discount && $discountAmount > $coupon->max_discount) {
-                $discountAmount = $coupon->max_discount;
-            }
-        } elseif ($coupon->discount_type == 'fixed_cart') {
-            $discountAmount = $coupon->discount_value;
-        } elseif ($coupon->discount_type == 'fixed_product') {
-            $cartItemsCount = count($cartProducts);
-            $discountAmount = $coupon->discount_value * $cartItemsCount;
+        switch ($coupon->discount_type) {
+            case 'percentage':
+                $discountAmount = $total * ($coupon->discount_value / 100);
+                if ($coupon->max_discount && $discountAmount > $coupon->max_discount) {
+                    $discountAmount = $coupon->max_discount;
+                }
+                break;
+
+            case 'fixed_cart':
+                $discountAmount = min($coupon->discount_value, $total);
+                break;
+
+            case 'fixed_product':
+                $discountAmount = $coupon->discount_value * count($cartProducts);
+                break;
         }
-        return $discountAmount;
+        return max(0, $discountAmount);
     }
 }
