@@ -54,7 +54,7 @@ class OrderService extends Controller
     }
     public function getPaymentMethodName($paymentMethodId)
     {
-        return PaymentMethod::where('id', $paymentMethodId)->value('name')
+        return PaymentMethod::where('id', $paymentMethodId)->value('code')
             ?? throw new \Exception('Payment method not found.');
     }
     private function prepareShippingAddress($checkoutData)
@@ -97,6 +97,12 @@ class OrderService extends Controller
             $vendorDiscount = $discount;
         }
         $totalAmount = ($cartAmount + $shippingCost) - $vendorDiscount;
+
+        if ((isset($coupon['vendor_id']) && $coupon['vendor_id'] == $vendorId) || empty($coupon['vendor_id'])) {
+            $couponId = $coupon['id'] ?? null;
+        } else {
+            $couponId = null;
+        }
         $order = Order::create([
             'customer_id' => $userId,
             'order_number' => $orderNumber,
@@ -115,6 +121,7 @@ class OrderService extends Controller
             'sub_total' => $cartAmount,
             'shipping_policy_id' => $shippingPolicyId,
             'shipping_method_id' => $checkoutData['shipping_method'],
+            'coupon_id' => $couponId,
         ]);
         foreach ($products as $item) {
             $order->items()->create([

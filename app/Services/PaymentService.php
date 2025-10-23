@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Payment;
 use App\Models\PaymentMethod;
 use Database\Factories\PaymentFactory;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class PaymentService
@@ -19,6 +21,22 @@ class PaymentService
         $gateway = $this->getGateway($paymentGateway);
         $checkoutData['amount_cents'] = $totalAmount * 100;
         $checkoutData['payment_gateway'] = $paymentGateway;
+        $userId = Auth::id();
+        $payment = Payment::create([
+            'customer_id'  => $userId,
+            'gateway'      => $paymentGateway,
+            'amount_cents' => $checkoutData['amount_cents'],
+            'currency'     => 'EGP',
+            'status'       => 'pending',
+        ]);
+        $checkoutData['payment_id'] = $payment->id;
+        if ($gateway == 'cod') {
+            return [
+                'success' => true,
+                'message' => 'Order created successfully.',
+                'payment_id' => $checkoutData['payment_id'],
+            ];
+        }
         return $gateway->sendPayment($checkoutData);
     }
     private function getGateway($paymentGateway)

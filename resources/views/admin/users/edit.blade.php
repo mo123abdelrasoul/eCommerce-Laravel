@@ -26,7 +26,7 @@
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
                             <li class="breadcrumb-item"><a
-                                    href="{{ route('users.show', ['lang' => app()->getLocale(), 'user' => $user->id]) }}">Profile</a>
+                                    href="{{ route('admin.users.show', ['lang' => app()->getLocale(), 'user' => $user->id]) }}">Profile</a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $user->name }}</li>
                         </ol>
@@ -39,7 +39,7 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form form action="{{ route('users.update', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+            <form form action="{{ route('admin.users.update', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                 method="POST" enctype="multipart/form-data" class="needs-validation">
                 @method('PUT')
                 @csrf

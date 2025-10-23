@@ -15,7 +15,7 @@
     @endif
     <!--begin::App Content Header-->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('brands.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
+        <a href="{{ route('vendor.brands.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
             Create Brand
         </a>
     </div>
@@ -29,7 +29,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Brands</li>
                     </ol>
                 </div>
@@ -82,11 +83,11 @@
                                             <td>{{ $brand->status ? 'Active' : 'Inactive' }} </td>
                                             <td>
                                                 <a class="btn btn-primary"
-                                                    href="{{ route('brands.edit', ['brand' => $brand->id, 'lang' => app()->getLocale()]) }}">
+                                                    href="{{ route('vendor.brands.edit', ['brand' => $brand->id, 'lang' => app()->getLocale()]) }}">
                                                     Edit
                                                 </a>
                                                 <form
-                                                    action="{{ route('brands.destroy', ['brand' => $brand->id, 'lang' => app()->getLocale()]) }}"
+                                                    action="{{ route('vendor.brands.destroy', ['brand' => $brand->id, 'lang' => app()->getLocale()]) }}"
                                                     method="POST" onsubmit="return confirm('Delete this brand?')"
                                                     style="display:inline;">
                                                     @csrf

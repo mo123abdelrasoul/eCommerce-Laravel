@@ -26,6 +26,7 @@ class Order extends Model
         'sub_total',
         'shipping_policy_id',
         'shipping_method_id',
+        'coupon_id',
     ];
     public function customer()
     {
@@ -35,12 +36,16 @@ class Order extends Model
     {
         return $this->belongsTo(Vendor::class, 'vendor_id');
     }
-    public function order()
+    public function shippingMethod()
     {
-        return $this->belongsTo(ShippingMethod::class);
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id');
     }
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+    public function payments()
+    {
+        return $this->belongsToMany(Payment::class, 'order_payments', 'order_id', 'payment_id')->withTimestamps();
     }
 }

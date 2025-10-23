@@ -14,12 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'checkUserRole' => \App\Http\Middleware\CheckUserRole::class,
-            'setLocale' => \App\Http\Middleware\LanguageMiddleware::class, // Register the LanguageMiddleware
+            'setLocale' => \App\Http\Middleware\LanguageMiddleware::class,
         ]);
         $middleware->group('web', [
-            \Illuminate\Session\Middleware\StartSession::class, // Ensure session starts first
-            \App\Http\Middleware\LanguageMiddleware::class,    // Then LanguageMiddleware
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class, // Required for $errors
+            \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\LanguageMiddleware::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

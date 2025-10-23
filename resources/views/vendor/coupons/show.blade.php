@@ -91,7 +91,7 @@
                 </table>
             </div>
             <div class="card-footer text-end">
-                <a href="{{ route('coupons.index') }}" class="btn btn-secondary">
+                <a href="{{ route('vendor.coupons.index', app()->getLocale()) }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Coupons
                 </a>
             </div>

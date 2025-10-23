@@ -26,7 +26,7 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('coupons.index') }}">Coupons</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('vendor.coupons.index') }}">Coupons</a></li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $coupon->code }}</li>
                         </ol>
                     </div>
@@ -38,7 +38,8 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form form action="{{ route('coupons.update', ['lang' => app()->getLocale(), 'coupon' => $coupon->id]) }}"
+            <form form
+                action="{{ route('vendor.coupons.update', ['lang' => app()->getLocale(), 'coupon' => $coupon->id]) }}"
                 method="POST" enctype="multipart/form-data" class="needs-validation">
                 @method('PUT')
                 @csrf

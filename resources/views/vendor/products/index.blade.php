@@ -15,7 +15,7 @@
     @endif
     <!--begin::App Content Header-->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('products.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
+        <a href="{{ route('vendor.products.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
             Create Product
         </a>
     </div>
@@ -29,7 +29,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Products</li>
                     </ol>
                 </div>
@@ -95,12 +96,12 @@
                                             <td>{{ $product->status ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $product->created_at->format('Y-m-d') }}</td>
                                             <td>
-                                                <a href="{{ route('products.show', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
+                                                <a href="{{ route('vendor.products.show', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
-                                                <a href="{{ route('products.edit', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
+                                                <a href="{{ route('vendor.products.edit', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                                                     class="btn btn-primary btn-sm">Edit</a>
                                                 <form
-                                                    action="{{ route('products.destroy', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
+                                                    action="{{ route('vendor.products.destroy', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                                                     method="POST" style="display:inline-block;"
                                                     onsubmit="return confirm('Are you sure you want to delete this product?');">
                                                     @csrf

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Interfaces\PaymentGatewayInterface;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
 
     public function sendPayment($checkoutData)
     {
-
         $authToken = $this->generateToken();
         $integrationId = $this->getIntegrationId($checkoutData['payment_gateway']);
 
@@ -43,6 +43,10 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
                 'success' => false,
                 'message' => 'Failed to create Paymob order.',
             ];
+        }
+        if (!empty($checkoutData['payment_id'])) {
+            Payment::where('id', $checkoutData['payment_id'])
+                ->update(['reference' => $orderId]);
         }
 
         // 2- Generate Payment Key
@@ -70,8 +74,8 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
         }
         return [
             'success' => true,
-            'message' => 'Payment URL generated successfully.',
-            'payment_url' => $paymentUrl,
+            'redirect_url' => $paymentUrl,
+            'payment_id' => $checkoutData['payment_id']
         ];
     }
 

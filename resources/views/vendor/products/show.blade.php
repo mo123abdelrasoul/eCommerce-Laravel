@@ -3,7 +3,7 @@
 @section('content')
     <!--begin::App Content Header-->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('products.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
+        <a href="{{ route('vendor.products.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
             Create Product
         </a>
     </div>
@@ -17,8 +17,9 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('products.index') }}">Products</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('vendor.products.index') }}">Products</a></li>
                         <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
 
                     </ol>
@@ -35,7 +36,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Overview</h3>
                     <div class="card-tools">
-                        <a href="{{ route('products.edit', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
+                        <a href="{{ route('vendor.products.edit', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                             class="btn btn-primary btn-sm">Edit</a>
                     </div>
                 </div>

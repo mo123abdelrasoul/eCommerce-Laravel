@@ -15,7 +15,7 @@
     @endif
     <!--begin::App Content Header-->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('coupons.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
+        <a href="{{ route('vendor.coupons.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
             Create Coupon
         </a>
     </div>
@@ -29,7 +29,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Coupons</li>
                     </ol>
                 </div>
@@ -81,15 +82,15 @@
                                             <td>{{ date('d-m-Y', strtotime($coupon->end_date)) }}</td>
                                             <td>{{ $coupon->status }} </td>
                                             <td>
-                                                <a href="{{ route('coupons.show', ['lang' => app()->getLocale(), 'coupon' => $coupon->id]) }}"
+                                                <a href="{{ route('vendor.coupons.show', ['lang' => app()->getLocale(), 'coupon' => $coupon->id]) }}"
                                                     class="btn btn-info">View
                                                 </a>
                                                 <a class="btn btn-primary"
-                                                    href="{{ route('coupons.edit', ['coupon' => $coupon->id, 'lang' => app()->getLocale()]) }}">
+                                                    href="{{ route('vendor.coupons.edit', ['coupon' => $coupon->id, 'lang' => app()->getLocale()]) }}">
                                                     Edit
                                                 </a>
                                                 <form
-                                                    action="{{ route('coupons.destroy', ['coupon' => $coupon->id, 'lang' => app()->getLocale()]) }}"
+                                                    action="{{ route('vendor.coupons.destroy', ['coupon' => $coupon->id, 'lang' => app()->getLocale()]) }}"
                                                     method="POST" onsubmit="return confirm('Delete this coupon?')"
                                                     style="display:inline;">
                                                     @csrf

@@ -15,7 +15,7 @@
     @endif
     <!--begin::App Content Header-->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('categories.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
+        <a href="{{ route('vendor.categories.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
             Create Category
         </a>
     </div>
@@ -29,7 +29,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Categories</li>
                     </ol>
                 </div>
@@ -85,11 +86,11 @@
 
                                             <td>
                                                 <a class="btn btn-primary"
-                                                    href="{{ route('categories.edit', ['category' => $category->id, 'lang' => app()->getLocale()]) }}">
+                                                    href="{{ route('vendor.categories.edit', ['category' => $category->id, 'lang' => app()->getLocale()]) }}">
                                                     Edit
                                                 </a>
                                                 <form
-                                                    action="{{ route('categories.destroy', ['category' => $category->id, 'lang' => app()->getLocale()]) }}"
+                                                    action="{{ route('vendor.categories.destroy', ['category' => $category->id, 'lang' => app()->getLocale()]) }}"
                                                     method="POST" onsubmit="return confirm('Delete this category?')"
                                                     style="display:inline;">
                                                     @csrf

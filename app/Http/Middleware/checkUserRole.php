@@ -14,25 +14,39 @@ class checkUserRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next, $role)
     {
-        if (Auth::guard('vendors')->check() && $role == 'vendor') {
+        $currentPath = $request->path();
+        if (str_contains($currentPath, 'vendor-login') || str_contains($currentPath, 'vendor/')) {
+            $determinedRole = 'vendor';
+        } elseif (str_contains($currentPath, 'admin-login') || str_contains($currentPath, 'admin/')) {
+            $determinedRole = 'admin';
+        } elseif (str_contains($currentPath, 'user-login') || $currentPath === '/') {
+            $determinedRole = 'user';
+        } else {
+            $determinedRole = $role;
+        }
+        $guards = [
+            'vendor' => 'vendors',
+            'admin' => 'admins',
+            'user' => 'web'
+        ];
+        if (!array_key_exists($determinedRole, $guards)) {
+            abort(403, 'Invalid role');
+        }
+        if (Auth::guard($guards[$determinedRole])->check()) {
             return $next($request);
         }
-        if (Auth::guard('admins')->check() && $role == 'admin') {
-            return $next($request);
-        }
-        if (Auth::guard('web')->check() && $role == 'user') {
-            return $next($request);
-        }
-        if ($role == 'user') {
-            return redirect()->guest(route('user.login'));
-        }
-        if ($role == 'vendor') {
-            return redirect()->guest(route('vendor.login'));
-        }
-        if ($role == 'admin') {
-            return redirect()->guest(route('admin.login'));
-        }
+        $loginRoutes = [
+            'vendor' => 'vendor.login',
+            'admin' => 'admin.login',
+            'user' => 'user.login'
+        ];
+        // dd($currentPath, $determinedRole, $guards, $loginRoutes[$determinedRole], ['lang' => app()->getLocale()]);
+
+
+        return redirect()->guest(
+            route($loginRoutes[$determinedRole], ['lang' => app()->getLocale()])
+        );
     }
 }

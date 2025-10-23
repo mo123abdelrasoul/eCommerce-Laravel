@@ -21,6 +21,8 @@ class Vendor extends Authenticatable
         'avatar',
         'company',
         'status',
+        'social_id',
+        'social_type',
     ];
     public function orders()
     {

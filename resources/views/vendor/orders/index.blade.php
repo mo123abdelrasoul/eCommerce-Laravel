@@ -22,7 +22,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Orders</li>
                     </ol>
                 </div>
@@ -74,12 +75,12 @@
                                             <td>{{ $order->total_amount ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $order->created_at->format('Y-m-d') }}</td>
                                             <td>
-                                                <a href="{{ route('orders.show', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
+                                                <a href="{{ route('vendor.orders.show', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
-                                                <a href="{{ route('orders.edit', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
+                                                <a href="{{ route('vendor.orders.edit', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
                                                     class="btn btn-primary btn-sm">Edit</a>
                                                 <form
-                                                    action="{{ route('orders.destroy', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
+                                                    action="{{ route('vendor.orders.destroy', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
                                                     method="POST" style="display:inline-block;"
                                                     onsubmit="return confirm('Are you sure you want to delete this order?');">
                                                     @csrf

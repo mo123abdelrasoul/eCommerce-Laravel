@@ -62,6 +62,7 @@ class CouponService
         return [
             'status' => 'success',
             'message' => 'Coupon applied successfully',
+            'id' => $coupon->id,
             'vendor_id' => $coupon->vendor_id,
             'discount' => $discountAmount,
         ];
@@ -89,6 +90,7 @@ class CouponService
         return [
             'status' => 'success',
             'message' => 'Coupon applied successfully',
+            'id' => $coupon->id,
             'vendor_id' => null,
             'discount' => $discountAmount,
         ];

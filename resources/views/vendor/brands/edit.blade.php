@@ -26,7 +26,7 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('brands.index') }}">Brands</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('vendor.brands.index') }}">Brands</a></li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $brand->name }}</li>
                         </ol>
                     </div>
@@ -38,7 +38,7 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form form action="{{ route('brands.update', ['lang' => app()->getLocale(), 'brand' => $brand->id]) }}"
+            <form form action="{{ route('vendor.brands.update', ['lang' => app()->getLocale(), 'brand' => $brand->id]) }}"
                 method="POST" enctype="multipart/form-data" class="needs-validation">
                 @method('PUT')
                 @csrf

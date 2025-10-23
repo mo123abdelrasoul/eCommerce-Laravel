@@ -25,8 +25,9 @@
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
-                            <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('categories.index') }}">Categories</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('vendor.categories.index') }}">Categories</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Create</li>
                         </ol>
                     </div>
@@ -38,7 +39,7 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form action="{{ route('categories.store', ['lang' => app()->getLocale()]) }}" method="POST"
+            <form action="{{ route('vendor.categories.store', ['lang' => app()->getLocale()]) }}" method="POST"
                 enctype="multipart/form-data">
                 @csrf
                 <!--begin::Body-->

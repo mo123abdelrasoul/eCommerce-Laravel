@@ -1034,7 +1034,8 @@
 
 .checkout-container .checkout-order-total,
 .checkout-container .checkout-order-shipping,
-.checkout-container .checkout-order-coupon {
+.checkout-container .checkout-order-coupon,
+.checkout-order-total-final {
     display: flex;
     justify-content: space-between;
     margin-top: 12px;
@@ -1221,3 +1222,106 @@
     color: #fff;
 }
 /* End Cart Section */
+
+
+/* Start Comman Styles Payment Pages */
+.payment-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 152px);
+    padding: 20px;
+}
+
+.payment-box {
+    border-radius: 10px;
+    text-align: center;
+    padding: 40px 30px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.payment-box .icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.payment-box h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.payment-box .message {
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.payment-box .btn-back {
+    display: inline-block;
+    padding: 12px 25px;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+/* End Comman Styles Payment Pages */
+
+/* Start Payment Success Page */
+.payment-container.success {
+    background: #e6ffed;
+}
+
+.payment-container.success .payment-box {
+    background: #e6ffed;
+    border: 1px solid #b7f5c9;
+}
+
+.payment-container.success .payment-box h1 {
+    color: #2d7a32;
+}
+
+.payment-container.success .payment-box .message {
+    color: #1a4d1a;
+}
+
+.payment-container.success .payment-box .btn-back {
+    background-color: #2d7a32;
+}
+
+.payment-container.success .payment-box .btn-back:hover {
+    background-color: #1a4d1a;
+}
+
+/* End Payment Success Page */
+
+
+/* Start Payment Failed Page */
+
+.payment-container.failed {
+    background: #ffe6e6;
+}
+
+.payment-container.failed .payment-box {
+    background: #ffe6e6;
+    border: 1px solid #f5b7b7;
+}
+
+.payment-container.failed .payment-box h1 {
+    color: #b71c1c;
+}
+
+.payment-container.failed .payment-box .message {
+    color: #7a1a1a;
+}
+
+.payment-container.failed .payment-box .btn-back {
+    background-color: #b71c1c;
+}
+
+.payment-container.failed .payment-box .btn-back:hover {
+    background-color: #7a1a1a;
+}
+/* End Payment Failed Page */

@@ -49,7 +49,7 @@
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-striped text-center">
                                 <thead>
                                     @if ($products->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No Products found.</p>
@@ -64,7 +64,7 @@
                                             <th>Sku</th>
                                             <th>Status</th>
                                             <th>Deleted</th>
-                                            <th>Date</th>
+                                            {{-- <th>Date</th> --}}
                                             <th>Actions</th>
                                         </tr>
                                 </thead>
@@ -104,7 +104,7 @@
                                                     <span class="badge bg-danger">Yes</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $product->created_at->format('Y-m-d') }}</td>
+                                            {{-- <td>{{ $product->created_at->format('Y-m-d') }}</td> --}}
                                             <td>
                                                 <a href="{{ route('admin.products.show', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>

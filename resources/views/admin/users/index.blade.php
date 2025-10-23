@@ -82,13 +82,13 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('users.show', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+                                                <a href="{{ route('admin.users.show', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
-                                                <a href="{{ route('users.edit', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+                                                <a href="{{ route('admin.users.edit', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                                                     class="btn btn-primary btn-sm">Edit</a>
                                                 @if ($user->deleted_at !== null)
                                                     <form
-                                                        action="{{ route('users.restore', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+                                                        action="{{ route('admin.users.restore', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                                                         method="POST" style="display:inline-block;"
                                                         onsubmit="return confirm('Are you sure you want to restore this user?');">
                                                         @csrf
@@ -98,7 +98,7 @@
                                                     </form>
                                                 @else
                                                     <form
-                                                        action="{{ route('users.destroy', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+                                                        action="{{ route('admin.users.destroy', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                                                         method="POST" style="display:inline-block;"
                                                         onsubmit="return confirm('Are you sure you want to delete this vendor?');">
                                                         @csrf

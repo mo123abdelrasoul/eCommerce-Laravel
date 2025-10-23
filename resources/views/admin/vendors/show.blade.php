@@ -50,7 +50,7 @@
                         </span>
                     </li>
                 </ul>
-                <a href="{{ route('vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+                <a href="{{ route('admin.vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                     class="btn btn-primary btn-block"><b>Edit
                         Profile</b></a>
             </div>

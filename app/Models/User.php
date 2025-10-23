@@ -26,6 +26,8 @@ class User extends Authenticatable
         'password',
         'phone',
         'avatar',
+        'social_id',
+        'social_type',
     ];
 
     public function products()

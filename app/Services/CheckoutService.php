@@ -40,15 +40,38 @@ class CheckoutService
                 $checkoutData['coupon_code'],
                 $cart
             );
+            if ($coupon['status'] == 'failed') {
+                return [
+                    'success' => false,
+                    'message' => $coupon['message'],
+                ];
+            }
         }
         $shipping = $this->shippingService->calculate($checkoutData);
-        $orders = $this->orderService->createPendingOrder($checkoutData, $coupon, $shipping, $vendorCart);
-        $payment = $this->paymentService->process($orders['totalAmount'], $checkoutData);
-        if ($payment['success']) {
-            return redirect()->away($payment['payment_url']);
-        } else {
-            dd($payment['message']);
+        if (!$shipping['success']) {
+            return $this->fail($shipping['message']);
         }
+        $orders = $this->orderService->createPendingOrder($checkoutData, $coupon, $shipping, $vendorCart);
+        if (!$orders['success']) {
+            return $this->fail($orders['message']);
+        }
+        $payment = $this->paymentService->process($orders['totalAmount'], $checkoutData);
+        if (!$payment['success']) {
+            return $this->fail($payment['message']);
+        }
+        if (!empty($payment['payment_id'])) {
+            foreach ($orders['orders'] as $order) {
+                $order->payments()->attach($payment['payment_id']);
+            }
+        }
+        return $payment;
+    }
+    private function fail($message)
+    {
+        return [
+            'success' => false,
+            'message' => $message,
+        ];
     }
     public function validateCart($cart)
     {

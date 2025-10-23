@@ -38,7 +38,7 @@
                         </span>
                     </li>
                 </ul>
-                <a href="{{ route('users.edit', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
+                <a href="{{ route('admin.users.edit', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                     class="btn btn-primary btn-block"><b>Edit
                         Profile</b></a>
             </div>

@@ -79,7 +79,7 @@
                                             <td>{{ $vendor->registration_id }}</td>
                                             <td>
                                                 <form
-                                                    action="{{ route('vendors.update.status', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+                                                    action="{{ route('admin.vendors.update.status', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     method="POST" style="display:inline-block;"
                                                     onsubmit="return confirm('Are you sure you want to confirm this vendor?');">
                                                     @csrf
@@ -87,12 +87,12 @@
                                                     <input type="hidden" name="status" value="confirmed">
                                                     <button type="submit" class="btn btn-success btn-sm">Confirm</button>
                                                 </form>
-                                                <a href="{{ route('vendors.show', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+                                                <a href="{{ route('admin.vendors.show', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
-                                                <a href="{{ route('vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+                                                <a href="{{ route('admin.vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     class="btn btn-primary btn-sm">Edit</a>
                                                 <form
-                                                    action="{{ route('vendors.destroy', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+                                                    action="{{ route('admin.vendors.destroy', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     method="POST" style="display:inline-block;"
                                                     onsubmit="return confirm('Are you sure you want to delete this vendor?');">
                                                     @csrf

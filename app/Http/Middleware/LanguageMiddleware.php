@@ -17,32 +17,34 @@ class LanguageMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $path = $request->path();
-        $segments = explode('/', trim($path, '/'));
+        $url = $request->path();
+        $segments = explode('/', trim($url, '/'));
+        $supported = ['en', 'ar'];
 
-        $lang = null;
-
-        // Check if first segment is a valid language
-        if (!empty($segments) && in_array($segments[0], ['en', 'ar'])) {
+        if (!empty($segments) && in_array($segments[0], $supported)) {
             $lang = $segments[0];
-        }
-
-        // If no valid language in URL but session has it
-        if ($lang === null && session()->has('locale')) {
-            $lang = session('locale');
-            return redirect("/$lang" . $request->getRequestUri());
-        }
-
-        // If still no language at all, fallback to 'en'
-        if ($lang === null) {
+        } else {
+            // لو مفيش لغة في URL، حدد default
             $lang = 'en';
-            return redirect("/$lang" . $request->getRequestUri());
+            // عمل redirect URL بنفس المسار مع إضافة اللغة
+            $newUrl = '/' . $lang . ($url !== '/' ? '/' . $url : '');
+            return redirect($newUrl);
         }
 
-        // Set locale and continue
         App::setLocale($lang);
-        session(['locale' => $lang]); // Sync the session too
+        session(['locale' => $lang]);
 
         return $next($request);
+        // $url = $request->path();
+        // $segments = explode('/', trim($url, '/'));
+        // $supported = ['en', 'ar'];
+        // if (!empty($segments) && in_array($segments[0], $supported)) {
+        //     $lang = $segments[0];
+        // } else {
+        //     $lang = 'en';
+        // }
+        // App::setLocale($lang);
+        // session(['locale' => $lang]);
+        // return $next($request);
     }
 }
