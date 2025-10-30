@@ -22,7 +22,11 @@ class UserController extends Controller
         if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
             abort(403, 'Unauthorized');
         }
-        $users = User::withTrashed()->get();
+        $search = request('search');
+        $users = User::when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+            ->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 

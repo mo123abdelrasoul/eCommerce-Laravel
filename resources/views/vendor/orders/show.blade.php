@@ -31,7 +31,22 @@
                             {{ ucfirst($order_details->payment_status) }}
                         </span>
                     </p>
-                    <p><strong>Shipping Address:</strong> {{ $order_details->shipping_address ?? 'N/A' }}</p>
+                    @php
+                        $address = json_decode($order_details->shipping_address);
+                        $cityName = null;
+                        if ($address && isset($address->city)) {
+                            $city = \App\Models\City::find($address->city);
+                            $cityName = $city ? $city->name : 'Unknown City';
+                        }
+                    @endphp
+                    @if ($address)
+                        <p><strong>Shipping Address:</strong>
+                            {{ $address->street_number ?? '' }} {{ $address->street_name ?? '' }},
+                            {{ $cityName }}
+                        </p>
+                    @else
+                        <p><strong>Shipping Address:</strong> N/A</p>
+                    @endif
                     <p><strong>Shipping Method:</strong> {{ $order_details->shipping_method ?? 'N/A' }}</p>
                 </div>
                 <div class="col-md-6">
@@ -57,7 +72,7 @@
                 <h5 class="mb-0">Products</h5>
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped mb-0">
+                <table class="table table-striped mb-0 text-center">
                     <thead class="table-dark">
                         <tr>
                             <th>Product</th>

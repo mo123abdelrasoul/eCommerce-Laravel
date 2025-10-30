@@ -19,7 +19,8 @@
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a
                                 href="{{ route('vendor.dashboard', ['lang' => app()->getLocale()]) }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('vendor.products.index') }}">Products</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('vendor.products.index', app()->getLocale()) }}">Products</a></li>
                         <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
 
                     </ol>
@@ -47,7 +48,7 @@
                                 alt="{{ $product->name }}">
                         </div>
                         <div class="col-md-8">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered text-center">
                                 <tbody>
                                     <tr>
                                         <th>Name</th>

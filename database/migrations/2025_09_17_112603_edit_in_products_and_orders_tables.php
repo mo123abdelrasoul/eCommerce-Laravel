@@ -29,8 +29,7 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('shipping_method');
             $table->decimal('total_weight', 10, 2)->default(0)->after('shipping_cost');
-            $table->foreignId('shipping_policy_id')->nullable()->constrained()->after('total_weight');
-            $table->string('tracking_number')->nullable()->after('shipping_policy_id');
+            $table->string('tracking_number')->nullable();
             $table->foreignId('shipping_method_id')->nullable()->constrained();
         });
     }

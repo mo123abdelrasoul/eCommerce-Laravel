@@ -26,7 +26,9 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('vendor.products.index') }}">Products</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('vendor.products.index', app()->getLocale()) }}">Products</a>
+                            </li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
                         </ol>
                     </div>
@@ -64,7 +66,7 @@
                             <label for="description" class="form-label">Description</label>
                             <input type="text" name="description"
                                 value="{{ old('description', $product->description ?? '') }}" class="form-control"
-                                id="description" required />
+                                id="description" />
                             @error('description')
                                 <p class="msg-error">{{ $message }}</p>
                             @enderror
@@ -129,21 +131,20 @@
 
                         <!--begin::Col-->
                         <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" id="status" class="form-select">
-                                @foreach (config('product.status') as $value => $label)
-                                    <option value="{{ $value }}"
-                                        {{ old('status', $product->status ?? '') === $value ? 'selected' : '' }}>
-                                        {{ $label }}</option>
+                            <label for="brand" class="form-label">Brand</label>
+                            <select class="form-select" name="brand_id" id="brand">
+                                <option value="">Choose...</option>
+                                @foreach ($brands as $brand)
+                                    <option value="{{ $brand->id }}"
+                                        {{ old('brand_id', $product->brand_id) == $brand->id ? 'selected' : '' }}>
+                                        {{ $brand->name }}</option>
                                 @endforeach
                             </select>
-                            @error('status')
+                            @error('brand_id')
                                 <p class="msg-error">{{ $message }}</p>
                             @enderror
-                            </select>
                         </div>
                         <!--end::Col-->
-
 
                         <!--begin::Col-->
                         <div class="col-md-6">

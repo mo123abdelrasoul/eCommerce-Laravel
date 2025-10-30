@@ -43,12 +43,18 @@
                 <div class="col-md-12">
                     <!-- /.card -->
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Orders</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
+                            <form action="{{ route('vendor.orders.index', ['lang' => app()->getLocale()]) }}" method="GET"
+                                class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search orders by order number..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-striped text-center">
                                 <thead>
                                     @if ($orders->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No orders found.</p>
@@ -60,25 +66,70 @@
                                             <th>Status</th>
                                             <th>Method</th>
                                             <th>Total</th>
-                                            <th>Order Date</th>
+                                            <th>Payment Status</th>
                                             <th>Actions</th>
                                         </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($orders as $order)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $orders->firstItem() + $loop->index }}</td>
                                             <td>{{ $order->order_number }}</td>
                                             <td>{{ $order->customer->name }}</td>
-                                            <td>{{ $order->status }}</td>
+                                            <td>
+                                                @switch($order->status)
+                                                    @case('completed')
+                                                        <span class="badge bg-success">{{ $order->status }}</span>
+                                                    @break
+
+                                                    @case('pending')
+                                                        <span class="badge bg-warning">{{ $order->status }}</span>
+                                                    @break
+
+                                                    @case('processing')
+                                                        <span class="badge bg-info">{{ $order->status }}</span>
+                                                    @break
+
+                                                    @case('cancelled')
+                                                        <span class="badge bg-danger">{{ $order->status }}</span>
+                                                    @break
+
+                                                    @default
+                                                @endswitch
+                                            </td>
                                             <td>{{ $order->payment_method }}</td>
-                                            <td>{{ $order->total_amount ? 'Active' : 'Inactive' }}</td>
-                                            <td>{{ $order->created_at->format('Y-m-d') }}</td>
+                                            <td>
+                                                {{ $order->total_amount }}
+                                            </td>
+                                            <td>
+                                                @switch($order->payment_status)
+                                                    @case('paid')
+                                                        <span class="badge bg-success">Paid</span>
+                                                    @break
+
+                                                    @case('unpaid')
+                                                        <span class="badge bg-warning">Unpaid</span>
+                                                    @break
+
+                                                    @case('failed')
+                                                        <span class="badge bg-danger">Failed</span>
+                                                    @break
+
+                                                    @case('refunded')
+                                                        <span class="badge bg-secondary">Refunded</span>
+                                                    @break
+
+                                                    @default
+                                                        <span
+                                                            class="badge bg-light text-dark">{{ ucfirst($order->payment_status ?? 'Unknown') }}</span>
+                                                @endswitch
+                                            </td>
+
                                             <td>
                                                 <a href="{{ route('vendor.orders.show', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
                                                 <a href="{{ route('vendor.orders.edit', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
-                                                    class="btn btn-primary btn-sm">Edit</a>
+                                                    class="btn btn-warning btn-sm">Edit</a>
                                                 <form
                                                     action="{{ route('vendor.orders.destroy', ['lang' => app()->getLocale(), 'order' => $order->id]) }}"
                                                     method="POST" style="display:inline-block;"
@@ -93,6 +144,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="pagination-container d-flex justify-content-center mt-3">
+                                {{ $orders->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>

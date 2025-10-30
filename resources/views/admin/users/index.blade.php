@@ -44,12 +44,18 @@
                 <div class="col-md-12">
                     <!-- /.card -->
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Users</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
+                            <form action="{{ route('admin.users.index', ['lang' => app()->getLocale()]) }}" method="GET"
+                                class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search users by name..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-striped text-center">
                                 <thead>
                                     @if ($users->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No Users found.</p>
@@ -66,7 +72,7 @@
                                 <tbody>
                                     @foreach ($users as $user)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $users->firstItem() + $loop->index }}</td>
                                             <td>{{ $user->name }}</td>
                                             <td>
                                                 <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}"
@@ -85,7 +91,7 @@
                                                 <a href="{{ route('admin.users.show', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
                                                 <a href="{{ route('admin.users.edit', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
-                                                    class="btn btn-primary btn-sm">Edit</a>
+                                                    class="btn btn-warning btn-sm">Edit</a>
                                                 @if ($user->deleted_at !== null)
                                                     <form
                                                         action="{{ route('admin.users.restore', ['lang' => app()->getLocale(), 'user' => $user->id]) }}"
@@ -112,6 +118,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="pagination-container d-flex justify-content-center mt-3">
+                                {{ $users->appends(request()->query())->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>

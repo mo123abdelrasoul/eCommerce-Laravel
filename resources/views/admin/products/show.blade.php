@@ -42,7 +42,7 @@
                                 alt="{{ $product->name }}">
                         </div>
                         <div class="col-md-8">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered text-center">
                                 <tbody>
                                     <tr>
                                         <th>Name</th>

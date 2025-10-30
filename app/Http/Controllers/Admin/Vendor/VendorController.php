@@ -17,12 +17,16 @@ class VendorController extends Controller
     {
         $admin = auth()->guard('admins')->user();
         if (!$admin) {
-            return redirect()->route('admin.login');
+            return redirect()->route('admin.login', app()->getLocale());
         }
         if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
             abort(403, 'Unauthorized');
         }
-        $vendors = Vendor::all();
+        $search = request('search');
+        $vendors = Vendor::when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+            ->paginate(10);
         return view('admin.vendors.index', compact('vendors'));
     }
 
@@ -49,7 +53,7 @@ class VendorController extends Controller
     {
         $admin = auth()->guard('admins')->user();
         if (!$admin) {
-            return redirect()->route('admin.login');
+            return redirect()->route('admin.login', app()->getLocale());
         }
         if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
             abort(403, 'Unauthorized');
@@ -65,7 +69,7 @@ class VendorController extends Controller
     {
         $admin = auth()->guard('admins')->user();
         if (!$admin) {
-            return redirect()->route('admin.login');
+            return redirect()->route('admin.login', app()->getLocale());
         }
         if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
             abort(403, 'Unauthorized');
@@ -140,7 +144,11 @@ class VendorController extends Controller
         if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
             abort(403, 'Unauthorized');
         }
-        $vendors = Vendor::where('status', 'pending')->get();
+        $search = request('search');
+        $vendors = Vendor::where('status', 'pending')->when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+            ->paginate(10);
         return view('admin.vendors.pending', compact('vendors'));
     }
     public function updateStatus(Request $request, $lang, $id)

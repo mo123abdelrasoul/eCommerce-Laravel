@@ -24,7 +24,6 @@ class Order extends Model
         'notes',
         'vendor_id',
         'sub_total',
-        'shipping_policy_id',
         'shipping_method_id',
         'coupon_id',
     ];
@@ -47,5 +46,9 @@ class Order extends Model
     public function payments()
     {
         return $this->belongsToMany(Payment::class, 'order_payments', 'order_id', 'payment_id')->withTimestamps();
+    }
+    public function vendorTransactions()
+    {
+        return $this->hasMany(VendorWalletTransaction::class);
     }
 }

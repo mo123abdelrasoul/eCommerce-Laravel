@@ -2,8 +2,6 @@
 
 return [
     'default' => [
-        'policy' => 'weight',
-        'method' => 'standard',
         'volumetric_divisor' => 5000,
     ],
 

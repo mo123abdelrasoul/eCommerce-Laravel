@@ -18,8 +18,14 @@ class Admin extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
         'phone',
         'social_id',
         'social_type',
     ];
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
+    }
 }

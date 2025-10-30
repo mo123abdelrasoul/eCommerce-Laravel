@@ -8,8 +8,9 @@ return [
         'cancelled' => 'Cancelled',
     ],
     'payment_status' => [
-        'paid' => 'Paid',
-        'unpaid' => 'Unpaid',
+        'unpaid'   => 'Unpaid',
+        'paid'     => 'Paid',
+        'failed'   => 'Failed',
         'refunded' => 'Refunded',
     ],
     'payment_method' => [

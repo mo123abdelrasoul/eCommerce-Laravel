@@ -10,16 +10,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ShippingMethod extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'description',
+        'carrier',
+        'delivery_time',
+        'is_active'
+    ];
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
-    public function policy()
-    {
-        return $this->belongsTo(ShippingPolicy::class, 'shipping_policy_id');
-    }
     public function scopeActive($query)
     {
         return $query->where('is_active', 1);
+    }
+    public function vendors()
+    {
+        return $this->belongsToMany(Vendor::class, 'vendor_shipping_methods');
+    }
+    public function vendorRates()
+    {
+        return $this->hasMany(VendorShippingRate::class);
     }
 }

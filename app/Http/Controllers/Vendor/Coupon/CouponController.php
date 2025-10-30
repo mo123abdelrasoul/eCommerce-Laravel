@@ -12,22 +12,20 @@ use App\Http\Requests\UpdateCouponRequest;
 
 class CouponController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         if (!auth::guard('vendors')->check()) {
             return redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
-        $coupons = Coupon::where('vendor_id', $vendor->id)->get();
+        $search = request('search');
+        $coupons = Coupon::where('vendor_id', $vendor->id)->when($search, function ($query, $search) {
+            return $query->where('code', 'like', "%{$search}%");
+        })
+            ->paginate(10);
         return view('vendor.coupons.index', compact('coupons'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         if (!auth::guard('vendors')->check()) {
@@ -38,9 +36,6 @@ class CouponController extends Controller
         return view('vendor.coupons.create', compact('vendor_id'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         if (!Auth::guard('vendors')->check()) {
@@ -113,9 +108,6 @@ class CouponController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($lang, $coupon)
     {
         if (!Auth::guard('vendors')->check()) {
@@ -132,9 +124,6 @@ class CouponController extends Controller
         return view('vendor.coupons.show', ['coupon' => $coupon_data]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($lang, $coupon)
     {
         if (!auth::guard('vendors')->check()) {
@@ -149,9 +138,6 @@ class CouponController extends Controller
         return view('vendor.coupons.edit', ['coupon' => $coupon]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $coupon)
     {
         if (!Auth::guard('vendors')->check()) {
@@ -224,9 +210,6 @@ class CouponController extends Controller
         }
     }
 
-    /*
-     * Remove the specified resource from storage.
-     */
     public function destroy($lang, $coupon)
     {
         if (!Auth::guard('vendors')->check()) {

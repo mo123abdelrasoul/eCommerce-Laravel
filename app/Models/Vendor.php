@@ -36,8 +36,25 @@ class Vendor extends Authenticatable
     {
         return $this->hasMany(Product::class, 'vendor_id');
     }
-    public function shipping()
+    public function shippingRates()
     {
-        return $this->hasMany(Shipping::class, 'vendor_id');
+        return $this->hasMany(VendorShippingRate::class);
+    }
+    public function shippingMethods()
+    {
+        return $this->belongsToMany(ShippingMethod::class, 'vendor_shipping_methods');
+    }
+    public function walletTransaction()
+    {
+        return $this->hasMany(VendorWalletTransaction::class);
+    }
+    public function withdraw()
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
     }
 }

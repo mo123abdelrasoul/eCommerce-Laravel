@@ -15,7 +15,7 @@ class LoginController extends Controller
         if (!Auth::guard('admins')->check()) {
             return view('admin.auth.login');
         }
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('admin.dashboard', app()->getLocale());
     }
 
     public function login(Request $request)

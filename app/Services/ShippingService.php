@@ -4,10 +4,8 @@ namespace App\Services;
 
 use App\Models\City;
 use App\Models\Product;
-use App\Models\ShippingMethod;
-use App\Models\ShippingPolicy;
-use App\Models\ShippingRate;
 use App\Models\Vendor;
+use App\Models\VendorShippingRate;
 
 class ShippingService
 {
@@ -17,19 +15,7 @@ class ShippingService
         $vendorsData = $this->prepareVendorCarts($cart);
         $regionId = $this->getRegionIdByCity($checkoutData['city']);
         $shippingMethodId = $checkoutData['shipping_method'];
-        $method = ShippingMethod::with('policy')->find($shippingMethodId);
-        if (!$method || !$method->policy) {
-            return ['success' => false, 'message' => 'Shipping policy not found.'];
-        }
-        $policy = $method->policy;
-        $weights = $this->calculateWeights($vendorsData['products']);
-        $rates = $this->calculateVendorRates($regionId, $shippingMethodId, $weights, $policy, $vendorsData['totals']);
-        return [
-            'success' => true,
-            'rate' => $rates,
-            'total_weights' => $weights,
-            'total_shipping' => array_sum($rates),
-        ];
+        return $this->calculateCartShipping($vendorsData, $regionId, $shippingMethodId);
     }
 
     public function prepareVendorCarts(array $cart): array
@@ -42,15 +28,10 @@ class ShippingService
         $vendorProductsCart = [];
         $vendorCartTotal = [];
         foreach ($cart as $productId => $qty) {
-            if (!isset($products[$productId])) {
-                continue;
-            }
+            if (!isset($products[$productId])) continue;
             $product = $products[$productId];
             $vendorId = $product->vendor_id;
-            $discountedPrice = $product->price - $product->discount;
-            if ($discountedPrice < 0) {
-                $discountedPrice = 0;
-            }
+            $discountedPrice = max(0, $product->price - $product->discount);
             $vendorProductsCart[$vendorId][] = [
                 'id' => $productId,
                 'name' => $product->name,
@@ -70,45 +51,28 @@ class ShippingService
         ];
     }
 
-    private function calculateWeights($vendorProductsCart): array
+    private function calculateVendorWeight(array $cartItems): float
     {
-        $realWeight = [];
-        $volumetricWeight = [];
+        $weight = 0;
         $divisor = config('shipping.default.volumetric_divisor', 5000);
-        foreach ($vendorProductsCart as $vendorId => $cart) {
-            $realWeight[$vendorId] = 0;
-            $volumetricWeight[$vendorId] = 0;
-            foreach ($cart as $item) {
-                $qty = $item['quantity'];
-                $height = $item['height'] ?? 0;
-                $width  = $item['width'] ?? 0;
-                $length = $item['length'] ?? 0;
-                $weight = $item['weight'] ?? 0;
-                $realWeight[$vendorId] += $weight * $qty;
-                $volumetricWeight[$vendorId] += (($height * $width * $length) / $divisor) * $qty;
-            }
+        foreach ($cartItems as $item) {
+            $realWeight = ($item['weight'] ?? 0) * $item['quantity'];
+            $volumetricWeight = ((($item['height'] ?? 0) * ($item['width'] ?? 0) * ($item['length'] ?? 0)) / $divisor) * $item['quantity'];
+            $weight += max($realWeight, $volumetricWeight);
         }
-        $finalWeight = [];
-        foreach ($realWeight as $vendorId => $weight) {
-            $finalWeight[$vendorId] = max($weight, $volumetricWeight[$vendorId]);
-        }
-        return $finalWeight;
+        return $weight;
     }
 
-    private function calculateVendorRates($regionId, $methodId, array $weights, $policy, array $totals)
+    private function checkVendorShippingMethod(Vendor $vendor, int $methodId): bool
     {
-        $vendorRates = [];
-        foreach ($weights as $vendorId => $weight) {
-            $rate = $this->getRateForVendor($regionId, $methodId, $weight);
-            $vendorRates[$vendorId] = $rate ? (float) $rate->rate : $this->calculateRateByPolicy($policy, $weight, $totals[$vendorId]);
-        }
-        return $vendorRates;
+        return $vendor->shippingMethods->contains($methodId);
     }
 
-    private function getRateForVendor($regionId, $methodId, $weight)
+    private function getVendorShippingRate(int $vendorId, int $methodId, int $regionId, float $weight)
     {
-        return ShippingRate::where('shipping_region_id', $regionId)
+        return VendorShippingRate::where('vendor_id', $vendorId)
             ->where('shipping_method_id', $methodId)
+            ->where('shipping_region_id', $regionId)
             ->where('min_weight', '<=', $weight)
             ->where(function ($query) use ($weight) {
                 $query->where('max_weight', '>=', $weight)
@@ -118,32 +82,39 @@ class ShippingService
             ->first();
     }
 
-    public function calculateRateByPolicy($policy, $vendorWeight, $vendorTotal): float
+    private function calculateCartShipping(array $vendorsData, int $regionId, int $shippingMethodId): array
     {
-        if ($policy->type == 'weight') {
-            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $vendorTotal) {
-                return (float) 0;
-            } elseif ($policy->weight_ranges !== null) {
-                $weights = json_decode($policy->weight_ranges, true);
-                foreach ($weights as $weight) {
-                    if ($weight['min'] <= $vendorWeight && ($weight['max'] >= $vendorWeight || $weight['max'] == null)) {
-                        return (float) $weight['price'];
-                    }
-                }
+        $vendorIds = array_keys($vendorsData['products']);
+        $vendorRates = [];
+        $totalShipping = 0;
+        foreach ($vendorIds as $vendorId) {
+            $vendor = Vendor::with('shippingMethods')->find($vendorId);
+            if (!$vendor) continue;
+            if (!$this->checkVendorShippingMethod($vendor, $shippingMethodId)) {
+                return [
+                    'success' => false,
+                    'message' => __("Vendor ({$vendor->name}) does not support the selected shipping method."),
+                ];
             }
-            $basePrice = $policy->base_price ?? 0;
-            $pricePerKg = $policy->price_per_kg ?? 0;
-            $rate = $basePrice + ($vendorWeight * $pricePerKg);
-            return (float) $rate;
-        } elseif ($policy->type == 'flat') {
-            if ($policy->free_shipping_threshold !== null && $policy->free_shipping_threshold <= $vendorTotal) {
-                return (float) 0;
+            $cartItems = $vendorsData['products'][$vendorId];
+            $weight = $this->calculateVendorWeight($cartItems);
+            $rate = $this->getVendorShippingRate($vendorId, $shippingMethodId, $regionId, $weight);
+            if (!$rate) {
+                return [
+                    'success' => false,
+                    'message' => __("Vendor ({$vendor->name}) does not shipping for this region and weight."),
+                ];
             }
-            return (float) ($policy->base_price ?? 0);
+            $vendorRates[$vendorId] = (float) $rate->rate;
+            $totalShipping += $rate->rate;
         }
-        return (float) 0;
+        return [
+            'success' => true,
+            'rate' => $vendorRates,
+            'total_weights' => array_map(fn($items) => $this->calculateVendorWeight($items), $vendorsData['products']),
+            'total_shipping' => $totalShipping,
+        ];
     }
-
     private function getRegionIdByCity($cityId)
     {
         return City::where('id', $cityId)->value('region_id') ?? 0;

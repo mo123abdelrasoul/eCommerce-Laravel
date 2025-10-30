@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Vendor\Product;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
@@ -12,46 +13,42 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use function Laravel\Prompts\table;
+use function Pest\Laravel\get;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
         $vendor = Auth::guard('vendors')->user();
+        if (!$vendor) {
+            return redirect()->route('vendor.login', app()->getLocale());
+        }
         if (!$vendor->hasRole('vendor') && !$vendor->can('view own products')) {
             abort(403, 'Unauthorized');
         }
-        $vendor_id = $vendor->id;
-        $products = Product::where('vendor_id', $vendor_id)->get();
-        return view('vendor.products.index', compact('products', 'vendor_id'));
+        $search = request('search');
+        $products = Product::where('vendor_id', $vendor->id)->when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+            ->paginate(10);
+        return view('vendor.products.index', compact('products'));
     }
 
-    /*
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
+            return redirect()->route('vendor.login', app()->getLocale());
         }
         $vendor = Auth::guard('vendors')->user();
         if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
             abort(403, 'Unauthorized');
         }
         $vendor_id = $vendor->id;
-        $cats = Category::select('id', 'name')->where('vendor_id', $vendor_id)->get();
-        return view('vendor.products.create', compact('cats', 'vendor_id'));
+        $cats = Category::where('status', true)->whereNotNull('parent_id')->select('id', 'name')->get();
+        $brands = Brand::where('status', true)->select('id', 'name')->get();
+        return view('vendor.products.create', compact('cats', 'brands', 'vendor_id'));
     }
 
-    /*
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -60,7 +57,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            'status' => 'required|in:active,inactive',
+            'brand_id' => 'nullable|exists:brands,id',
             'sku' => 'required|unique:products,sku|max:8|min:6',
             'discount' => 'nullable|numeric|min:0|max:100',
             'vendor_id' => 'required|exists:vendors,id',
@@ -98,7 +95,7 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'quantity' => $validated['quantity'],
             'category_id' => $validated['category_id'],
-            'status' => $validated['status'],
+            'brand_id' => $validated['brand_id'],
             'image' => $imgPath,
             'sku' => $validated['sku'],
             'discount' => $validated['discount'],
@@ -108,15 +105,12 @@ class ProductController extends Controller
             'updated_at' => Carbon::now(),
         ]);
         if ($store) {
-            return back()->with('success', 'Product added successfully!');
+            return back()->with('success', 'Product added successfully! Please wait for admin approval.');
         } else {
             return back()->with('error', 'Failed to add product. Please try again.');
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($lang, $id)
     {
         if (!auth::guard('vendors')->check()) {
@@ -134,9 +128,6 @@ class ProductController extends Controller
         return view('vendor.products.show', compact('product', 'vendor_id'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($lang, $id)
     {
         if (!auth::guard('vendors')->check()) {
@@ -157,13 +148,11 @@ class ProductController extends Controller
         if ($product->discount == NULL) {
             $product->discount = 0;
         }
-        $categories = Category::select('id', 'name')->where('vendor_id', $vendor_id)->get();
-        return view('vendor.products.edit', ['product' => $product, 'categories' => $categories]);
+        $categories = Category::where('status', true)->whereNotNull('parent_id')->select('id', 'name')->get();
+        $brands = Brand::where('status', true)->select('id', 'name')->get();
+        return view('vendor.products.edit', ['product' => $product, 'categories' => $categories, 'brands' => $brands]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $id)
     {
         if (!Auth::guard('vendors')->check()) {
@@ -183,7 +172,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            'status' => 'required',
+            'brand_id' => 'required|exists:brands,id',
             'sku' => 'required|max:8|min:6|unique:products,sku,' . $id,
             'discount' => 'nullable|numeric|min:0|max:100',
             'tags' => 'nullable|string',
@@ -216,7 +205,7 @@ class ProductController extends Controller
             'price' => $validateData['price'],
             'quantity' => $validateData['quantity'],
             'category_id' => $validateData['category_id'],
-            'status' => $validateData['status'],
+            'brand_id' => $validateData['brand_id'],
             'image' => $imgPath,
             'sku' => $validateData['sku'],
             'discount' => $validateData['discount'],

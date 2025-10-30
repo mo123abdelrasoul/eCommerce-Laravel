@@ -22,7 +22,6 @@ class OrderService extends Controller
             $paymentMethodName = $this->getPaymentMethodName($checkoutData['payment_method']);
             $userId = Auth::id();
             $shippingAddress = $this->prepareShippingAddress($checkoutData);
-            $shippingPolicyId = $this->getShippingPolicyId($checkoutData['shipping_method']);
             $orders = [];
             foreach ($vendorCart['products'] as $vendorId => $products) {
                 $orderNumber = $this->uniqueNumber();
@@ -37,7 +36,6 @@ class OrderService extends Controller
                     $paymentMethodName,
                     $userId,
                     $shippingAddress,
-                    $shippingPolicyId
                 );
             }
             DB::commit();
@@ -67,10 +65,6 @@ class OrderService extends Controller
                 "zip" => $checkoutData['zip_code']
             ];
     }
-    private function getShippingPolicyId($methodId)
-    {
-        return ShippingMethod::where('id', $methodId)->value('shipping_policy_id');
-    }
     private function createVendorOrder(
         $vendorId,
         $products,
@@ -82,7 +76,6 @@ class OrderService extends Controller
         $paymentMethodName,
         $userId,
         $shippingAddress,
-        $shippingPolicyId
     ) {
         $totalCartAmount = array_sum($vendorCart['totals']);
         $discount = $coupon['discount'];
@@ -119,7 +112,6 @@ class OrderService extends Controller
             'notes' => $checkoutData['notes'] ?? null,
             'vendor_id' => $vendorId,
             'sub_total' => $cartAmount,
-            'shipping_policy_id' => $shippingPolicyId,
             'shipping_method_id' => $checkoutData['shipping_method'],
             'coupon_id' => $couponId,
         ]);

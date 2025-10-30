@@ -11,3 +11,6 @@
 .card-body .tables-btn-actions {
     padding: 0px!important;
 }
+.pagination-container .text-muted {
+    padding-right: 10px;
+}

@@ -19,27 +19,17 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2);
             $table->string('payment_status');
             $table->string('payment_method')->nullable();
-
             $table->json('shipping_address');
             $table->json('billing_address')->nullable();
-
             $table->foreignId('shipping_method_id')->nullable()->constrained('shipping_methods')->onDelete('set null');
-
             $table->decimal('shipping_cost', 10, 2)->default(0);
             $table->decimal('total_weight', 10, 2)->default(0);
-
-            $table->foreignId('shipping_policy_id')->nullable()->constrained('shipping_policies')->onDelete('set null');
-
             $table->string('tracking_number')->nullable();
-
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->decimal('tax_amount', 10, 2)->default(0);
             $table->text('notes')->nullable();
-
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
-
             $table->decimal('sub_total', 10, 2);
-
             $table->softDeletes();
             $table->timestamps();
         });

@@ -28,7 +28,7 @@
                 </ul>
 
                 <a href="{{ route('vendor.profile.edit', ['profile' => $vendor->id, 'lang' => app()->getLocale()]) }}"
-                    class="btn btn-primary btn-block"><b>Edit
+                    class="btn btn-warning btn-block"><b>Edit
                         Profile</b></a>
             </div>
         </div>

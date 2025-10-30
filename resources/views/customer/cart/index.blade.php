@@ -17,7 +17,7 @@
             </a>
         @else
             <h1 class="mb-4 fs-1">{{ __('Your Cart') }}</h1>
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped text-center">
                 <thead class="table-dark">
                     <tr>
                         <th>{{ __('Image') }}</th>

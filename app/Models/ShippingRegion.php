@@ -9,12 +9,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ShippingRegion extends Model
 {
     use HasFactory;
-    public function rates()
+    protected $fillable = ['name', 'description', 'is_active'];
+    public function scopeActive($query)
     {
-        return $this->hasMany(ShippingRate::class);
+        return $query->where('is_active', 1);
     }
     public function cities()
     {
         return $this->hasMany(City::class, 'region_id');
+    }
+
+    public function vendorRates()
+    {
+        return $this->hasMany(VendorShippingRate::class);
     }
 }

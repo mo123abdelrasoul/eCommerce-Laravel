@@ -10,7 +10,7 @@ class Product extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['name', 'description', "image", "tags", 'price', 'quantity', 'category_id', 'vendor_id', 'status', 'sku', 'discount', 'admin_feedback'];
+    protected $fillable = ['name', 'description', "image", "tags", 'price', 'quantity', 'category_id', 'brand_id', 'vendor_id', 'status', 'sku', 'discount', 'admin_feedback'];
 
 
     public function vendor()
@@ -21,6 +21,10 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
     public function orders()
     {

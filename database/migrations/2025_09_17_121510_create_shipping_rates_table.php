@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('shipping_rates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shipping_policy_id')->constrained();
             $table->foreignId('shipping_region_id')->constrained();
             $table->decimal('min_weight', 10, 2)->default(0);
             $table->decimal('max_weight', 10, 2)->nullable();

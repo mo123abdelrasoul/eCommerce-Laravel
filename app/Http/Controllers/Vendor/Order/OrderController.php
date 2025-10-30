@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Vendor\Order;
 
+use App\Events\OrderUpdated;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -19,7 +20,11 @@ class OrderController extends Controller
             return redirect()->route('vendor.login');
         }
         $vendor = Auth::guard('vendors')->user();
-        $orders = Order::with(['customer:id,name'])->where('vendor_id', $vendor->id)->get();
+        $search = request('search');
+        $orders = Order::with(['customer:id,name'])->where('vendor_id', $vendor->id)->when($search, function ($query, $search) {
+            return $query->where('order_number', 'like', "%{$search}%");
+        })
+            ->paginate(10);
         return view('vendor.orders.index', compact('orders'));
     }
 
@@ -70,24 +75,17 @@ class OrderController extends Controller
     public function update(Request $request, $lang, $orderId)
     {
         if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
+            return redirect()->route('vendor.login', app()->getLocale());
         }
         $order = Order::findOrFail($orderId);
         $vendor = Auth::guard('vendors')->user();
-        if ($vendor->id != $order->vendor_id) {
-            abort(403, 'You are not allowed to access this order.');
-        }
-        if (intval($orderId)) {
-            $vendor_authorized = DB::table('orders')->where('vendor_id', $vendor->id)->where('id', $orderId)->count();
-            if ($vendor_authorized == 0) {
-                return "UnAuthorized";
-            }
+        if ($vendor->id !== $order->vendor_id) {
+            abort(403, 'Unauthorized.');
         }
         $validated = $request->validate([
             'status' => ['required', Rule::in(array_keys(config('order.status')))],
-            'payment_method' => ['required', Rule::in(array_keys(config('order.payment_method')))],
+            'payment_status' => ['required', Rule::in(array_keys(config('order.payment_status')))],
             'shipping_cost' => ['required', 'numeric', 'min:0'],
-            'shipping_address' => ['required', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
         if ($order->shipping_cost !== $validated['shipping_cost']) {
@@ -95,19 +93,22 @@ class OrderController extends Controller
         } else {
             $total_amount = $order->total_amount;
         }
+        $oldStatus = $order->status;
+
         $updated = $order->update([
             'status' => $validated['status'],
-            'payment_method' => $validated['payment_method'],
+            'payment_status' => $validated['payment_status'],
             'shipping_cost' => $validated['shipping_cost'],
-            'shipping_address' => $validated['shipping_address'],
             'notes' => $validated['notes'],
             'total_amount' => $total_amount,
         ]);
-        if ($updated) {
-            return back()->with('success', 'Order Updated successfully!');
-        } else {
+        if (!$updated) {
             return back()->with('error', 'Failed to Update the Order. Please try again.');
         }
+        if ($validated['status'] == 'completed' || $validated['status'] == 'cancelled') {
+            event(new OrderUpdated($order, $oldStatus));
+        }
+        return back()->with('success', 'Order Updated successfully!');
     }
     public function destroy($lang, $orderId)
     {

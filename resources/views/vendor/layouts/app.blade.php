@@ -5,7 +5,7 @@
     @endsection
 
     @section('layout-sidebar')
-        @include('common.layouts.partials.sidebar')
+        @include('common.layouts.partials.vendor-sidebar')
     @endsection
 
     @section('layout-footer')

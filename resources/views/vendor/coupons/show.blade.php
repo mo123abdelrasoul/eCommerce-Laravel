@@ -9,7 +9,7 @@
                 </h4>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped align-middle">
+                <table class="table table-bordered table-striped align-middle text-center">
                     <tbody>
                         <tr>
                             <th scope="row" style="width: 30%">Code</th>

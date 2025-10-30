@@ -14,11 +14,6 @@
         </div>
     @endif
     <!--begin::App Content Header-->
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('vendor.coupons.create', ['lang' => app()->getLocale()]) }}" class="btn btn-success">
-            Create Coupon
-        </a>
-    </div>
     <div class="app-content-header">
         <!--begin::Container-->
         <div class="container-fluid">
@@ -50,42 +45,68 @@
                 <div class="col-md-12">
                     <!-- /.card -->
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Coupons</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
+                            <form action="{{ route('vendor.coupons.index', ['lang' => app()->getLocale()]) }}"
+                                method="GET" class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search coupons by code..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+                            <a href="{{ route('vendor.coupons.create', ['lang' => app()->getLocale()]) }}"
+                                class="btn btn-success">Create Coupon</a>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-striped text-center">
                                 <thead>
                                     @if ($coupons->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No Coupons found.</p>
                                     @else
                                         <tr>
                                             <th style="width: 10px">#</th>
-                                            <th>Coupon</th>
+                                            <th>Code</th>
                                             <th>Type</th>
                                             <th>Value</th>
                                             <th>Start</th>
                                             <th>End</th>
                                             <th>Status</th>
+                                            <th>Is approved</th>
                                             <th>Actions</th>
                                         </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($coupons as $coupon)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $coupons->firstItem() + $loop->index }}</td>
                                             <td>{{ $coupon->code }}</td>
                                             <td>{{ $coupon->discount_type }}</td>
                                             <td>{{ $coupon->discount_value }}</td>
                                             <td>{{ date('d-m-Y', strtotime($coupon->start_date)) }}</td>
                                             <td>{{ date('d-m-Y', strtotime($coupon->end_date)) }}</td>
-                                            <td>{{ $coupon->status }} </td>
+                                            <td>
+                                                @if ($coupon->status === 'active')
+                                                    <span class="badge bg-success">Active</span>
+                                                @elseif($coupon->status === 'expired')
+                                                    <span class="badge bg-danger">Expired</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Disabled</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($coupon->approval_status == 'approved')
+                                                    <span class="badge bg-success">Approved</span>
+                                                @elseif ($coupon->approval_status == 'pending')
+                                                    <span class="badge bg-warning text-white">Pending</span>
+                                                @elseif ($coupon->approval_status == 'rejected')
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <a href="{{ route('vendor.coupons.show', ['lang' => app()->getLocale(), 'coupon' => $coupon->id]) }}"
                                                     class="btn btn-info">View
                                                 </a>
-                                                <a class="btn btn-primary"
+                                                <a class="btn btn-warning"
                                                     href="{{ route('vendor.coupons.edit', ['coupon' => $coupon->id, 'lang' => app()->getLocale()]) }}">
                                                     Edit
                                                 </a>
@@ -105,6 +126,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="pagination-container d-flex justify-content-center mt-3">
+                                {{ $coupons->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>

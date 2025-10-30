@@ -1,4 +1,4 @@
-@extends('user.layouts.app')
+@extends('customer.layouts.app')
 
 @section('title', 'Checkout Success')
 
@@ -10,7 +10,7 @@
             @if (session('message'))
                 <p class="message">{{ session('message') }}</p>
             @endif
-            <a href="{{ route('checkout.index') }}" class="btn-back">Back to Checkout</a>
+            <a href="{{ route('user.checkout.index', app()->getLocale()) }}" class="btn-back">Back to Checkout</a>
         </div>
     </div>
 @endsection

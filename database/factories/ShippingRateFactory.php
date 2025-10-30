@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\ShippingPolicy;
 use App\Models\ShippingRegion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,7 +18,6 @@ class ShippingRateFactory extends Factory
     public function definition(): array
     {
         return [
-            'shipping_policy_id' => ShippingPolicy::factory(),
             'shipping_region_id' => ShippingRegion::factory(),
             'min_weight' => $this->faker->randomFloat(2, 0, 5),
             'max_weight' => $this->faker->randomFloat(2, 5, 20),

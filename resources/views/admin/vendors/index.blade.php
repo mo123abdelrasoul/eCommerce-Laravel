@@ -44,12 +44,18 @@
                 <div class="col-md-12">
                     <!-- /.card -->
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Vendors</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
+                            <form action="{{ route('admin.vendors.index', ['lang' => app()->getLocale()]) }}" method="GET"
+                                class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search vendors by name..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-striped text-center">
                                 <thead>
                                     @if ($vendors->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No Vendors found.</p>
@@ -68,7 +74,7 @@
                                 <tbody>
                                     @foreach ($vendors as $vendor)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $vendors->firstItem() + $loop->index }}</td>
                                             <td>{{ $vendor->name }}</td>
                                             <td>
                                                 <img src="{{ asset('storage/' . $vendor->avatar) }}"
@@ -83,7 +89,7 @@
                                                 <a href="{{ route('admin.vendors.show', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
                                                 <a href="{{ route('admin.vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
-                                                    class="btn btn-primary btn-sm">Edit</a>
+                                                    class="btn btn-warning btn-sm">Edit</a>
                                                 <form
                                                     action="{{ route('admin.vendors.destroy', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     method="POST" style="display:inline-block;"
@@ -98,6 +104,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="pagination-container d-flex justify-content-center mt-3">
+                                {{ $vendors->appends(request()->query())->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>

@@ -5,9 +5,10 @@ use App\Http\Controllers\Admin\Auth\ForgotPasswordController as AdminForgotPassw
 use App\Http\Controllers\Admin\Auth\ResetPasswordController as AdminResetPasswordController;
 use App\Http\Controllers\Admin\Vendor\VendorController as AdminVendorController;
 use App\Http\Controllers\Admin\Product\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\Shipping\ShippingController as AdminShippingController;
+// use App\Http\Controllers\Admin\Shipping\ShippingController as AdminShippingController;
 use App\Http\Controllers\Admin\Customer\UserController as AdminUserController;
-
+use App\Http\Controllers\Admin\Finance\FinanceController as AdminFinanceController;
+use App\Http\Controllers\Admin\Finance\Withraw\WithdrawController as AdminWithdrawController;
 use App\Http\Controllers\Vendor\Auth\LoginController as VendorLoginController;
 use App\Http\Controllers\Vendor\Auth\ForgotPasswordController as VendorForgotPasswordController;
 use App\Http\Controllers\Vendor\Auth\ResetPasswordController as VendorResetPasswordController;
@@ -34,6 +35,14 @@ use App\Http\Controllers\Admin\Product\BrandController as AdminBrandController;
 use App\Http\Controllers\Admin\Product\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\Product\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\Product\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\Shipping\ShippingCityController;
+use App\Http\Controllers\Admin\Shipping\ShippingMethodController;
+use App\Http\Controllers\Admin\Shipping\ShippingRegionController;
+use App\Http\Controllers\Admin\Chat\ChatController as AdminChatController;
+use App\Http\Controllers\Vendor\Shipping\ShippingMethodController as VendorShippingMethodController;
+use App\Http\Controllers\Vendor\Shipping\ShippingRateController as VendorShippingRateController;
+use App\Http\Controllers\Vendor\Wallet\WalletController as VendorWalletController;
+use App\Http\Controllers\Vendor\Wallet\Withdraw\WithdrawController as VendorWithdrawController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -157,6 +166,15 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
             Route::get('profile', [VendorProfileController::class, 'index'])->name('profile.index');
             Route::get('profile/{profile}/edit', [VendorProfileController::class, 'edit'])->name('profile.edit');
             Route::put('profile/{profile}', [VendorProfileController::class, 'update'])->name('profile.update');
+
+            // Shipping
+            Route::get('shipping/methods', [VendorShippingMethodController::class, 'index'])->name('shipping.methods.index');
+            Route::post('shipping/methods', [VendorShippingMethodController::class, 'store'])->name('shipping.methods.store');
+            Route::resource('shipping/rates', VendorShippingRateController::class)->except(['show', 'edit']);
+
+            // Wallet
+            Route::get('wallet', [VendorWalletController::class, 'index'])->name('wallet.index');
+            Route::resource('wallet/withdraw', VendorWithdrawController::class);
         });
     });
 
@@ -195,7 +213,20 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
             Route::put('products/restore/{product}', [AdminProductController::class, 'restore'])->name('products.restore');
 
             // Shipping
-            Route::resource('shipping', AdminShippingController::class);
+            Route::resource('shipping/methods', ShippingMethodController::class)->except('show');
+            // Route::resource('shipping', AdminShippingController::class);
+            Route::resource('cities', ShippingCityController::class)->except('show');
+            Route::resource('regions', ShippingRegionController::class)->except('show');
+
+            // Finance
+            Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+            Route::resource('finance/withdraw', AdminWithdrawController::class)->except(['create', 'store', 'show', 'edit', 'update', 'destroy']);
+            Route::post('finance/withdraw/approve', [AdminWithdrawController::class, 'approve'])->name('withdraw.approve');
+            Route::post('finance/withdraw/reject', [AdminWithdrawController::class, 'reject'])->name('withdraw.reject');
+
+            // Chats
+            Route::resource('chats', AdminChatController::class);
+            Route::post('chats/{chat}/send-message', [AdminChatController::class, 'sendMessage'])->name('chats.send.message');
         });
     });
 

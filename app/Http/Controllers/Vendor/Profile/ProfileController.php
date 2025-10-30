@@ -15,19 +15,16 @@ class ProfileController extends Controller
     public function index()
     {
         if (!Auth::guard('vendors')->check()) {
-            return redirect()->route(('vendor.login'));
+            return redirect()->route('vendor.login', app()->getLocale());
         }
         $vendor = Auth::guard('vendors')->user();
-        $orders_count = DB::table('orders')->where('vendor_id', $vendor->id)->count();
-        $products_count = DB::table('products')->where('vendor_id', $vendor->id)->count();
-        $revenue = DB::table('orders')->where('vendor_id', $vendor->id)->sum('total_amount');
-        return view('vendor.profile.index', compact('vendor', 'orders_count', 'products_count', 'revenue'));
+        return view('vendor.profile.index', compact('vendor'));
     }
 
     public function edit($lang, $profile)
     {
         if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
+            return redirect()->route('vendor.login', app()->getLocale());
         }
         $vendor = Auth::guard('vendors')->user();
         if ($vendor->id != $profile) {
@@ -39,7 +36,7 @@ class ProfileController extends Controller
     public function update(Request $request, $lang, $profile)
     {
         if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
+            return redirect()->route('vendor.login', app()->getLocale());
         }
         $authVendor = Auth::guard('vendors')->user();
         $vendor = Vendor::find($authVendor->id);

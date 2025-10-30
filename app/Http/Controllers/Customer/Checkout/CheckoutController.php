@@ -74,7 +74,7 @@ class CheckoutController extends Controller
             return redirect()->away($checkout['redirect_url']);
         }
         if (is_array($checkout) && isset($checkout['success']) && $checkout['success'] === true) {
-            return redirect()->route('checkout.success', ['lang' => $lang])
+            return redirect()->route('user.checkout.success', ['lang' => $lang])
                 ->with('success', true)
                 ->with('message', $checkout['message'] ?? 'Order placed successfully.');
         }
@@ -123,7 +123,7 @@ class CheckoutController extends Controller
 
     public function success($lang)
     {
-        return view('user.checkout.success', [
+        return view('customer.checkout.success', [
             'message' => session('message', 'Your order has been placed successfully!'),
         ]);
     }

@@ -20,7 +20,9 @@ class RolePermissionSeeder extends Seeder
             'delete product',
             'view own orders',
             'update order status',
-            'update vendor profile'
+            'update vendor profile',
+            'manage shipping methods',
+            'manage shipping rates',
         ];
 
         foreach ($vendorPermissions as $perm) {

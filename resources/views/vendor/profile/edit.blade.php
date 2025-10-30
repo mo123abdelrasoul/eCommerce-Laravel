@@ -25,7 +25,8 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('vendor.profile.index') }}">Profile</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('vendor.profile.index', app()->getLocale()) }}">Profile</a></li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $vendor->name }}</li>
                         </ol>
                     </div>

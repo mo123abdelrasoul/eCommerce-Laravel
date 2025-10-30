@@ -48,7 +48,7 @@
                             </div>
                             <div class="checkout-form-group">
                                 <label for="city">City</label>
-                                <select name="city" id="city" required>
+                                <select name="city" id="city" autocomplete="off" required>
                                     <option value="">Select City</option>
                                     @if (!empty($cities))
                                         @foreach ($cities as $city)
@@ -88,7 +88,7 @@
                         </div>
                         <div class="checkout-form-group full-width">
                             <label for="shipping_method">Shipping Method</label>
-                            <select name="shipping_method" id="shipping_method" required>
+                            <select name="shipping_method" id="shipping_method" autocomplete="off" required>
                                 <option value="">Select Shipping Method</option>
                                 @if (!empty($shipping_methods))
                                     @foreach ($shipping_methods as $method)

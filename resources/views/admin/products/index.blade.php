@@ -109,7 +109,7 @@
                                                 <a href="{{ route('admin.products.show', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
                                                 <a href="{{ route('admin.products.edit', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"
-                                                    class="btn btn-primary btn-sm">Edit</a>
+                                                    class="btn btn-warning btn-sm">Edit</a>
                                                 @if ($product->deleted_at !== null)
                                                     <form
                                                         action="{{ route('admin.products.restore', ['lang' => app()->getLocale(), 'product' => $product->id]) }}"

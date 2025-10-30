@@ -26,7 +26,8 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('vendor.products.index') }}">Products</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('vendor.products.index', app()->getLocale()) }}">Products</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Create</li>
                         </ol>
                     </div>
@@ -61,7 +62,7 @@
                         <div class="col-md-6">
                             <label for="description" class="form-label">Description</label>
                             <input type="text" name="description" value="{{ old('description') }}" class="form-control"
-                                id="description" required />
+                                id="description" />
                             @error('description')
                                 <p class="msg-error">{{ $message }}</p>
                             @enderror
@@ -103,7 +104,7 @@
                         <!--begin::Col-->
                         <div class="col-md-6">
                             <label for="category" class="form-label">Category</label>
-                            <select class="form-select" name="category_id" id="category">
+                            <select class="form-select" name="category_id" id="category" required>
                                 <option value="">Choose...</option>
                                 @foreach ($cats as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -117,14 +118,16 @@
 
                         <!--begin::Col-->
                         <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" name="status" id="status" required>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                @error('status')
-                                    <p class="msg-error">{{ $message }}</p>
-                                @enderror
+                            <label for="brand" class="form-label">Brand</label>
+                            <select class="form-select" name="brand_id" id="brand">
+                                <option value="">Choose...</option>
+                                @foreach ($brands as $brand)
+                                    <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                @endforeach
                             </select>
+                            @error('brand_id')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
                         </div>
                         <!--end::Col-->
 
