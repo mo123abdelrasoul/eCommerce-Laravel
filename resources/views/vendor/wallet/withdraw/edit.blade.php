@@ -36,7 +36,7 @@
         </div>
 
         <!--begin::Form Card-->
-        @if ($withdraw->status == 'approved')
+        @if ($withdraw->status == 'approved' || $withdraw->status == 'paid' || $withdraw->status == 'rejected')
             <div class="alert alert-danger">
                 ⚠ This withdrawal has already been approved and cannot be modified.
             </div>

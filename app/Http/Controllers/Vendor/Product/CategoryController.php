@@ -16,14 +16,12 @@ class CategoryController extends Controller
 
     public function index()
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        $vendor = Auth::guard('vendors')->user();
         $search = request('search');
-        $categories = Category::where('status', true)->whereNotNull('parent_id')->when($search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%");
-        })
+        $categories = Category::where('status', true)
+            ->whereNotNull('parent_id')->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('vendor.categories.index', compact('categories'));
     }

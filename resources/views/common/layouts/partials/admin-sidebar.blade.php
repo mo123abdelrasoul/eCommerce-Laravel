@@ -202,9 +202,35 @@
                         </li>
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'withdraw.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*withdrawals*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->is('*withdraw*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Withdraw Requests</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item {{ request()->is('*email*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*email*') ? 'active' : '' }}">
+                        <i class="bi bi-envelope"></i>
+                        <p>
+                            Email
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.email.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*email*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Settings</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.email.test', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*email/test*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Test Email</p>
                             </a>
                         </li>
                     </ul>

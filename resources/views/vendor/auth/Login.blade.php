@@ -94,7 +94,8 @@
                         Register</a>
                 </p>
                 <p class="mb-1 text-center">
-                    <a href="#">I forgot my password</a>
+                    <a href="{{ route('vendor.password.request', ['lang' => app()->getLocale()]) }}">I forgot my
+                        password</a>
                 </p>
             </div>
             <!-- /.login-card-body -->

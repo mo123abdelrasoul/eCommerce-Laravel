@@ -25,7 +25,7 @@
                     </li>
                 </ul>
 
-                <a href="{{ route('admin.profile.edit', ['profile' => $admin->id, 'lang' => app()->getLocale()]) }}"
+                <a href="{{ route('admin.profile.edit', ['lang' => app()->getLocale(), 'profile' => $admin->id]) }}"
                     class="btn btn-warning btn-block"><b>Edit
                         Profile</b></a>
             </div>

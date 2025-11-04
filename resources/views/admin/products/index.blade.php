@@ -24,7 +24,8 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard', app()->getLocale()) }}">Home</a>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">Products</li>
                     </ol>
                 </div>
@@ -44,10 +45,16 @@
                 <div class="col-md-12">
                     <!-- /.card -->
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Products</h3>
-                        </div>
                         <!-- /.card-header -->
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
+                            <form action="{{ route('admin.products.index', ['lang' => app()->getLocale()]) }}"
+                                method="GET" class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search products by name..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+                        </div>
                         <div class="card-body p-0">
                             <table class="table table-striped text-center">
                                 <thead>
@@ -136,6 +143,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="pagination-container d-flex justify-content-center mt-3">
+                                {{ $products->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>

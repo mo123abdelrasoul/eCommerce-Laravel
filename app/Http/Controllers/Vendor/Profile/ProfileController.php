@@ -3,49 +3,34 @@
 namespace App\Http\Controllers\Vendor\Profile;
 
 use App\Http\Controllers\Controller;
-use App\Models\Vendor;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-
+    protected $vendor;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->vendor = auth()->guard('vendors')->user();
+            return $next($request);
+        });
+    }
     public function index()
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        $vendor = Auth::guard('vendors')->user();
-        return view('vendor.profile.index', compact('vendor'));
+        return view('vendor.profile.index', compact(['vendor' => $this->vendor]));
     }
 
-    public function edit($lang, $profile)
+    public function edit($lang)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if ($vendor->id != $profile) {
-            abort(403, 'You are not allowed to access this profile.');
-        }
-        return view('vendor.profile.edit', compact('vendor'));
+        return view('vendor.profile.edit', compact(['vendor' => $this->vendor]));
     }
 
-    public function update(Request $request, $lang, $profile)
+    public function update(Request $request, $lang)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        $authVendor = Auth::guard('vendors')->user();
-        $vendor = Vendor::find($authVendor->id);
-        if ($vendor->id != $profile) {
-            abort(403, 'You are not allowed to access this profile.');
-        }
         $data = $request->validate([
             'name' => 'required|string|max:255|min:3',
-            'email' => 'required|string|email|max:255|unique:vendors,email,' . $vendor->id,
+            'email' => 'required|string|email|max:255|unique:vendors,email,' . $this->vendor->id,
             'password' => [
                 'nullable',
                 'string',
@@ -55,31 +40,30 @@ class ProfileController extends Controller
                 'regex:/[0-9]/',
                 'regex:/[@$!%*?&]/',
             ],
-            'phone' => 'required|string|max:15|regex:/^[0-9]+$/|unique:vendors,phone,' . $vendor->id,
+            'phone' => 'required|string|max:15|regex:/^[0-9]+$/|unique:vendors,phone,' . $this->vendor->id,
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'company' => 'nullable|string|max:255',
         ]);
 
         if ($request->hasFile('avatar')) {
-            if ($vendor->avatar && Storage::disk('public')->exists($vendor->avatar)) {
-                Storage::disk('public')->delete($vendor->avatar);
+            if ($this->vendor->avatar && Storage::disk('public')->exists($this->vendor->avatar)) {
+                Storage::disk('public')->delete($this->vendor->avatar);
             }
             $imgPath = $request->file('avatar')->store('uploads/vendors', 'public');
         } else {
-            $imgPath = $vendor->avatar;
+            $imgPath = $this->vendor->avatar;
         }
-        if ($data['password'] == NULL) {
+        if (empty($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = bcrypt($data['password']);
         }
         $data['avatar'] = $imgPath;
 
-        $update = $vendor->update($data);
-        if ($update) {
-            return back()->with('success', 'Profile Updated successfully!');
-        } else {
+        $update = $this->vendor->update($data);
+        if (!$update) {
             return back()->with('error', 'Failed to Update the profile. Please try again.');
         }
+        return back()->with('success', 'Profile Updated successfully!');
     }
 }

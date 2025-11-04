@@ -13,24 +13,28 @@ class RolePermissionSeeder extends Seeder
     {
         // Permissions for vendors
         $vendorPermissions = [
-            'create product',
-            'edit product',
-            'view product',
-            'view own products',
-            'delete product',
-            'view own orders',
+            'manage own products',
+            'manage own orders',
+            'view categories',
+            'view brands',
+            'print order invoice',
             'update order status',
             'update vendor profile',
-            'manage shipping methods',
-            'manage shipping rates',
+            'manage shipping options',
+            'create discount coupons',
+            'manage own coupons',
+            'manage own profile',
+            'view sales reports',
+            'manage dashboard',
+            'view own wallet',
+            'request withdraw'
         ];
-
         foreach ($vendorPermissions as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'vendors']);
         }
-
         $vendor = Role::firstOrCreate(['name' => 'vendor', 'guard_name' => 'vendors']);
         $vendor->syncPermissions($vendorPermissions);
+
 
         // Permissions for admins
         $adminPermissions = [
@@ -38,14 +42,23 @@ class RolePermissionSeeder extends Seeder
             'manage vendors',
             'manage products',
             'manage shipping',
-            'view all orders',
-            'manage settings'
+            'manage orders',
+            'manage settings',
+            'view reports',
+            'manage categories',
+            'manage brands',
+            'manage coupons',
+            'manage roles and permissions',
+            'process refunds',
+            'view dashboard',
+            'manage profile',
+            'manage finance',
+            'manage chats',
+            'manage emails'
         ];
-
         foreach ($adminPermissions as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'admins']);
         }
-
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'admins']);
         $admin->syncPermissions($adminPermissions);
 
@@ -59,11 +72,9 @@ class RolePermissionSeeder extends Seeder
             'checkout',
             'view own orders'
         ];
-
         foreach ($customerPermissions as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
-
         $customer = Role::firstOrCreate(['name' => 'customer', 'guard_name' => 'web']);
         $customer->syncPermissions($customerPermissions);
     }

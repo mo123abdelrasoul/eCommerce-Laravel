@@ -89,7 +89,7 @@
                 </div>
                 <!-- /.social-auth-links -->
                 <p class="mb-1 text-center">
-                    <a href="#">I forgot my password</a>
+                    <a href="{{ route('admin.password.request', ['lang' => app()->getLocale()]) }}">I forgot my password</a>
                 </p>
             </div>
             <!-- /.login-card-body -->

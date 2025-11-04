@@ -10,87 +10,30 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\TestMail;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
-        $admin = Auth::guard('admins')->user();
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
-        $products = Product::withTrashed()->get();
+        $products = Product::withTrashed()->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show($lang, $id)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
-        $admin = Auth::guard('admins')->user();
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
         $product = Product::withTrashed()->findOrFail($id);
         return view('admin.products.show', compact('product'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($lang, $id)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
-        $admin = Auth::guard('admins')->user();
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
         $product = Product::withTrashed()->findOrFail($id);
         $categories = Category::select('id', 'name')->where('vendor_id', $product->vendor_id)->get();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $id)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
-        $admin = Auth::guard('admins')->user();
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
         $product = Product::withTrashed()->findOrFail($id);
         $validateData = $request->validate([
             'name' => 'required|max:255|min:3|string',
@@ -161,43 +104,24 @@ class ProductController extends Controller
             'tags' => $tags,
             'admin_feedback' => $validateData['admin_feedback'],
         ]);
-        if ($update) {
-            return back()->with('success', 'Product Updated successfully!');
-        } else {
+        if (!$update) {
             return back()->with('error', 'Failed to Update the Product. Please try again.');
         }
+        return back()->with('success', 'Product Updated successfully!');
     }
 
     public function restore($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
         $product = Product::withTrashed()->findOrFail($id);
-        if ($product->trashed()) {
-            $product->restore();
-            return back()->with('success', 'User restored successfully!');
-        } else {
+        if (!$product->trashed()) {
             return back()->with('info', 'User is not deleted.');
         }
+        $product->restore();
+        return back()->with('success', 'User restored successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($lang, $id)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
-        $admin = Auth::guard('admins')->user();
-        if (!$admin->hasRole('admin') || !$admin->can('manage products')) {
-            abort(403, 'Unauthorized');
-        }
         $product = Product::withTrashed()->findOrFail($id);
         if (!$product) {
             return redirect()->route('admin.products.index')->with('error', 'Product not found.');

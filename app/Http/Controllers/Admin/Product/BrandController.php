@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin\Product;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Brand;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -15,30 +13,22 @@ class BrandController extends Controller
 {
     public function index()
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $search = request('search');
         $brands = Brand::when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.brands.index', compact('brands'));
     }
 
     public function create()
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         return view('admin.brands.create');
     }
 
     public function store(Request $request)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -63,18 +53,14 @@ class BrandController extends Controller
             'image' => $validated['image'],
             'status' => $validated['status'],
         ]);
-        if ($store) {
-            return back()->with('success', 'Brand added successfully!');
-        } else {
+        if (!$store) {
             return back()->with('error', 'Failed to add brand. Please try again.');
         }
+        return back()->with('success', 'Brand added successfully!');
     }
 
     public function edit($lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $brand = Brand::where('id', $id)->firstOrFail();
         if (!$brand) {
             return back()->with('error', 'Brand not found or you do not have permission to edit this brand.');
@@ -82,14 +68,8 @@ class BrandController extends Controller
         return view('admin.brands.edit', compact('brand'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $brand = Brand::findOrFail($id);
         if (!$brand) {
             return back()->with('error', 'Brand not found or you do not have permission to edit this brand.');
@@ -121,18 +101,14 @@ class BrandController extends Controller
             'image' => $validated['image'],
             'status' => $validated['status'],
         ]);
-        if ($store) {
-            return back()->with('success', 'Brand updated successfully!');
-        } else {
+        if (!$store) {
             return back()->with('error', 'Failed to updated brand. Please try again.');
         }
+        return back()->with('success', 'Brand updated successfully!');
     }
 
     public function destroy($lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $brand = Brand::findOrFail($id);
         if ($brand->image && Storage::disk('public')->exists($brand->image)) {
             Storage::disk('public')->delete($brand->image);

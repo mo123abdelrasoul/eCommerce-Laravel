@@ -4,19 +4,13 @@ namespace App\Http\Controllers\Customer\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showLoginForm()
-    {
-        if (Auth::guard('web')->check()) {
-            return redirect()->route('home', ['lang' => app()->getLocale()]);
-        }
-        return view('customer.auth.login');
-    }
-
     public function index()
     {
         $featured_products = Product::where('status', 'approved')
@@ -33,34 +27,38 @@ class LoginController extends Controller
         ]);
     }
 
+    public function showLoginForm()
+    {
+        if (Auth::guard('web')->check()) {
+            return redirect()->route('home', ['lang' => app()->getLocale()]);
+        }
+        return view('customer.auth.login');
+    }
+
+
+
     public function login(Request $request)
     {
         $validatedData = $request->validate([
             'email' => [
                 'required',
-                'email'
+                'email',
             ],
             'password' => 'required|min:6'
         ]);
         $remember = $request->has('remember');
-        if (Auth::guard('web')
-            ->attempt(
-                [
-                    'email' => $validatedData['email'],
-                    'password' => $validatedData['password'],
-                    'deleted_at' => null
-                ],
-                $remember
-            )
-        ) {
-            $user = Auth::guard('web')->user();
-            if (!is_null($user->deleted_at)) {
-                Auth::guard('web')->logout();
-                return back()->with('error', 'Your account has been deactivated. Please contact support.');
-            }
-            return redirect()->route('home', ['lang' => app()->getLocale()]);
+        $user = User::where('email', $validatedData['email'])->first();
+        if (!$user) {
+            return back()->with('error', 'Invalid email or password');
         }
-        return back()->with('error', 'Invalid email or password');
+        if ($user->trashed()) {
+            return back()->with('error', 'Your account has been deactivated.');
+        }
+        if (!Hash::check($validatedData['password'], $user->password)) {
+            return back()->with('error', 'Invalid email or password');
+        }
+        Auth::guard('web')->login($user, $remember);
+        return redirect()->route('home', ['lang' => app()->getLocale()]);
     }
 
     public function logout(Request $request)

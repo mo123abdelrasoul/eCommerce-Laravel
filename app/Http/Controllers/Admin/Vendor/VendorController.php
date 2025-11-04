@@ -10,86 +10,31 @@ use Illuminate\Support\Facades\Storage;
 
 class VendorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $search = request('search');
         $vendors = Vendor::when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.vendors.index', compact('vendors'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $vendor = Vendor::findOrFail($id);
         return view('admin.vendors.show', compact('vendor'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $vendor = Vendor::findOrFail($id);
         return view('admin.vendors.edit', compact('vendor'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $vendor = Vendor::findOrFail($id);
         $data = $request->validate([
             'name' => 'required|string|max:255|min:3',
@@ -108,10 +53,10 @@ class VendorController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'company' => 'nullable|string|max:255',
         ]);
-        if ($data['phone'] == NULL) {
+        if (empty($data['phone'])) {
             unset($data['phone']);
         }
-        if ($data['company'] == NULL) {
+        if (empty($data['company'])) {
             unset($data['company']);
         }
         if ($request->hasFile('avatar')) {
@@ -122,28 +67,20 @@ class VendorController extends Controller
         } else {
             unset($data['avatar']);
         }
-        if ($data['password'] == NULL) {
+        if (empty($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = bcrypt($data['password']);
         }
         $update = $vendor->update($data);
-        if ($update) {
-            return back()->with('success', 'Profile Updated successfully!');
-        } else {
+        if (!$update) {
             return back()->with('error', 'Failed to Update the profile. Please try again.');
         }
+        return back()->with('success', 'Profile Updated successfully!');
     }
 
     public function pending()
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $search = request('search');
         $vendors = Vendor::where('status', 'pending')->when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
@@ -153,37 +90,19 @@ class VendorController extends Controller
     }
     public function updateStatus(Request $request, $lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $data = $request->validate([
             'status' => 'required|in:pending,confirmed,rejected,unknown',
         ]);
         $vendor = Vendor::findOrFail($id);
-        $vendor->status = 'confirmed';
-        if ($vendor->save()) {
-            return back()->with('success', 'Vendor confirmed successfully!');
-        } else {
-            return back()->with('error', 'Failed to confirm the vendor. Please try again.');
+        $vendor->status = $data['status'];
+        if (!$vendor->save()) {
+            return back()->with('error', 'Failed to update the vendor status. Please try again.');
         }
+        return back()->with('success', 'Vendor updated successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage vendors')) {
-            abort(403, 'Unauthorized');
-        }
         $vendor = Vendor::findOrFail($id);
         if ($vendor->avatar && Storage::disk('public')->exists($vendor->avatar)) {
             Storage::disk('public')->delete($vendor->avatar);

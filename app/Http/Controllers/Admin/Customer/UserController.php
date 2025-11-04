@@ -5,95 +5,39 @@ namespace App\Http\Controllers\Admin\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $search = request('search');
         $users = User::when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $user = User::withTrashed()->findOrFail($id);
         return view('admin.users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $user = User::withTrashed()->findOrFail($id);
         return view('admin.users.edit', compact('user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $user = User::withTrashed()->findOrFail($id);
         $data = $request->validate([
             'name' => 'required|string|max:255|min:3',
-            'email' => 'required|string|email|max:255|unique:vendors,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => [
                 'nullable',
                 'string',
@@ -106,7 +50,7 @@ class UserController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'phone' => 'nullable|max:15|regex:/^[0-9]+$/',
         ]);
-        if ($data['phone'] == NULL) {
+        if (empty($data['phone'])) {
             unset($data['phone']);
         }
         if ($request->hasFile('avatar')) {
@@ -117,7 +61,7 @@ class UserController extends Controller
         } else {
             unset($data['avatar']);
         }
-        if ($data['password'] == NULL) {
+        if (empty($data['password'])) {
             unset($data['password']);
         } else {
             $data['password'] = bcrypt($data['password']);
@@ -132,34 +76,16 @@ class UserController extends Controller
 
     public function restore($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $user = User::withTrashed()->findOrFail($id);
-        if ($user->trashed()) {
-            $user->restore();
-            return back()->with('success', 'User restored successfully!');
-        } else {
+        if (!$user->trashed()) {
             return back()->with('info', 'User is not deleted.');
         }
+        $user->restore();
+        return back()->with('success', 'User restored successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login');
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage users')) {
-            abort(403, 'Unauthorized');
-        }
         $user = User::findOrFail($id);
         try {
             $user->delete();

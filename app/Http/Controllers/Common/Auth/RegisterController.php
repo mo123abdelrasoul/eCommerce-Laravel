@@ -43,8 +43,7 @@ class RegisterController extends Controller
                 'password' => Hash::make($validatedData['password']),
                 'phone' => $validatedData['phone'],
             ]);
-            return redirect()->route('login', ['lang' => app()->getLocale()]);
-            // return redirect()->route('login');
+            return redirect()->route('user.login', ['lang' => app()->getLocale()]);
         }
         if ($validatedData['role'] == 'vendor') {
             $vendor = Vendor::create([

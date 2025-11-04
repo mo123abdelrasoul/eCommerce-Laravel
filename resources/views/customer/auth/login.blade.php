@@ -1,4 +1,4 @@
-@extends('vendor.layouts.app')
+@extends('customer.layouts.app')
 @section('hideLayout', true)
 @section('title', 'User login')
 

@@ -12,39 +12,33 @@ use App\Http\Requests\UpdateCouponRequest;
 
 class CouponController extends Controller
 {
+    protected $vendor;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->vendor = auth()->guard('vendors')->user();
+            return $next($request);
+        });
+    }
     public function index()
     {
-        if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
         $search = request('search');
-        $coupons = Coupon::where('vendor_id', $vendor->id)->when($search, function ($query, $search) {
+        $coupons = Coupon::where('vendor_id', $this->vendor->id)->when($search, function ($query, $search) {
             return $query->where('code', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('vendor.coupons.index', compact('coupons'));
     }
 
     public function create()
     {
-        if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        $vendor_id = $vendor->id;
+        $vendor_id = $this->vendor->id;
         return view('vendor.coupons.create', compact('vendor_id'));
     }
 
     public function store(Request $request)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if ($vendor->id != $request->vendor_id) {
-            abort(403, 'You are not allowed to access this coupon.');
-        }
         $validated = $request->validate([
             'code' => 'required|string|min:3|max:50|unique:coupons,code',
             'description' => 'nullable|string|max:1000',
@@ -110,15 +104,11 @@ class CouponController extends Controller
 
     public function show($lang, $coupon)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        $coupon_data = Coupon::where('vendor_id', $vendor->id)->where('id', $coupon)->first();
+        $coupon_data = Coupon::where('vendor_id', $this->vendor->id)->where('id', $coupon)->first();
         if (!$coupon_data) {
             abort(404, 'No coupon found.');
         }
-        if ($coupon_data->vendor_id != $vendor->id) {
+        if ($coupon_data->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this coupon.');
         }
         return view('vendor.coupons.show', ['coupon' => $coupon_data]);
@@ -126,13 +116,8 @@ class CouponController extends Controller
 
     public function edit($lang, $coupon)
     {
-        if (!auth::guard('vendors')->check()) {
-            redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        $vendor_id = $vendor->id;
-        $coupon = Coupon::Where('id', $coupon)->where('vendor_id', $vendor->id)->first();
-        if ($coupon->vendor_id !== $vendor_id) {
+        $coupon = Coupon::Where('id', $coupon)->where('vendor_id', $this->vendor->id)->first();
+        if ($coupon->vendor_id !== $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
         return view('vendor.coupons.edit', ['coupon' => $coupon]);
@@ -140,12 +125,8 @@ class CouponController extends Controller
 
     public function update(Request $request, $lang, $coupon)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        $coupon = Coupon::Where('id', $coupon)->where('vendor_id', $vendor->id)->first();
-        if ($coupon->vendor_id != $vendor->id) {
+        $coupon = Coupon::Where('id', $coupon)->where('vendor_id', $this->vendor->id)->first();
+        if ($coupon->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this coupon.');
         }
         $validated = $request->validate([
@@ -212,12 +193,8 @@ class CouponController extends Controller
 
     public function destroy($lang, $coupon)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
         $coupon_data = Coupon::findOrFail($coupon);
-        $vendor = Auth::guard('vendors')->user();
-        if ($coupon_data->vendor_id != $vendor->id) {
+        if ($coupon_data->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
         try {

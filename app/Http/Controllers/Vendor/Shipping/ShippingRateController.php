@@ -3,46 +3,36 @@
 namespace App\Http\Controllers\Vendor\Shipping;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShippingMethod;
 use App\Models\ShippingRegion;
 use App\Models\VendorShippingRate;
 use Exception;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ShippingRateController extends Controller
 {
+    protected $vendor;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->vendor = auth()->guard('vendors')->user();
+            return $next($request);
+        });
+    }
     public function index()
     {
-        $vendor = auth()->guard('vendors')->user();
-        if (!$vendor) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        if (!$vendor->hasRole('vendor') || !$vendor->can('manage shipping rates')) {
-            abort(403, 'Unauthorized');
-        }
-        $methods = $vendor->shippingMethods;
+        $methods = $this->vendor->shippingMethods;
         $regions = ShippingRegion::active()->get();
-
-        $rates = VendorShippingRate::where('vendor_id', $vendor->id)
+        $rates = VendorShippingRate::where('vendor_id', $this->vendor->id)
             ->with(['method', 'region'])
             ->get();
-
         return view('vendor.shipping.rates.index', compact('methods', 'regions', 'rates'));
     }
 
     public function store($lang, Request $request)
     {
-        $vendor = auth()->guard('vendors')->user();
-        if (!$vendor) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        if (!$vendor->hasRole('vendor') || !$vendor->can('manage shipping rates')) {
-            abort(403, 'Unauthorized');
-        }
         if (!$request->has('rates') || empty($request->rates)) {
-            VendorShippingRate::where('vendor_id', $vendor->id)->delete();
+            VendorShippingRate::where('vendor_id', $this->vendor->id)->delete();
             return back()->with('success', 'All shipping rates have been deleted successfully.');
         }
         $validated = $request->validate([
@@ -62,10 +52,10 @@ class ShippingRateController extends Controller
         $newRates = collect($validated['rates']);
         try {
             DB::beginTransaction();
-            VendorShippingRate::where('vendor_id', $vendor->id)->delete();
+            VendorShippingRate::where('vendor_id', $this->vendor->id)->delete();
             foreach ($newRates as $rate) {
                 VendorShippingRate::create([
-                    'vendor_id' => $vendor->id,
+                    'vendor_id' => $this->vendor->id,
                     'shipping_region_id' => $rate['region'],
                     'shipping_method_id' => $rate['method'],
                     'min_weight' => $rate['min_weight'],

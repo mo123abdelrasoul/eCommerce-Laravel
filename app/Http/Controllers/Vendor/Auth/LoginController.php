@@ -23,9 +23,6 @@ class LoginController extends Controller
     public function dashboard()
     {
         $vendor = Auth::guard('vendors')->user();
-        if (!$vendor) {
-            return redirect()->route('vendor.login');
-        }
         $orders = Order::with(['customer:id,name'])->where('vendor_id', $vendor->id)->get();
         $total_orders = 0;
         if (!$orders->isEmpty()) {
@@ -55,11 +52,11 @@ class LoginController extends Controller
         if ($vendor->trashed()) {
             return back()->with('error', 'Your account has been deactivated.');
         }
-        if (Hash::check($validatedData['password'], $vendor->password)) {
+        if (!Hash::check($validatedData['password'], $vendor->password)) {
             return back()->with('error', 'Invalid email or password');
         }
         Auth::guard('vendors')->login($vendor, $remember);
-        return redirect()->intended(route('vendor.dashboard', ['lang' => app()->getLocale()]));
+        return redirect()->route('vendor.dashboard', ['lang' => app()->getLocale()]);
     }
 
     public function logout($lang, Request $request)

@@ -15,36 +15,20 @@ class LanguageMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
-    {
-        $url = $request->path();
-        $segments = explode('/', trim($url, '/'));
-        $supported = ['en', 'ar'];
+    protected $supported = ['en', 'ar'];
 
-        if (!empty($segments) && in_array($segments[0], $supported)) {
-            $lang = $segments[0];
-        } else {
-            // لو مفيش لغة في URL، حدد default
-            $lang = 'en';
-            // عمل redirect URL بنفس المسار مع إضافة اللغة
-            $newUrl = '/' . $lang . ($url !== '/' ? '/' . $url : '');
-            return redirect($newUrl);
+    public function handle(Request $request, Closure $next)
+    {
+        $segment = $request->segment(1);
+
+        if (!in_array($segment, $this->supported)) {
+            $lang = Session::get('locale', 'en');
+            return redirect("/{$lang}{$request->getRequestUri()}");
         }
 
-        App::setLocale($lang);
-        session(['locale' => $lang]);
+        App::setLocale($segment);
+        Session::put('locale', $segment);
 
         return $next($request);
-        // $url = $request->path();
-        // $segments = explode('/', trim($url, '/'));
-        // $supported = ['en', 'ar'];
-        // if (!empty($segments) && in_array($segments[0], $supported)) {
-        //     $lang = $segments[0];
-        // } else {
-        //     $lang = 'en';
-        // }
-        // App::setLocale($lang);
-        // session(['locale' => $lang]);
-        // return $next($request);
     }
 }

@@ -72,7 +72,7 @@
         </div>
 
         <div class="d-flex justify-content-center">
-            {{ $transactions->links() }}
+            {{ $transactions->links('pagination::bootstrap-5') }}
         </div>
     </div>
 @endsection

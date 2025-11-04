@@ -95,16 +95,20 @@
                                             <td>{{ $request->notes ?? 'N/A' }}</td>
                                             <td>{{ $request->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
-                                                <a href="{{ route('vendor.withdraw.edit', ['lang' => app()->getLocale(), 'withdraw' => $request->id]) }}"
-                                                    class="btn btn-warning btn-sm">Edit</a>
-                                                <form
-                                                    action="{{ route('vendor.withdraw.destroy', ['lang' => app()->getLocale(), 'withdraw' => $request->id]) }}"
-                                                    method="POST" style="display:inline-block;"
-                                                    onsubmit="return confirm('Are you sure you want to delete this request?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                                </form>
+                                                @if ($request->status == 'pending')
+                                                    <a href="{{ route('vendor.withdraw.edit', ['lang' => app()->getLocale(), 'withdraw' => $request->id]) }}"
+                                                        class="btn btn-warning btn-sm">Edit</a>
+                                                    <form
+                                                        action="{{ route('vendor.withdraw.destroy', ['lang' => app()->getLocale(), 'withdraw' => $request->id]) }}"
+                                                        method="POST" style="display:inline-block;"
+                                                        onsubmit="return confirm('Are you sure you want to delete this request?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                    </form>
+                                                @else
+                                                    <span>No actions</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

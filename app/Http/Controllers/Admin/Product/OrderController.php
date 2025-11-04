@@ -4,31 +4,24 @@ namespace App\Http\Controllers\Admin\Product;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $search = request('search');
         $orders = Order::with(['customer:id,name'])->when($search, function ($query, $search) {
             return $query->where('order_number', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.orders.index', compact('orders'));
     }
 
     public function show($lang, $orderId)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $order = Order::with(['items', 'customer', 'vendor'])->findOrFail($orderId);
         $order_products = $order->items;
         $customer_name = $order->customer ? $order->customer->name : 'N/A';
@@ -37,17 +30,11 @@ class OrderController extends Controller
 
     public function edit($lang, $orderId)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $order = Order::with(['items', 'customer', 'vendor'])->findOrFail($orderId);
         return view('admin.orders.edit', compact('order'));
     }
     public function update(Request $request, $lang, $orderId)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $order = Order::findOrFail($orderId);
         $validated = $request->validate([
             'status' => ['required', Rule::in(array_keys(config('order.status')))],
@@ -69,17 +56,13 @@ class OrderController extends Controller
             'notes' => $validated['notes'],
             'total_amount' => $total_amount,
         ]);
-        if ($updated) {
-            return back()->with('success', 'Order updated successfully!');
-        } else {
+        if (!$updated) {
             return back()->with('error', 'Failed to update the order. Please try again.');
         }
+        return back()->with('success', 'Order updated successfully!');
     }
     public function destroy($lang, $orderId)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $order = Order::findOrFail($orderId);
         try {
             $order->delete();

@@ -1,14 +1,34 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
+// Common Controllers
+use App\Http\Controllers\Common\Auth\RegisterController;
+use App\Http\Controllers\Common\Auth\Socialite\GoogleController as SocialiteGoogleController;
+use App\Http\Controllers\Common\Localization\LanguageController as LocalizationLanguageController;
+
+// Admin Controllers
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\Auth\ForgotPasswordController as AdminForgotPasswordController;
 use App\Http\Controllers\Admin\Auth\ResetPasswordController as AdminResetPasswordController;
 use App\Http\Controllers\Admin\Vendor\VendorController as AdminVendorController;
 use App\Http\Controllers\Admin\Product\ProductController as AdminProductController;
-// use App\Http\Controllers\Admin\Shipping\ShippingController as AdminShippingController;
 use App\Http\Controllers\Admin\Customer\UserController as AdminUserController;
 use App\Http\Controllers\Admin\Finance\FinanceController as AdminFinanceController;
-use App\Http\Controllers\Admin\Finance\Withraw\WithdrawController as AdminWithdrawController;
+use App\Http\Controllers\Admin\Finance\Withdraw\WithdrawController as AdminWithdrawController;
+use App\Http\Controllers\Admin\Profile\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\Product\BrandController as AdminBrandController;
+use App\Http\Controllers\Admin\Product\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\Product\CouponController as AdminCouponController;
+use App\Http\Controllers\Admin\Product\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\Payment\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\Shipping\ShippingCityController as AdminShippingCityController;
+use App\Http\Controllers\Admin\Shipping\ShippingMethodController as AdminShippingMethodController;
+use App\Http\Controllers\Admin\Shipping\ShippingRegionController as AdminShippingRegionController;
+use App\Http\Controllers\Admin\Chat\ChatController as AdminChatController;
+use App\Http\Controllers\Admin\Email\EmailController as AdminEmailController;
+
+// Vendor Controllers
 use App\Http\Controllers\Vendor\Auth\LoginController as VendorLoginController;
 use App\Http\Controllers\Vendor\Auth\ForgotPasswordController as VendorForgotPasswordController;
 use App\Http\Controllers\Vendor\Auth\ResetPasswordController as VendorResetPasswordController;
@@ -18,32 +38,19 @@ use App\Http\Controllers\Vendor\Product\CategoryController as VendorCategoryCont
 use App\Http\Controllers\Vendor\Product\BrandController as VendorBrandController;
 use App\Http\Controllers\Vendor\Coupon\CouponController as VendorCouponController;
 use App\Http\Controllers\Vendor\Order\OrderController as VendorOrderController;
-
-use App\Http\Controllers\Customer\Auth\LoginController as CustomerLoginController;
-use App\Http\Controllers\Customer\Auth\ForgotPasswordController as CustomerForgotPasswordController;
-use App\Http\Controllers\Customer\Auth\ResetPasswordController as CustomerResetPasswordController;
-use App\Http\Controllers\Customer\Cart\CartController;
-use App\Http\Controllers\Customer\Checkout\CheckoutController;
-use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippingController;
-
-use App\Http\Controllers\Common\Auth\RegisterController;
-use App\Http\Controllers\Common\Auth\Socialite\GoogleController as SocialiteGoogleController;
-use App\Http\Controllers\Common\Localization\LanguageController as LocalizationLanguageController;
-use App\Http\Controllers\Admin\Payment\PaymentController;
-use App\Http\Controllers\Admin\Profile\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\Product\BrandController as AdminBrandController;
-use App\Http\Controllers\Admin\Product\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\Product\CouponController as AdminCouponController;
-use App\Http\Controllers\Admin\Product\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\Shipping\ShippingCityController;
-use App\Http\Controllers\Admin\Shipping\ShippingMethodController;
-use App\Http\Controllers\Admin\Shipping\ShippingRegionController;
-use App\Http\Controllers\Admin\Chat\ChatController as AdminChatController;
 use App\Http\Controllers\Vendor\Shipping\ShippingMethodController as VendorShippingMethodController;
 use App\Http\Controllers\Vendor\Shipping\ShippingRateController as VendorShippingRateController;
 use App\Http\Controllers\Vendor\Wallet\WalletController as VendorWalletController;
 use App\Http\Controllers\Vendor\Wallet\Withdraw\WithdrawController as VendorWithdrawController;
-use Illuminate\Support\Facades\Route;
+
+// Customer Controllers
+use App\Http\Controllers\Customer\Auth\LoginController as CustomerLoginController;
+use App\Http\Controllers\Customer\Auth\ForgotPasswordController as CustomerForgotPasswordController;
+use App\Http\Controllers\Customer\Auth\ResetPasswordController as CustomerResetPasswordController;
+use App\Http\Controllers\Customer\Cart\CartController as CustomerCartController;
+use App\Http\Controllers\Customer\Checkout\CheckoutController as CustomerCheckoutController;
+use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippingController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -53,21 +60,26 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/{language}/change-language', [LocalizationLanguageController::class, 'changeLanguage'])->name('change.language');
 
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes (Register / Login / Socialite / Password Reset)
 |--------------------------------------------------------------------------
 */
 
-Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
+Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
 
     // Registration
-    Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'registerForm'])->name('registerForm');
+    Route::get('/register', [RegisterController::class, 'showRegisterForm'])
+        ->name('register');
+    Route::post('/register', [RegisterController::class, 'registerForm'])
+        ->name('registerForm');
 
     // Socialite
-    Route::get('auth/google', [SocialiteGoogleController::class, 'redirect'])->name('google.redirect');
-    Route::get('auth/google/callback', [SocialiteGoogleController::class, 'callback'])->name('google.callback');
+    Route::get('auth/google', [SocialiteGoogleController::class, 'redirect'])
+        ->name('google.redirect');
+    Route::get('auth/google/callback', [SocialiteGoogleController::class, 'callback'])
+        ->name('google.callback');
 
     /*
     |--------------------------------------------------------------------------
@@ -76,14 +88,21 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     */
     Route::prefix('user')->name('user.')->group(function () {
         // Login
-        Route::get('login', [CustomerLoginController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [CustomerLoginController::class, 'login'])->name('login.submit');
+        Route::get('login', [CustomerLoginController::class, 'showLoginForm'])
+            ->name('login');
+        Route::post('login', [CustomerLoginController::class, 'login'])
+            ->name('login.submit');
 
         // Forgot / Reset Password
-        Route::get('password/reset', [CustomerForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-        Route::post('password/email', [CustomerForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-        Route::get('password/reset/{token}', [CustomerResetPasswordController::class, 'showResetForm'])->name('password.reset');
-        Route::post('password/reset', [CustomerResetPasswordController::class, 'reset'])->name('password.update');
+        Route::get('password/reset', [CustomerForgotPasswordController::class, 'showLinkRequestForm'])
+            ->name('password.request');
+        Route::post('password/email', [CustomerForgotPasswordController::class, 'sendResetLinkEmail'])
+            ->name('password.email');
+
+        Route::get('password/reset/{token}', [CustomerResetPasswordController::class, 'showResetForm'])
+            ->name('password.reset');
+        Route::post('password/reset', [CustomerResetPasswordController::class, 'reset'])
+            ->name('password.update');
     });
 
     /*
@@ -93,14 +112,21 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     */
     Route::prefix('vendor')->name('vendor.')->group(function () {
         // Login
-        Route::get('login', [VendorLoginController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [VendorLoginController::class, 'login'])->name('login.submit');
+        Route::get('login', [VendorLoginController::class, 'showLoginForm'])
+            ->name('login');
+        Route::post('login', [VendorLoginController::class, 'login'])
+            ->name('login.submit');
 
         // Forgot / Reset Password
-        Route::get('password/reset', [VendorForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-        Route::post('password/email', [VendorForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-        Route::get('password/reset/{token}', [VendorResetPasswordController::class, 'showResetForm'])->name('password.reset');
-        Route::post('password/reset', [VendorResetPasswordController::class, 'reset'])->name('password.update');
+        Route::get('password/reset', [VendorForgotPasswordController::class, 'showLinkRequestForm'])
+            ->name('password.request');
+        Route::post('password/email', [VendorForgotPasswordController::class, 'sendResetLinkEmail'])
+            ->name('password.email');
+
+        Route::get('password/reset/{token}', [VendorResetPasswordController::class, 'showResetForm'])
+            ->name('password.reset');
+        Route::post('password/reset', [VendorResetPasswordController::class, 'reset'])
+            ->name('password.update');
     });
 
     /*
@@ -110,14 +136,21 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     */
     Route::prefix('admin')->name('admin.')->group(function () {
         // Login
-        Route::get('login', [AdminLoginController::class, 'index'])->name('login');
-        Route::post('login', [AdminLoginController::class, 'login'])->name('login.submit');
+        Route::get('login', [AdminLoginController::class, 'index'])
+            ->name('login');
+        Route::post('login', [AdminLoginController::class, 'login'])
+            ->name('login.submit');
 
         // Forgot / Reset Password
-        Route::get('password/reset', [AdminForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-        Route::post('password/email', [AdminForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-        Route::get('password/reset/{token}', [AdminResetPasswordController::class, 'showResetForm'])->name('password.reset');
-        Route::post('password/reset', [AdminResetPasswordController::class, 'reset'])->name('password.update');
+        Route::get('password/reset', [AdminForgotPasswordController::class, 'showLinkRequestForm'])
+            ->name('password.request');
+        Route::post('password/email', [AdminForgotPasswordController::class, 'sendResetLinkEmail'])
+            ->name('password.email');
+
+        Route::get('password/reset/{token}', [AdminResetPasswordController::class, 'showResetForm'])
+            ->name('password.reset');
+        Route::post('password/reset', [AdminResetPasswordController::class, 'reset'])
+            ->name('password.update');
     });
 
     /*
@@ -125,23 +158,33 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     | Customer Protected Routes
     |--------------------------------------------------------------------------
     */
+
     Route::middleware(['checkUserRole:user'])->group(function () {
-        Route::get('/', [CustomerLoginController::class, 'index'])->name('home');
+        Route::get('/', [CustomerLoginController::class, 'index'])
+            ->name('home');
+        Route::get('/cart', [CustomerCartController::class, 'index'])
+            ->name('user.cart.index');
+        Route::get('/checkout', [CustomerCheckoutController::class, 'showCheckoutForm'])
+            ->name('user.checkout.index');
         Route::prefix('user')->name('user.')->group(function () {
-            Route::post('logout', [CustomerLoginController::class, 'logout'])->name('logout.submit');
-            Route::get('dashboard', [CustomerLoginController::class, 'index'])->name('home');
-
+            Route::post('logout', [CustomerLoginController::class, 'logout'])
+                ->name('logout.submit');
             // Cart & Checkout
-            Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-            Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-            Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-            Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+            Route::post('/cart/add', [CustomerCartController::class, 'add'])
+                ->name('cart.add');
+            Route::post('/cart/update', [CustomerCartController::class, 'update'])
+                ->name('cart.update');
+            Route::delete('/cart/delete/{id}', [CustomerCartController::class, 'delete'])
+                ->name('cart.delete');
+            Route::post('/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])
+                ->name('checkout.shipping.rate');
+            Route::post('/checkout/apply-coupon', [CustomerCheckoutController::class, 'applyCoupon'])
+                ->name('apply.coupon');
 
-            Route::post('/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])->name('checkout.shipping.rate');
-            Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('apply.coupon');
-            Route::get('/checkout', [CheckoutController::class, 'showCheckoutForm'])->name('checkout.index');
-            Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
-            Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+            Route::post('/checkout', [CustomerCheckoutController::class, 'process'])
+                ->name('checkout.process');
+            Route::get('/checkout/success', [CustomerCheckoutController::class, 'success'])
+                ->name('checkout.success');
         });
     });
 
@@ -150,31 +193,52 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     | Vendor Protected Routes
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['checkUserRole:vendor'])->group(function () {
+    Route::middleware(['auth:vendors', 'checkUserRole:vendor'])->group(function () {
         Route::prefix('vendor')->name('vendor.')->group(function () {
-            Route::post('logout', [VendorLoginController::class, 'logout'])->name('logout.submit');
-            Route::get('dashboard', [VendorLoginController::class, 'dashboard'])->name('dashboard');
+            Route::post('logout', [VendorLoginController::class, 'logout'])
+                ->name('logout.submit');
+            Route::get('dashboard', [VendorLoginController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('check.vendor.permission:manage dashboard');
 
             // Vendor resources
-            Route::resource('categories', VendorCategoryController::class);
-            Route::resource('products', VendorProductController::class);
-            Route::resource('brands', VendorBrandController::class);
-            Route::resource('coupons', VendorCouponController::class);
-            Route::resource('orders', VendorOrderController::class)->except(['create', 'store']);
+            Route::resource('categories', VendorCategoryController::class)
+                ->middleware('check.vendor.permission:view categories');
+            Route::resource('products', VendorProductController::class)
+                ->middleware('check.vendor.permission:manage own products');
+            Route::resource('brands', VendorBrandController::class)
+                ->middleware('check.vendor.permission:view brands');
+            Route::resource('coupons', VendorCouponController::class)
+                ->middleware('check.vendor.permission:manage own coupons');
+            Route::resource('orders', VendorOrderController::class)->except(['create', 'store'])
+                ->middleware('check.vendor.permission:manage own orders');
 
             // Profile
-            Route::get('profile', [VendorProfileController::class, 'index'])->name('profile.index');
-            Route::get('profile/{profile}/edit', [VendorProfileController::class, 'edit'])->name('profile.edit');
-            Route::put('profile/{profile}', [VendorProfileController::class, 'update'])->name('profile.update');
+            Route::middleware(['check.vendor.permission:manage own profile'])->group(function () {
+                Route::get('profile', [VendorProfileController::class, 'index'])
+                    ->name('profile.index');
+                Route::get('profile/{profile}/edit', [VendorProfileController::class, 'edit'])
+                    ->name('profile.edit');
+                Route::put('profile/{profile}', [VendorProfileController::class, 'update'])
+                    ->name('profile.update');
+            });
+
+
 
             // Shipping
-            Route::get('shipping/methods', [VendorShippingMethodController::class, 'index'])->name('shipping.methods.index');
-            Route::post('shipping/methods', [VendorShippingMethodController::class, 'store'])->name('shipping.methods.store');
-            Route::resource('shipping/rates', VendorShippingRateController::class)->except(['show', 'edit']);
+            Route::middleware(['check.vendor.permission:manage shipping options'])->group(function () {
+                Route::get('shipping/methods', [VendorShippingMethodController::class, 'index'])->name('shipping.methods.index');
+                Route::post('shipping/methods', [VendorShippingMethodController::class, 'store'])->name('shipping.methods.store');
+                Route::resource('shipping/rates', VendorShippingRateController::class)->except(['show', 'edit']);
+            });
 
             // Wallet
-            Route::get('wallet', [VendorWalletController::class, 'index'])->name('wallet.index');
-            Route::resource('wallet/withdraw', VendorWithdrawController::class);
+            Route::get('wallet', [VendorWalletController::class, 'index'])
+                ->name('wallet.index')
+                ->middleware('check.vendor.permission:view own wallet');
+            Route::resource('wallet/withdraw', VendorWithdrawController::class)
+                ->except(['show'])
+                ->middleware('check.vendor.permission:request withdraw');
         });
     });
 
@@ -185,48 +249,92 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     */
     Route::middleware(['checkUserRole:admin'])->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
-            Route::post('logout', [AdminLoginController::class, 'logout'])->name('logout.submit');
-            Route::get('dashboard', function () {
-                return view('admin.dashboard');
-            })->name('dashboard');
+            Route::post('logout', [AdminLoginController::class, 'logout'])
+                ->name('logout.submit');
+            Route::get('dashboard', [AdminLoginController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('check.admin.permission:view dashboard');
 
             // Vendors
-            Route::get('vendors/pending', [AdminVendorController::class, 'pending'])->name('vendors.pending');
-            Route::put('vendors/pending/{vendor}', [AdminVendorController::class, 'updateStatus'])->name('vendors.update.status');
-            Route::resource('vendors', AdminVendorController::class)->except(['create', 'store']);
+            Route::middleware(['check.admin.permission:manage vendors'])->group(function () {
+                Route::get('vendors/pending', [AdminVendorController::class, 'pending'])
+                    ->name('vendors.pending');
+                Route::put('vendors/pending/{vendor}', [AdminVendorController::class, 'updateStatus'])
+                    ->name('vendors.update.status');
+                Route::resource('vendors', AdminVendorController::class)
+                    ->except(['create', 'store']);
+            });
 
             // Users
-            Route::resource('users', AdminUserController::class)->except(['create', 'store']);
-            Route::put('users/restore/{user}', [AdminUserController::class, 'restore'])->name('users.restore');
+            Route::middleware(['check.admin.permission:manage users'])->group(function () {
+                Route::resource('users', AdminUserController::class)
+                    ->except(['create', 'store']);
+                Route::put('users/restore/{user}', [AdminUserController::class, 'restore'])
+                    ->name('users.restore');
+            });
 
             // Admin Resources
-            Route::resource('brands', AdminBrandController::class);
-            Route::resource('categories', AdminCategoryController::class);
-            Route::resource('coupons', AdminCouponController::class);
-            Route::resource('orders', AdminOrderController::class)->except(['create', 'store']);
-            Route::resource('products', AdminProductController::class)->except(['create', 'store']);
+            Route::resource('brands', AdminBrandController::class)
+                ->middleware('check.admin.permission:manage brands');
+            Route::resource('categories', AdminCategoryController::class)
+                ->middleware('check.admin.permission:manage categories');
+            Route::resource('coupons', AdminCouponController::class)
+                ->middleware('check.admin.permission:manage coupons');
+            Route::resource('orders', AdminOrderController::class)
+                ->except(['create', 'store'])
+                ->middleware('check.admin.permission:manage orders');
 
             // Profile
-            Route::resource('profile', AdminProfileController::class)->except(['create', 'store', 'show']);
+            Route::resource('profile', AdminProfileController::class)
+                ->except(['create', 'store', 'show'])
+                ->middleware('check.admin.permission:manage profile');
 
             // Products
-            Route::put('products/restore/{product}', [AdminProductController::class, 'restore'])->name('products.restore');
+            Route::middleware(['check.admin.permission:manage products'])->group(function () {
+                Route::resource('products', AdminProductController::class)
+                    ->except(['create', 'store']);
+                Route::put('products/restore/{product}', [AdminProductController::class, 'restore'])
+                    ->name('products.restore');
+            });
 
             // Shipping
-            Route::resource('shipping/methods', ShippingMethodController::class)->except('show');
-            // Route::resource('shipping', AdminShippingController::class);
-            Route::resource('cities', ShippingCityController::class)->except('show');
-            Route::resource('regions', ShippingRegionController::class)->except('show');
+            Route::middleware(['check.admin.permission:manage shipping'])->group(function () {
+                Route::resource('shipping/methods', AdminShippingMethodController::class)
+                    ->except('show');
+                Route::resource('cities', AdminShippingCityController::class)
+                    ->except('show');
+                Route::resource('regions', AdminShippingRegionController::class)
+                    ->except('show');
+            });
+
 
             // Finance
-            Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
-            Route::resource('finance/withdraw', AdminWithdrawController::class)->except(['create', 'store', 'show', 'edit', 'update', 'destroy']);
-            Route::post('finance/withdraw/approve', [AdminWithdrawController::class, 'approve'])->name('withdraw.approve');
-            Route::post('finance/withdraw/reject', [AdminWithdrawController::class, 'reject'])->name('withdraw.reject');
+            Route::middleware(['check.admin.permission:manage finance'])->group(function () {
+                Route::get('finance', [AdminFinanceController::class, 'index'])
+                    ->name('finance.index');
+                Route::resource('withdraw', AdminWithdrawController::class)
+                    ->except(['create', 'store', 'show', 'edit', 'update', 'destroy']);
+                Route::post('withdraw/approve', [AdminWithdrawController::class, 'approve'])
+                    ->name('withdraw.approve');
+                Route::post('withdraw/reject', [AdminWithdrawController::class, 'reject'])
+                    ->name('withdraw.reject');
+            });
+
+            // Emails
+            Route::middleware(['check.admin.permission:manage emails'])->group(function () {
+                Route::resource('email', AdminEmailController::class)->except(['show', 'create', 'store', 'destroy']);
+                Route::get('email/test', [AdminEmailController::class, 'emailTest'])
+                    ->name('email.test');
+                Route::post('email/send', [AdminEmailController::class, 'sendEmailTest'])
+                    ->name('email.test.send');
+            });
 
             // Chats
-            Route::resource('chats', AdminChatController::class);
-            Route::post('chats/{chat}/send-message', [AdminChatController::class, 'sendMessage'])->name('chats.send.message');
+            Route::middleware(['check.admin.permission:manage chats'])->group(function () {
+                Route::resource('chats', AdminChatController::class);
+                Route::post('chats/{chat}/send-message', [AdminChatController::class, 'sendMessage'])
+                    ->name('chats.send.message');
+            });
         });
     });
 
@@ -235,8 +343,12 @@ Route::group(['prefix' => '{lang?}', 'middleware' => 'setLocale'], function () {
     | Payment Callback
     |--------------------------------------------------------------------------
     */
-    Route::match(['GET', 'POST'], '/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
-    Route::post('/payment/process', [PaymentController::class, 'paymentProcess'])->name('payment.process');
-    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
+    Route::match(['GET', 'POST'], '/payment/callback', [AdminPaymentController::class, 'callback'])
+        ->name('payment.callback');
+    Route::post('/payment/process', [AdminPaymentController::class, 'paymentProcess'])
+        ->name('payment.process');
+    Route::get('/payment/success', [AdminPaymentController::class, 'success'])
+        ->name('payment.success');
+    Route::get('/payment/failed', [AdminPaymentController::class, 'failed'])
+        ->name('payment.failed');
 });

@@ -17,11 +17,11 @@ class checkUserRole
     public function handle(Request $request, Closure $next, $role)
     {
         $currentPath = $request->path();
-        if (str_contains($currentPath, 'vendor-login') || str_contains($currentPath, 'vendor/')) {
+        if (str_contains($currentPath, 'vendor/login') || str_contains($currentPath, 'vendor/')) {
             $determinedRole = 'vendor';
-        } elseif (str_contains($currentPath, 'admin-login') || str_contains($currentPath, 'admin/')) {
+        } elseif (str_contains($currentPath, 'admin/login') || str_contains($currentPath, 'admin/')) {
             $determinedRole = 'admin';
-        } elseif (str_contains($currentPath, 'user-login') || $currentPath === '/') {
+        } elseif (str_contains($currentPath, 'user/login') || $currentPath === '/') {
             $determinedRole = 'user';
         } else {
             $determinedRole = $role;
@@ -42,9 +42,6 @@ class checkUserRole
             'admin' => 'admin.login',
             'user' => 'user.login'
         ];
-        // dd($currentPath, $determinedRole, $guards, $loginRoutes[$determinedRole], ['lang' => app()->getLocale()]);
-
-
         return redirect()->guest(
             route($loginRoutes[$determinedRole], ['lang' => app()->getLocale()])
         );

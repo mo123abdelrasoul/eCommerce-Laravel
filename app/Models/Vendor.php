@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VendorResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,6 +25,10 @@ class Vendor extends Authenticatable
         'social_id',
         'social_type',
     ];
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new VendorResetPassword($token));
+    }
     public function orders()
     {
         return $this->hasMany(Order::class, 'vendor_id');
@@ -56,5 +61,12 @@ class Vendor extends Authenticatable
     public function chats()
     {
         return $this->hasMany(Chat::class);
+    }
+
+    public function getWalletBalance()
+    {
+        $credits = $this->walletTransaction()->where('type', 'credit')->sum('amount');
+        $debits = $this->walletTransaction()->where('type', 'debit')->sum('amount');
+        return $credits + $debits;
     }
 }

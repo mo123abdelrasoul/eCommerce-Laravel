@@ -40,10 +40,16 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="card mb-12">
-                        <div class="card-header">
-                            <h3 class="card-title">Withdraw Requests</h3>
-                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3">
 
+                            <form action="{{ route('admin.withdraw.index', app()->getLocale()) }}" method="GET"
+                                class="d-flex">
+                                <input type="text" name="search" class="form-control me-2"
+                                    placeholder="Search withdraw requests by vendor..." style="width: 300px;"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+                        </div>
                         <div class="card-body p-0">
                             <table class="table table-striped text-center">
                                 <thead>
@@ -86,7 +92,8 @@
                                             <td>{{ $withdrawal->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
                                                 @if ($withdrawal->status === 'pending')
-                                                    <form action="{{ route('admin.withdraw.approve', app()->getLocale()) }}"
+                                                    <form
+                                                        action="{{ route('admin.withdraw.approve', app()->getLocale()) }}"
                                                         method="POST" style="display:inline-block;"
                                                         onsubmit="return confirm('Are you sure you want to approve this withdrawal request?');">
                                                         @csrf

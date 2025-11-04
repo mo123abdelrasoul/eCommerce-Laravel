@@ -12,43 +12,23 @@ class ShippingCityController extends Controller
 
     public function index()
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $search = request('search');
         $cities = City::with(['region:id,name'])->when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.shipping.cities.index', compact('cities'));
     }
 
     public function create($lang)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $regions = ShippingRegion::select('id', 'name')->get();
         return view('admin.shipping.cities.create', compact('regions'));
     }
 
     public function store($lang, Request $request)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $data = $request->validate([
             'name' => 'required|string|max:255|min:2',
             'region_id' => 'required|exists:shipping_regions,id',
@@ -58,23 +38,14 @@ class ShippingCityController extends Controller
         $city->name = $data['name'];
         $city->region_id = $data['region_id'];
         $city->is_active = $data['is_active'];
-
-        if ($city->save()) {
-            return back()->with('success', 'City created successfully!');
-        } else {
+        if (!$city->save()) {
             return back()->with('error', 'Failed to create the city. Please try again.');
         }
+        return back()->with('success', 'City created successfully!');
     }
 
     public function edit($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $city = City::findOrFail($id);
         $regions = ShippingRegion::select('id', 'name')->get();
         return view('admin.shipping.cities.edit', compact('city', 'regions'));
@@ -82,13 +53,6 @@ class ShippingCityController extends Controller
 
     public function update(Request $request, $lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $city = City::findOrFail($id);
         $data = $request->validate([
             'name' => 'required|string|max:255|min:2',
@@ -96,22 +60,14 @@ class ShippingCityController extends Controller
             'is_active' => 'required|in:0,1',
         ]);
         $update = $city->update($data);
-        if ($update) {
-            return back()->with('success', 'City Updated successfully!');
-        } else {
+        if (!$update) {
             return back()->with('error', 'Failed to Update the city. Please try again.');
         }
+        return back()->with('success', 'City Updated successfully!');
     }
 
     public function destroy($lang, $id)
     {
-        $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $city = City::findOrFail($id);
         try {
             $city->delete();

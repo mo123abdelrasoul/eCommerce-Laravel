@@ -12,41 +12,39 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use function Laravel\Prompts\table;
-use function Pest\Laravel\get;
-
 class ProductController extends Controller
 {
+    protected $vendor;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->vendor = auth()->guard('vendors')->user();
+            return $next($request);
+        });
+    }
     public function index()
     {
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        if (!$vendor->hasRole('vendor') && !$vendor->can('view own products')) {
-            abort(403, 'Unauthorized');
-        }
         $search = request('search');
-        $products = Product::where('vendor_id', $vendor->id)->when($search, function ($query, $search) {
+        $products = Product::where('vendor_id', $this->vendor->id)->when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('vendor.products.index', compact('products'));
     }
 
     public function create()
     {
-        if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login', app()->getLocale());
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
-            abort(403, 'Unauthorized');
-        }
-        $vendor_id = $vendor->id;
         $cats = Category::where('status', true)->whereNotNull('parent_id')->select('id', 'name')->get();
         $brands = Brand::where('status', true)->select('id', 'name')->get();
-        return view('vendor.products.create', compact('cats', 'brands', 'vendor_id'));
+        return view(
+            'vendor.products.create',
+            compact([
+                'cats' => $cats,
+                'brands' => $brands,
+                'vendor_id' => $this->vendor->id
+            ])
+        );
     }
 
     public function store(Request $request)
@@ -76,18 +74,11 @@ class ProductController extends Controller
         } else {
             $tags = Null;
         }
-        if ($validated['quantity'] == NULL) {
+        if (empty($validated['quantity'])) {
             $validated['quantity'] = 0;
         }
         if ($validated['discount'] == NULL) {
             $validated['discount'] = 0;
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if ($vendor->id != $validated['vendor_id']) {
-            abort(403, 'Unauthorized');
-        }
-        if (!$vendor->hasRole('vendor') && !$vendor->can('create product')) {
-            abort(403, 'Unauthorized');
         }
         $store = DB::table('products')->insert([
             'name' => $validated['name'],
@@ -104,42 +95,28 @@ class ProductController extends Controller
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
-        if ($store) {
-            return back()->with('success', 'Product added successfully! Please wait for admin approval.');
-        } else {
+        if (!$store) {
             return back()->with('error', 'Failed to add product. Please try again.');
         }
+        return back()->with('success', 'Product added successfully! Please wait for admin approval.');
     }
 
     public function show($lang, $id)
     {
-        if (!auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor->can('view product')) {
-            abort(403, 'Unauthorized');
-        }
-        $vendor_id = $vendor->id;
         $product = Product::findOrFail($id);
-        if ($product->vendor_id != $vendor_id) {
+        if ($product->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
-        return view('vendor.products.show', compact('product', 'vendor_id'));
+        return view(
+            'vendor.products.show',
+            compact('product')
+        );
     }
 
     public function edit($lang, $id)
     {
-        if (!auth::guard('vendors')->check()) {
-            redirect()->route('vendor.login');
-        }
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor->can('edit product')) {
-            abort(403, 'Unauthorized');
-        }
-        $vendor_id = $vendor->id;
         $product = Product::findOrFail($id);
-        if ($product->vendor_id != $vendor_id) {
+        if ($product->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
         if ($product->quantity == NULL) {
@@ -155,15 +132,8 @@ class ProductController extends Controller
 
     public function update(Request $request, $lang, $id)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
         $product = Product::findOrFail($id);
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor->can('edit product')) {
-            abort(403, 'Unauthorized');
-        }
-        if ($product->vendor_id != $vendor->id) {
+        if ($product->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
         $validateData = $request->validate([
@@ -172,7 +142,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'required|exists:brands,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'sku' => 'required|max:8|min:6|unique:products,sku,' . $id,
             'discount' => 'nullable|numeric|min:0|max:100',
             'tags' => 'nullable|string',
@@ -186,18 +156,17 @@ class ProductController extends Controller
         } else {
             $imgPath = $product->image;
         }
-        if ($validateData['quantity'] == NULL) {
+        if (empty($validateData['quantity'])) {
             $validateData['quantity'] = 0;
         }
-        if ($validateData['discount'] == NULL) {
+        if (empty($validateData['discount'])) {
             $validateData['discount'] = 0;
         }
         $desc = strip_tags($validateData['description']);
+        $tags = Null;
         if (!empty($request['tags'])) {
             $tagsArray = explode(',', strip_tags($request['tags']));
             $tags = json_encode($tagsArray);
-        } else {
-            $tags = Null;
         }
         $update = $product->update([
             'name' => $validateData['name'],
@@ -212,27 +181,16 @@ class ProductController extends Controller
             'vendor_id' => $product->vendor_id,
             'tags' => $tags,
         ]);
-        if ($update) {
-            return back()->with('success', 'Product Updated successfully!');
-        } else {
+        if (!$update) {
             return back()->with('error', 'Failed to Update the Product. Please try again.');
         }
+        return back()->with('success', 'Product Updated successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($lang, $id)
     {
-        if (!Auth::guard('vendors')->check()) {
-            return redirect()->route('vendor.login');
-        }
         $product = Product::findOrFail($id);
-        $vendor = Auth::guard('vendors')->user();
-        if (!$vendor->can('delete product')) {
-            abort(403, 'Unauthorized');
-        }
-        if ($product->vendor_id != $vendor->id) {
+        if ($product->vendor_id != $this->vendor->id) {
             abort(403, 'You are not allowed to access this product.');
         }
         if ($product->image && Storage::disk('public')->exists($product->image)) {

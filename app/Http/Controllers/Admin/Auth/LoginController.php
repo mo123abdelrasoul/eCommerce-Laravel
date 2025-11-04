@@ -18,6 +18,11 @@ class LoginController extends Controller
         return redirect()->route('admin.dashboard', app()->getLocale());
     }
 
+    public function dashboard()
+    {
+        $admin = Auth::guard('admins')->user();
+        return view('admin.dashboard', compact('admin'));
+    }
     public function login(Request $request)
     {
         $validatedData = $request->validate([
@@ -35,11 +40,11 @@ class LoginController extends Controller
         if ($admin->trashed()) {
             return back()->with('error', 'Your account has been deactivated.');
         }
-        if (Hash::check($validatedData['password'], $admin->password)) {
+        if (!Hash::check($validatedData['password'], $admin->password)) {
             return back()->with('error', 'Invalid email or password');
         }
         Auth::guard('admins')->login($admin, $remember);
-        return redirect()->intended(route('admin.dashboard', ['lang' => app()->getLocale()]));
+        return redirect()->route('admin.dashboard', ['lang' => app()->getLocale()]);
     }
 
     public function logout(Request $request)

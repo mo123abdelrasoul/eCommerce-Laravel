@@ -13,12 +13,6 @@ class FinanceController extends Controller
     public function index()
     {
         $admin = auth()->guard('admins')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        if (!$admin->hasRole('admin') || !$admin->can('manage shipping')) {
-            abort(403, 'Unauthorized');
-        }
         $totalOrdersCount = Order::count();
         $totalOrdersAmount = Order::sum('total_amount');
         $totalSales = Order::where('status', 'completed')->sum('total_amount');

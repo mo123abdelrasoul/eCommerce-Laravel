@@ -5,43 +5,29 @@ namespace App\Http\Controllers\Admin\Product;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-
-
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        $admin = Auth::guard('admins')->user();
         $search = request('search');
         $categories = Category::when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.categories.index', compact('categories'));
     }
 
     public function create()
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
-        $admin_id = Auth::guard('admins')->user()->id;
         $categories = Category::get();
         return view('admin.categories.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -69,18 +55,14 @@ class CategoryController extends Controller
             'image' => $validated['image'],
             'status' => $validated['status'],
         ]);
-        if ($store) {
-            return back()->with('success', 'Category added successfully!');
-        } else {
+        if (!$store) {
             return back()->with('error', 'Failed to add category. Please try again.');
         }
+        return back()->with('success', 'Category added successfully!');
     }
 
     public function edit($lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
         $categories = Category::get();
         $category = Category::where('id', $id)->firstOrFail();
         if (!$category) {
@@ -94,9 +76,6 @@ class CategoryController extends Controller
 
     public function update(Request $request, $lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
         $category = Category::findOrFail($id);
         if ($category->parent_id && $category->parent_id == $id) {
             return back()->with('error', 'You cannot set a category as its own parent.');
@@ -134,18 +113,14 @@ class CategoryController extends Controller
             'image' => $validated['image'],
             'status' => $validated['status'],
         ]);
-        if ($store) {
-            return back()->with('success', 'Category updated successfully!');
-        } else {
+        if (!$store) {
             return back()->with('error', 'Failed to updated category. Please try again.');
         }
+        return back()->with('success', 'Category updated successfully!');
     }
 
     public function destroy($lang, $id)
     {
-        if (!Auth::guard('admins')->check()) {
-            return redirect()->route('admin.login');
-        }
         $category = Category::findOrFail($id);
         if ($category->image && Storage::disk('public')->exists($category->image)) {
             Storage::disk('public')->delete($category->image);

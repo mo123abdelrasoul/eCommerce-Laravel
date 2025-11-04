@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin\Product;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Coupon;
 use Illuminate\Validation\Rule;
 
@@ -13,22 +12,17 @@ class CouponController extends Controller
 {
     public function index()
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $search = request('search');
         $coupons = Coupon::when($search, function ($query, $search) {
             return $query->where('code', 'like', "%{$search}%");
         })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.coupons.index', compact('coupons'));
     }
 
     public function show($lang, $coupon)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $coupon_data = Coupon::where('id', $coupon)->first();
         if (!$coupon_data) {
             abort(404, 'No coupon found.');
@@ -38,18 +32,12 @@ class CouponController extends Controller
 
     public function edit($lang, $coupon)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $coupon = Coupon::Where('id', $coupon)->first();
         return view('admin.coupons.edit', ['coupon' => $coupon]);
     }
 
     public function update(Request $request, $lang, $coupon)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $coupon = Coupon::Where('id', $coupon)->first();
         $validated = $request->validate([
             'code' => 'required|string|min:3|max:50|unique:coupons,code,' . $coupon->id,
@@ -79,7 +67,6 @@ class CouponController extends Controller
             }
             $validated['excluded_product_ids'] = json_encode($productIdsArray);
         }
-
         if (!empty($validated['excluded_category_ids'])) {
             $categoryIdsArray = array_map('trim', explode(',', $validated['excluded_category_ids']));
             foreach ($categoryIdsArray as $id) {
@@ -89,7 +76,6 @@ class CouponController extends Controller
             }
             $validated['excluded_category_ids'] = json_encode($categoryIdsArray);
         }
-
         $coupon->code = $validated['code'];
         $coupon->description = $validated['description'] ?? null;
         $coupon->discount_type = $validated['discount_type'];
@@ -117,9 +103,6 @@ class CouponController extends Controller
 
     public function destroy($lang, $coupon)
     {
-        if (!auth::guard('admins')->check()) {
-            return redirect()->route('admin.login', app()->getLocale());
-        }
         $coupon_data = Coupon::findOrFail($coupon);
         try {
             $coupon_data->delete();
