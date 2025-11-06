@@ -25,6 +25,15 @@
                         <p>{{ 'Dashboard' }}</p>
                     </a>
                 </li>
+
+
+                <li class="nav-item">
+                    <a href="{{ route($prefix . 'admins.index', app()->getLocale()) }}"
+                        class="nav-link {{ request()->routeIs($prefix . 'admins.index*') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i>
+                        <p>{{ 'Admins' }}</p>
+                    </a>
+                </li>
                 <!-- Vendors -->
                 <li class="nav-item {{ request()->is('*admin/vendors*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('*admin/vendors*') ? 'active' : '' }}">
@@ -51,6 +60,9 @@
                         </li>
                     </ul>
                 </li>
+
+
+
                 <!-- Users -->
                 <li class="nav-item {{ request()->is('*admin/users*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('*admin/users*') ? 'active' : '' }}">
@@ -245,6 +257,64 @@
                     </a>
                 </li>
 
+
+                <!-- Roles -->
+                <li class="nav-item {{ request()->is('*roles*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*roles*') ? 'active' : '' }}">
+                        <i class="bi bi-shield-lock"></i>
+                        <p>
+                            Roles
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.roles.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*roles*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Roles</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.roles.create', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*roles/create*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Create Role</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Permissions -->
+                <li class="nav-item {{ request()->is('*permissions*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*permissions*') ? 'active' : '' }}">
+                        <i class="bi bi-key"></i>
+                        <p>
+                            Permissions
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.permissions.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*permissions*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Permissions</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.permissions.create', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is('*permissions/create*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Create Permission</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+                <!-- Reports -->
                 <li class="nav-item {{ request()->is('reports*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('reports*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-bar-chart-fill"></i>

@@ -61,8 +61,12 @@ function handleEmptyCart() {
     const container = document.querySelector('.cart-container');
     if (container) {
         container.innerHTML = `
-            <p>Your cart is empty.</p>
-            <a href="/" class="btn btn-primary">Continue Shopping</a>
+            <div class="text-center py-5">
+                <div class="alert alert-danger">Your cart is empty.</div>
+                <a href="${window.location.origin + '/' + document.documentElement.lang}" class="btn btn-primary btn-lg">
+                    Continue Shopping
+                </a>
+            </div>
         `;
     }
 }

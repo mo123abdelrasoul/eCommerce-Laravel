@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class City extends Model
 {
+    use HasRoles;
     /** @use HasFactory<\Database\Factories\CityFactory> */
     use HasFactory;
     protected $fillable = [

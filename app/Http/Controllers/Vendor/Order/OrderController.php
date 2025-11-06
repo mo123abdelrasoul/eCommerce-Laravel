@@ -38,9 +38,12 @@ class OrderController extends Controller
         if ($order->vendor_id !== $this->vendor->id) {
             abort(403, 'You are not allowed to access this order.');
         }
+        $shipping_method_name = DB::table('shipping_methods')
+            ->where('id', $order->shipping_method_id)
+            ->value('name');
         $order_products = $order->items;
         $customer_name = $order->customer->name;
-        return view('vendor.orders.show', compact('order', 'order_products', 'customer_name'));
+        return view('vendor.orders.show', compact('order', 'order_products', 'customer_name', 'shipping_method_name'));
     }
 
     public function edit($lang, $orderId)

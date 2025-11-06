@@ -70,7 +70,7 @@
                         @else
                             <p><strong>Shipping Address:</strong> N/A</p>
                         @endif
-                        <p><strong>Shipping Method:</strong> {{ $order->shipping_method ?? 'N/A' }}</p>
+                        <p><strong>Shipping Method:</strong> {{ $shipping_method_name ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Shipping Cost:</strong> {{ number_format($order->shipping_cost, 2) }} EGP</p>

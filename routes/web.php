@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\Access\PermissionController as AdminPermissionController;
+use App\Http\Controllers\Admin\Access\RoleController as AdminRoleController;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
 // Common Controllers
@@ -193,7 +196,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
     | Vendor Protected Routes
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:vendors', 'checkUserRole:vendor'])->group(function () {
+    Route::middleware(['checkUserRole:vendor'])->group(function () {
         Route::prefix('vendor')->name('vendor.')->group(function () {
             Route::post('logout', [VendorLoginController::class, 'logout'])
                 ->name('logout.submit');
@@ -248,7 +251,24 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['checkUserRole:admin'])->group(function () {
+
         Route::prefix('admin')->name('admin.')->group(function () {
+
+
+
+            // Admins CRUD
+            Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
+            Route::get('/admins/create', [AdminController::class, 'create'])->name('admins.create');
+            Route::post('/admins', [AdminController::class, 'store'])->name('admins.store');
+            Route::get('/admins/{admin}/edit', [AdminController::class, 'edit'])->name('admins.edit');
+            Route::put('/admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
+            Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');
+
+            // Assign roles
+            Route::get('/admins/{admin}/roles', [AdminController::class, 'assignRoleForm'])->name('admins.assignRoleForm');
+            Route::post('/admins/{admin}/roles', [AdminController::class, 'assignRole'])->name('admins.assignRole');
+
+
             Route::post('logout', [AdminLoginController::class, 'logout'])
                 ->name('logout.submit');
             Route::get('dashboard', [AdminLoginController::class, 'dashboard'])
@@ -283,6 +303,14 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
             Route::resource('orders', AdminOrderController::class)
                 ->except(['create', 'store'])
                 ->middleware('check.admin.permission:manage orders');
+
+            Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])->name('roles.getPermissions');
+            Route::resource('roles', AdminRoleController::class)->middleware('check.admin.permission:Manage Roles');
+            Route::resource('permissions', AdminPermissionController::class)->middleware('check.admin.permission:Manage Permissions');
+
+            Route::get('vendors/{id}/assign-role', [AdminVendorController::class, 'showAssignRoleForm'])->name('vendors.assignRoleForm');
+            Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])->name('vendors.assignRole');
+
 
             // Profile
             Route::resource('profile', AdminProfileController::class)

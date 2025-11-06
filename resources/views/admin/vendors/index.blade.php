@@ -66,8 +66,6 @@
                                             <th>Name</th>
                                             <th>Image</th>
                                             <th>Phone</th>
-                                            <th>Company</th>
-                                            <th>Registration ID</th>
                                             <th>Status</th>
                                             <th>Actions</th>
                                         </tr>
@@ -83,10 +81,13 @@
                                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
                                             </td>
                                             <td>{{ $vendor->phone ?? 'N/A' }}</td>
-                                            <td>{{ $vendor->company ?? 'N/A' }}</td>
-                                            <td>{{ $vendor->registration_id }}</td>
                                             <td>{{ ucfirst($vendor->status) }}</td>
                                             <td>
+                                                <a href="{{ route('admin.vendors.assignRoleForm', [app()->getLocale(), $vendor->id]) }}"
+                                                    class="btn btn-sm btn-dark">
+                                                    Assign Role
+                                                </a>
+
                                                 <a href="{{ route('admin.vendors.show', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                                                     class="btn btn-info btn-sm">View</a>
                                                 <a href="{{ route('admin.vendors.edit', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"

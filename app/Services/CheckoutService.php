@@ -64,6 +64,7 @@ class CheckoutService
                 $order->payments()->attach($payment['payment_id']);
             }
         }
+        $payment['orders'] = $orders['orders'];
         return $payment;
     }
     private function fail($message)

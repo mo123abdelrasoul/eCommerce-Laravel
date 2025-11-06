@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class Message extends Model
 {
+    use HasRoles;
     protected $fillable = [
         'chat_id',
         'sender_type',

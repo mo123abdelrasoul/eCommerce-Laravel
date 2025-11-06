@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class Category extends Model
 {
+    use HasRoles;
     use SoftDeletes;
     protected $fillable = ["name", "description", "parent_id", "image", "status", "vendor_id"];
 

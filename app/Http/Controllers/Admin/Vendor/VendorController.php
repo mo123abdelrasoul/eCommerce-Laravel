@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 class VendorController extends Controller
 {
@@ -113,5 +114,23 @@ class VendorController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to delete the vendor. Please try again.');
         }
+    }
+
+
+    public function showAssignRoleForm($lang, $id)
+    {
+        $vendor = Vendor::findOrFail($id);
+        $roles = Role::where('guard_name', 'vendors')->get();
+        return view('admin.vendors.assignRole', compact('vendor', 'roles'));
+    }
+
+    public function assignRole($lang, Request $request, $id)
+    {
+        $vendor = Vendor::findOrFail($id);
+        $request->validate([
+            'role' => 'required|exists:roles,name'
+        ]);
+        $vendor->syncRoles([$request->role]);
+        return back()->with('success', 'Role assigned to vendor successfully!');
     }
 }

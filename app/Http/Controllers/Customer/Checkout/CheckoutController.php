@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer\Checkout;
 
+use App\Events\OrderPlaced;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\PaymentMethod;
@@ -29,9 +30,19 @@ class CheckoutController extends Controller
     }
     public function showCheckoutForm($lang)
     {
-        $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys(Session::get('cart', [])))->get();
-        if ($products->isEmpty()) {
-            return Redirect::route('cart.index', app()->getLocale())->with('error', __('Your cart is empty. Please add items to your cart before proceeding to checkout.'));
+        $cart = Session::get('cart', []);
+        if (empty($cart)) {
+            return redirect()
+                ->route('user.cart.index', app()->getLocale())
+                ->with('error', __('Your cart is empty. Please add items before checkout.'));
+        }
+        $products = Product::select('id', 'name', 'image', 'price')
+            ->whereIn('id', array_keys($cart))
+            ->get();
+        if ($products->count() !== count($cart)) {
+            return redirect()
+                ->route('user.cart.index', app()->getLocale())
+                ->with('error', __('Some products in your cart are no longer available.'));
         }
         return response()
             ->view('customer.checkout.index', [
@@ -44,6 +55,7 @@ class CheckoutController extends Controller
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
     }
+
     public function process($lang, Request $request)
     {
         $user = Auth::guard('web')->user();
@@ -51,6 +63,10 @@ class CheckoutController extends Controller
             return back()->with('error', 'You Must Login First.');
         }
         $cart = Session::get('cart', []);
+        if (empty($cart)) {
+            return redirect()->route('user.cart.index', $lang)
+                ->with('error', 'Your cart is empty.');
+        }
         $checkoutData = $request->validate([
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|email',
@@ -65,23 +81,36 @@ class CheckoutController extends Controller
             'payment_method' => 'required|integer'
         ]);
         $checkout = $this->checkoutService->handle($checkoutData, $cart);
-        if (is_array($checkout) && isset($checkout['success']) && $checkout['success'] === false) {
-            return redirect()->back()
-                ->with('error', true)
-                ->with('message', $checkout['message'] ?? 'Something went wrong');
+
+        if (isset($checkout['success']) && $checkout['success'] === false) {
+            return back()
+                ->with('error', $checkout['message'] ?? 'Something went wrong.');
         }
-        if (is_array($checkout) && isset($checkout['redirect_url'])) {
+        if (isset($checkout['redirect_url'])) {
             return redirect()->away($checkout['redirect_url']);
         }
-        if (is_array($checkout) && isset($checkout['success']) && $checkout['success'] === true) {
-            return redirect()->route('user.checkout.success', ['lang' => $lang])
-                ->with('success', true)
-                ->with('message', $checkout['message'] ?? 'Order placed successfully.');
+        foreach ($checkout['orders'] as $order) {
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'processing',
+            ]);
+            foreach ($order->items as $item) {
+                $product = $item->product;
+                if ($product && $product->quantity >= $item->quantity) {
+                    $product->quantity -= $item->quantity;
+                    $product->save();
+                } else {
+                    $order->update(['status' => 'cancelled']);
+                }
+            }
         }
-        return redirect()->back()
-            ->with('error', true)
-            ->with('message', 'Unexpected checkout response.');
+        event(new OrderPlaced($order));
+        Session::forget('cart');
+        return redirect()->route('user.checkout.success', $lang)
+            ->with('success', true)
+            ->with('message', $checkout['message'] ?? 'Order placed successfully.');
     }
+
     public function applyCoupon($lang, Request $request)
     {
         $validation = $request->validate([

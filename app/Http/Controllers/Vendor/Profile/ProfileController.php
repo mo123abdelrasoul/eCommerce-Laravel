@@ -18,12 +18,13 @@ class ProfileController extends Controller
     }
     public function index()
     {
-        return view('vendor.profile.index', compact(['vendor' => $this->vendor]));
+        dd($this->vendor);
+        return view('vendor.profile.index', ['vendor' => $this->vendor]);
     }
 
     public function edit($lang)
     {
-        return view('vendor.profile.edit', compact(['vendor' => $this->vendor]));
+        return view('vendor.profile.edit', ['vendor' => $this->vendor]);
     }
 
     public function update(Request $request, $lang)

@@ -39,7 +39,7 @@
         <!--begin::Form Validation-->
         <div class="card card-info card-outline mb-4">
             <!--begin::Form-->
-            <form form action="{{ route('admin.vendors.update', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
+            <form action="{{ route('admin.vendors.update', ['lang' => app()->getLocale(), 'vendor' => $vendor->id]) }}"
                 method="POST" enctype="multipart/form-data" class="needs-validation">
                 @method('PUT')
                 @csrf

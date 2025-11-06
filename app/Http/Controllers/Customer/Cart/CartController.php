@@ -15,7 +15,14 @@ class CartController extends Controller
     public function index($lang)
     {
         $cart = Session::get('cart', []);
-        $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys($cart))->get();
+        if (empty($cart)) {
+            $products = collect();
+            return view('customer.cart.index', compact('cart', 'products'))
+                ->with('error', __('Your cart is empty. Please add items before checkout.'));
+        }
+        $products = Product::select('id', 'name', 'image', 'price')
+            ->whereIn('id', array_keys($cart))
+            ->get();
         return view('customer.cart.index', compact('cart', 'products'));
     }
 

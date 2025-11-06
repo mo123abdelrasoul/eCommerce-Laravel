@@ -27,7 +27,8 @@ class RolePermissionSeeder extends Seeder
             'view sales reports',
             'manage dashboard',
             'view own wallet',
-            'request withdraw'
+            'request withdraw',
+            'admin viewer'
         ];
         foreach ($vendorPermissions as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'vendors']);

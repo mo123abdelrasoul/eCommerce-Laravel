@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class VendorShippingRate extends Model
 {
+    use HasRoles;
     protected $fillable = [
         'vendor_id',
         'shipping_method_id',

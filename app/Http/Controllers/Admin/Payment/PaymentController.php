@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Payment;
 
+use App\Events\OrderPlaced;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Database\Factories\PaymentFactory;
@@ -32,6 +33,7 @@ class PaymentController extends Controller
             'transaction_id' => $data['id'],
             'status' => 'paid',
         ]);
+
         return redirect()->route('payment.success', ['lang' => app()->getLocale()])
             ->with('message', 'Payment succeeded!');
     }
@@ -43,6 +45,17 @@ class PaymentController extends Controller
                 'payment_status' => 'paid',
                 'status' => 'processing',
             ]);
+
+            foreach ($order->items as $item) {
+                $product = $item->product;
+                if ($product && $product->quantity >= $item->quantity) {
+                    $product->quantity -= $item->quantity;
+                    $product->save();
+                } else {
+                    $order->update(['status' => 'cancelled']);
+                }
+            }
+
             if (!empty($order->coupon_id)) {
                 DB::table('coupon_users')->updateOrInsert(
                     [
@@ -54,8 +67,10 @@ class PaymentController extends Controller
                     ]
                 );
             }
+            event(new OrderPlaced($order));
         }
-        return view('user.payment.payment-success');
+        session()->forget('cart');
+        return view('customer.payment.payment-success');
     }
 
     public function failed($lang, Payment $payment)
@@ -66,6 +81,6 @@ class PaymentController extends Controller
                 'status' => 'cancelled',
             ]);
         }
-        return view('user.payment.payment-failed');
+        return view('customer.payment.payment-failed');
     }
 }
