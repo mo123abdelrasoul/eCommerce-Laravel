@@ -3,22 +3,26 @@
 namespace App\Http\Controllers\Vendor\Profile;
 
 use App\Http\Controllers\Controller;
+use App\Services\ProfileService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     protected $vendor;
-    public function __construct()
+    protected $profileService;
+
+    public function __construct(ProfileService $profileService)
     {
         $this->middleware(function ($request, $next) {
             $this->vendor = auth()->guard('vendors')->user();
             return $next($request);
         });
+
+        $this->profileService = $profileService;
     }
+
     public function index()
     {
-        dd($this->vendor);
         return view('vendor.profile.index', ['vendor' => $this->vendor]);
     }
 
@@ -46,25 +50,12 @@ class ProfileController extends Controller
             'company' => 'nullable|string|max:255',
         ]);
 
-        if ($request->hasFile('avatar')) {
-            if ($this->vendor->avatar && Storage::disk('public')->exists($this->vendor->avatar)) {
-                Storage::disk('public')->delete($this->vendor->avatar);
-            }
-            $imgPath = $request->file('avatar')->store('uploads/vendors', 'public');
-        } else {
-            $imgPath = $this->vendor->avatar;
-        }
-        if (empty($data['password'])) {
-            unset($data['password']);
-        } else {
-            $data['password'] = bcrypt($data['password']);
-        }
-        $data['avatar'] = $imgPath;
+        $avatarFile = $request->file('avatar');
 
-        $update = $this->vendor->update($data);
-        if (!$update) {
-            return back()->with('error', 'Failed to Update the profile. Please try again.');
-        }
-        return back()->with('success', 'Profile Updated successfully!');
+        $success = $this->profileService->updateVendor($this->vendor, $data, $avatarFile);
+
+        return $success
+            ? back()->with('success', 'Profile updated successfully!')
+            : back()->with('error', 'Failed to update the profile. Please try again.');
     }
 }

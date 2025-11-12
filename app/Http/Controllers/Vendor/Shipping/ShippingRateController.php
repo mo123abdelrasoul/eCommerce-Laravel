@@ -5,20 +5,24 @@ namespace App\Http\Controllers\Vendor\Shipping;
 use App\Http\Controllers\Controller;
 use App\Models\ShippingRegion;
 use App\Models\VendorShippingRate;
-use Exception;
+use App\Services\ShippingRateService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ShippingRateController extends Controller
 {
     protected $vendor;
-    public function __construct()
+    protected $shippingRateService;
+
+    public function __construct(ShippingRateService $shippingRateService)
     {
         $this->middleware(function ($request, $next) {
             $this->vendor = auth()->guard('vendors')->user();
             return $next($request);
         });
+
+        $this->shippingRateService = $shippingRateService;
     }
+
     public function index()
     {
         $methods = $this->vendor->shippingMethods;
@@ -26,10 +30,11 @@ class ShippingRateController extends Controller
         $rates = VendorShippingRate::where('vendor_id', $this->vendor->id)
             ->with(['method', 'region'])
             ->get();
+
         return view('vendor.shipping.rates.index', compact('methods', 'regions', 'rates'));
     }
 
-    public function store($lang, Request $request)
+    public function store(Request $request)
     {
         if (!$request->has('rates') || empty($request->rates)) {
             VendorShippingRate::where('vendor_id', $this->vendor->id)->delete();
@@ -49,26 +54,10 @@ class ShippingRateController extends Controller
             'rates.*.max_weight' => 'Maximum weight',
             'rates.*.rate' => 'Rate',
         ]);
-        $newRates = collect($validated['rates']);
-        try {
-            DB::beginTransaction();
-            VendorShippingRate::where('vendor_id', $this->vendor->id)->delete();
-            foreach ($newRates as $rate) {
-                VendorShippingRate::create([
-                    'vendor_id' => $this->vendor->id,
-                    'shipping_region_id' => $rate['region'],
-                    'shipping_method_id' => $rate['method'],
-                    'min_weight' => $rate['min_weight'],
-                    'max_weight' => $rate['max_weight'] ?? null,
-                    'rate' => $rate['rate'],
-                ]);
-            }
-            DB::commit();
-            return back()->with('success', 'Shipping rates updated successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            report($e);
-            return back()->with('error', 'Something went wrong while saving shipping rates. Please try again.');
-        }
+        $success = $this->shippingRateService->updateVendorRates($this->vendor, $validated['rates']);
+        return back()->with(
+            $success ? 'success' : 'error',
+            $success ? 'Shipping rates updated successfully.' : 'Something went wrong while saving shipping rates.'
+        );
     }
 }

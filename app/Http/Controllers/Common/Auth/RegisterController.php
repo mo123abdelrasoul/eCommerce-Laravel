@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Vendor;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
@@ -27,10 +29,17 @@ class RegisterController extends Controller
     /* Start Handle Register Form */
     public function registerForm(Request $request)
     {
+        $role = $request->input('role');
         $validatedData = $request->validate(
             [
                 'name' => 'required|max:255|min:3|string',
-                'email' => 'required|email',
+                'email' => [
+                    'required',
+                    'email',
+                    $role === 'customer'
+                        ? Rule::unique('users', 'email')
+                        : Rule::unique('vendors', 'email')
+                ],
                 'password' => 'required|min:6|confirmed',
                 'phone' => 'required|digits_between:10,15',
                 'role' => 'required'
@@ -52,7 +61,11 @@ class RegisterController extends Controller
                 'password' => Hash::make($validatedData['password']),
                 'phone' => $validatedData['phone'],
             ]);
-            return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
+            event(new Registered($vendor));
+            auth('vendors')->login($vendor);
+            return redirect()->route('vendor.verification.notice', ['lang' => app()->getLocale()])
+                ->with('message', 'A verification link has been sent to your email.');
+            // return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
         }
     }
     /* End Handle Register Form */

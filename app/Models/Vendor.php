@@ -3,17 +3,46 @@
 namespace App\Models;
 
 use App\Notifications\VendorResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\URL;
 
-class Vendor extends Authenticatable
+class Vendor extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable;
-    use HasRoles;
-    use SoftDeletes;
+    use Notifiable, HasRoles, SoftDeletes;
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new class extends VerifyEmail {
+            protected function verificationUrl($notifiable)
+            {
+                return URL::temporarySignedRoute(
+                    'vendor.verification.verify',
+                    now()->addMinutes(60),
+                    [
+                        'id' => $notifiable->getKey(),
+                        'hash' => sha1($notifiable->getEmailForVerification()),
+                        'lang' => app()->getLocale()
+                    ]
+                );
+            }
+            public function toMail($notifiable)
+            {
+                return (new MailMessage)
+                    ->subject('Verify Email Address (Vendor)')
+                    ->line('Click the button below to verify your email address.')
+                    ->action('Verify Email Address', $this->verificationUrl($notifiable))
+                    ->line('If you did not create an account, no further action is required.');
+            }
+        });
+    }
+
     protected $fillable = [
         'name',
         'email',

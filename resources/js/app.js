@@ -1,7 +1,7 @@
 // Js for Create Role Page In Admin Dashboard
 let guardName = document.getElementById('guard_name');
 if(guardName){
-    document.getElementById('guard_name').addEventListener('change', function() {
+    guardName.addEventListener('change', function() {
         let selectedGuard = this.value;
 
         // hide all permission groups

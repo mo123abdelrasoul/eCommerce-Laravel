@@ -3,122 +3,77 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RoleStoreRequest;
+use App\Http\Requests\RoleUpdateRequest;
+use App\Models\Role;
+use App\Services\RoleService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    public function index()
+    protected $service;
+
+    public function __construct(RoleService $service)
     {
-        $search = request('search');
-        $roles = Role::when($search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%");
-        })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $this->service = $service;
+    }
+
+    public function index(Request $request)
+    {
+        $roles = $this->service->list($request->get('search'));
         return view('admin.roles.index', compact('roles'));
     }
 
     public function create()
     {
-        $guards = array_keys(config('auth.guards'));
-        $permissions = Permission::all()->groupBy('guard_name');
+        $guards = $this->service->getGuards();
+        $permissions = \Spatie\Permission\Models\Permission::all()->groupBy('guard_name');
         return view('admin.roles.create', compact('permissions', 'guards'));
     }
 
-    public function store($lang, Request $request)
+    public function store(RoleStoreRequest $request)
     {
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('roles')->where(function ($query) use ($request) {
-                    return $query->where('guard_name', $request->guard_name);
-                })
-            ],
-            'guard_name' => [
-                'required',
-                'string',
-                Rule::in(array_keys(config('auth.guards')))
-            ],
-            'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,name'
-        ]);
         try {
-            $role = Role::create([
-                'name' => $validated['name'],
-                'guard_name' => $validated['guard_name']
-            ]);
-            $role->syncPermissions($validated['permissions']);
+            $this->service->create($request->validated());
             return back()->with('success', 'Role added successfully!');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Failed to add role. Please try again' . $e);
+            return back()->with('error', 'Failed to add role. Please try again.');
         }
     }
 
     public function edit($lang, $id)
     {
-        $role = Role::where('id', $id)->first();
-        $guards = array_keys(config('auth.guards'));
-        $permissions = Permission::where('guard_name', $role->guard_name)->get();
+        $role = $this->service->find($id);
+        $guards = $this->service->getGuards();
+        $permissions = $this->service->getPermissionsByGuard($role->guard_name);
         $rolePermissions = $role->permissions()->pluck('id')->toArray();
         return view('admin.roles.edit', compact('role', 'guards', 'permissions', 'rolePermissions'));
     }
 
-    public function getPermissions($lang, $guard)
+    public function update($lang, $role, RoleUpdateRequest $request)
     {
-        $permissions = Permission::where('guard_name', $guard)->get();
-        return response()->json($permissions);
-    }
-
-    public function update($lang, Request $request, $id)
-    {
-        $role = Role::findOrFail($id);
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('roles')->ignore($role->id)->where(function ($query) use ($request) {
-                    return $query->where('guard_name', $request->guard_name);
-                })
-            ],
-            'guard_name' => [
-                'required',
-                'string',
-                Rule::in(array_keys(config('auth.guards')))
-            ],
-            'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,id'
-        ]);
         try {
-            $validated['permissions'] = Permission::whereIn('id', $validated['permissions'])
-                ->where('guard_name', $validated['guard_name'])
-                ->pluck('id')
-                ->toArray();
-            $role->update([
-                'name' => $validated['name'],
-                'guard_name' => $validated['guard_name']
-            ]);
-            $role->syncPermissions($validated['permissions']);
+            $this->service->update($role, $request->validated());
             return back()->with('success', 'Role updated successfully!');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Failed to update the role. Please try again' . $e);
+            return back()->with('error', 'Failed to update the role. Please try again.');
         }
     }
 
     public function destroy($lang, $id)
     {
-        $role = Role::findOrFail($id);
         try {
-            $role->delete();
+            $role = $this->service->find($id);
+            $this->service->delete($role);
             return back()->with('success', 'Role deleted successfully!');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Failed to delete the role. Please try again.');
         }
+    }
+
+    public function getPermissions($lang, $guard)
+    {
+        $permissions = $this->service->getPermissionsByGuard($guard);
+        return response()->json($permissions);
     }
 }

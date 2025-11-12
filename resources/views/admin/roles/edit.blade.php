@@ -40,9 +40,7 @@
                         method="POST">
                         @csrf
                         @method('PUT')
-
                         <div class="row">
-
                             <!-- Role Name -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Role Name</label>

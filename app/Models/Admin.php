@@ -11,9 +11,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Admin extends Authenticatable
 {
-    use Notifiable;
-    use HasRoles;
-    use SoftDeletes;
+    use Notifiable, HasRoles, SoftDeletes;
+
     protected $guard_name = 'admins';
     protected $fillable = [
         'name',

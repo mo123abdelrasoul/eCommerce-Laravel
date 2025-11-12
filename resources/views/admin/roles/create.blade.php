@@ -70,9 +70,10 @@
 
                         </div>
 
-                        <!-- Permissions (Hidden by default) -->
+                        <!-- Permissions Section (Hidden by default) -->
                         <div id="permissions_section" class="col-12" style="display:none;">
                             <label class="form-label">Assign Permissions</label>
+
                             @foreach ($permissions as $guard => $group)
                                 <div class="permissions-group" data-guard="{{ $guard }}" style="display:none;">
                                     <div class="row mt-2">
@@ -90,27 +91,34 @@
                                     </div>
                                 </div>
                             @endforeach
+
                             @error('permissions')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        @error('permissions')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Save Role
-                            </button>
-                        </div>
-
                 </div>
-
-
-                </form>
-
+                @error('permissions')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
+
+            @error('permissions')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Save Role
+                </button>
+            </div>
+
         </div>
+
+
+        </form>
+
+    </div>
+    </div>
     </div>
     </div>
 @endsection

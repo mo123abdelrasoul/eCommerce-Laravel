@@ -36,9 +36,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($shipping_methods as $method)
+                            @forelse ($shippingMethods as $method)
                                 @php
-                                    $vendor_method = $vendor_methods->firstWhere('id', $method->id);
+                                    $vendor_method = $vendorMethods->firstWhere('id', $method->id);
                                 @endphp
                                 <tr>
                                     <td>

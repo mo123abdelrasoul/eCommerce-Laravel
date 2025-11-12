@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Vendor\Wallet;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Services\WalletService;
 
 class WalletController extends Controller
 {
@@ -16,23 +16,9 @@ class WalletController extends Controller
         });
     }
 
-    public function index()
+    public function index(WalletService $walletService)
     {
-        $transactions = $this->vendor->walletTransaction()->latest()->paginate(10);
-        $totalCredits = $this->vendor->walletTransaction()->where('type', 'credit')->sum('amount');
-        $totalDebits = $this->vendor->walletTransaction()->where('type', 'debit')->sum('amount');
-        $balance = $totalCredits + $totalDebits;
-        $pendingEarnings = Order::where('vendor_id', $this->vendor->id)
-            ->where(function ($q) {
-                $q->where('status', '!=', 'completed')
-                    ->orWhere('payment_status', '!=', 'paid');
-            })
-            ->sum('total_amount');
-        return view('vendor.wallet.index', compact(
-            'transactions',
-            'totalCredits',
-            'totalDebits',
-            'balance'
-        ));
+        $data = $walletService->getVendorWalletSummary($this->vendor);
+        return view('vendor.wallet.index', $data);
     }
 }

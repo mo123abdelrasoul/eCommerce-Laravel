@@ -81,10 +81,10 @@ class CheckoutController extends Controller
             'payment_method' => 'required|integer'
         ]);
         $checkout = $this->checkoutService->handle($checkoutData, $cart);
-
         if (isset($checkout['success']) && $checkout['success'] === false) {
             return back()
-                ->with('error', $checkout['message'] ?? 'Something went wrong.');
+                ->with('error', true)
+                ->with('message', $checkout['message'] ?? 'Something went wrong.');
         }
         if (isset($checkout['redirect_url'])) {
             return redirect()->away($checkout['redirect_url']);

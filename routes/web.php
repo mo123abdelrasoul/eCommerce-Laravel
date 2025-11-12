@@ -45,6 +45,9 @@ use App\Http\Controllers\Vendor\Shipping\ShippingMethodController as VendorShipp
 use App\Http\Controllers\Vendor\Shipping\ShippingRateController as VendorShippingRateController;
 use App\Http\Controllers\Vendor\Wallet\WalletController as VendorWalletController;
 use App\Http\Controllers\Vendor\Wallet\Withdraw\WithdrawController as VendorWithdrawController;
+use App\Http\Controllers\Vendor\Auth\EmailVerificationController as VendorEmailVerificationController;
+use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
+
 
 // Customer Controllers
 use App\Http\Controllers\Customer\Auth\LoginController as CustomerLoginController;
@@ -53,7 +56,6 @@ use App\Http\Controllers\Customer\Auth\ResetPasswordController as CustomerResetP
 use App\Http\Controllers\Customer\Cart\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\Checkout\CheckoutController as CustomerCheckoutController;
 use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippingController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +79,12 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
         ->name('register');
     Route::post('/register', [RegisterController::class, 'registerForm'])
         ->name('registerForm');
+
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/', [CustomerLoginController::class, 'index']);
+    });
+
 
     // Socialite
     Route::get('auth/google', [SocialiteGoogleController::class, 'redirect'])
@@ -130,6 +138,20 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
             ->name('password.reset');
         Route::post('password/reset', [VendorResetPasswordController::class, 'reset'])
             ->name('password.update');
+
+
+        // Email Verification
+        Route::get('email/verify', [VendorEmailVerificationController::class, 'notice'])
+            ->middleware('auth:vendors')
+            ->name('verification.notice');
+
+        Route::get('email/verify/{id}/{hash}', [VendorEmailVerificationController::class, 'verify'])
+            ->middleware(['auth:vendors', 'signed'])
+            ->name('verification.verify');
+
+        Route::post('email/verification-notification', [VendorEmailVerificationController::class, 'resend'])
+            ->middleware(['auth:vendors', 'throttle:6,1'])
+            ->name('verification.send');
     });
 
     /*
@@ -200,7 +222,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
         Route::prefix('vendor')->name('vendor.')->group(function () {
             Route::post('logout', [VendorLoginController::class, 'logout'])
                 ->name('logout.submit');
-            Route::get('dashboard', [VendorLoginController::class, 'dashboard'])
+            Route::get('dashboard', [VendorDashboardController::class, 'index'])
                 ->name('dashboard')
                 ->middleware('check.vendor.permission:manage dashboard');
 
@@ -268,6 +290,11 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
             Route::get('/admins/{admin}/roles', [AdminController::class, 'assignRoleForm'])->name('admins.assignRoleForm');
             Route::post('/admins/{admin}/roles', [AdminController::class, 'assignRole'])->name('admins.assignRole');
 
+            Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])->name('roles.getPermissions');
+            Route::resource('permissions', AdminPermissionController::class)->middleware('check.admin.permission:Manage Permissions');
+            Route::resource('roles', AdminRoleController::class)->middleware('check.admin.permission:Manage Roles')->except('show');
+            Route::get('vendors/{id}/assign-role', [AdminVendorController::class, 'showAssignRoleForm'])->name('vendors.assignRoleForm');
+            Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])->name('vendors.assignRole');
 
             Route::post('logout', [AdminLoginController::class, 'logout'])
                 ->name('logout.submit');
@@ -304,12 +331,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 ->except(['create', 'store'])
                 ->middleware('check.admin.permission:manage orders');
 
-            Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])->name('roles.getPermissions');
-            Route::resource('roles', AdminRoleController::class)->middleware('check.admin.permission:Manage Roles');
-            Route::resource('permissions', AdminPermissionController::class)->middleware('check.admin.permission:Manage Permissions');
 
-            Route::get('vendors/{id}/assign-role', [AdminVendorController::class, 'showAssignRoleForm'])->name('vendors.assignRoleForm');
-            Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])->name('vendors.assignRole');
 
 
             // Profile

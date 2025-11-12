@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.admin.permission' => \App\Http\Middleware\CheckAdminPermission::class,
             'check.vendor.permission' => \App\Http\Middleware\CheckVendorPermission::class,
             'check.customer.permission' => \App\Http\Middleware\CheckCustomerPermission::class,
+            'verified.vendor' => \App\Http\Middleware\EnsureVendorIsVerified::class,
         ]);
         $middleware->group('web', [
             \Illuminate\Session\Middleware\StartSession::class,

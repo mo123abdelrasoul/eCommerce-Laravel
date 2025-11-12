@@ -4,6 +4,12 @@
 
 @section('content')
     <div class="container-fluid">
+        {{-- Flash Message --}}
+        @if (session('message'))
+            <div class="alert alert-success mb-3">
+                {{ session('message') }}
+            </div>
+        @endif
         <!-- Profile Header -->
         <div class="card card-primary card-outline">
             <div class="card-body box-profile">
@@ -18,6 +24,20 @@
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
                         <b>Email</b> <span class="float-right">{{ $vendor->email }}</span>
+                        @if (!$vendor->hasVerifiedEmail())
+                            <span class="badge bg-danger">Not verified</span>
+
+                            <form method="POST" action="{{ route('vendor.verification.send', app()->getLocale()) }}"
+                                class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-2">
+                                    Verify Now
+                                </button>
+                            </form>
+                        @else
+                            <span class="badge bg-success">Verified</span>
+                        @endif
+
                     </li>
                     <li class="list-group-item">
                         <b>Phone</b> <span class="float-right">{{ $vendor->phone ?? 'N/A' }}</span>

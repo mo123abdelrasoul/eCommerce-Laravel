@@ -8,6 +8,12 @@
             <div class="app-content-header">
                 <!--begin::Container-->
                 <div class="container-fluid">
+                    {{-- Flash Message --}}
+                    @if (session('message'))
+                        <div class="alert alert-success mb-3">
+                            {{ session('message') }}
+                        </div>
+                    @endif
                     <!--begin::Row-->
                     <div class="row">
                         <div class="col-sm-6">

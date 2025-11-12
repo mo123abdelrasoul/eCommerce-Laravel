@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderAmountService;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\OrderItemService;
 
 class OrderService extends Controller
 {
@@ -19,12 +21,15 @@ class OrderService extends Controller
             if (empty($vendorCart['products'])) {
                 throw new \Exception('No vendor products found in cart.');
             }
-            $paymentMethodName = $this->getPaymentMethodName($checkoutData['payment_method']);
+            $paymentMethodService = new PaymentMethodService();
+            $paymentMethodName = $paymentMethodService->getPaymentMethodCode($checkoutData['payment_method']);
             $userId = Auth::id();
-            $shippingAddress = $this->prepareShippingAddress($checkoutData);
+            $shippingAddressService = new ShippingAddressService();
+            $shippingAddress = $shippingAddressService->prepare($checkoutData);
             $orders = [];
             foreach ($vendorCart['products'] as $vendorId => $products) {
-                $orderNumber = $this->uniqueNumber();
+                $orderNumberService = new OrderNumberGeneratorService();
+                $orderNumber = $orderNumberService->generate();
                 $orders[] = $this->createVendorOrder(
                     $vendorId,
                     $products,
@@ -50,21 +55,7 @@ class OrderService extends Controller
             throw $e;
         }
     }
-    public function getPaymentMethodName($paymentMethodId)
-    {
-        return PaymentMethod::where('id', $paymentMethodId)->value('code')
-            ?? throw new \Exception('Payment method not found.');
-    }
-    private function prepareShippingAddress($checkoutData)
-    {
-        return
-            [
-                "city" => $checkoutData['city'],
-                "street_number" => $checkoutData['street_number'],
-                "street_name" => $checkoutData['street_name'],
-                "zip" => $checkoutData['zip_code']
-            ];
-    }
+
     private function createVendorOrder(
         $vendorId,
         $products,
@@ -77,62 +68,31 @@ class OrderService extends Controller
         $userId,
         $shippingAddress,
     ) {
-        $totalCartAmount = array_sum($vendorCart['totals']);
-        $discount = $coupon['discount'];
-        $couponVendorId = $coupon['vendor_id'];
-        $shippingCost = $shipping['rate'][$vendorId] ?? 0;
-        $cartAmount = $vendorCart['totals'][$vendorId];
-        $totalWeight = $shipping['total_weights'][$vendorId] ?? 0;
-        $vendorDiscount = 0;
-        if ($couponVendorId === null && $totalCartAmount > 0) {
-            $vendorDiscount = ($discount * ($cartAmount / $totalCartAmount));
-        } elseif ($couponVendorId == $vendorId) {
-            $vendorDiscount = $discount;
-        }
-        $totalAmount = ($cartAmount + $shippingCost) - $vendorDiscount;
-
-        if ((isset($coupon['vendor_id']) && $coupon['vendor_id'] == $vendorId) || empty($coupon['vendor_id'])) {
-            $couponId = $coupon['id'] ?? null;
-        } else {
-            $couponId = null;
-        }
-        $order = Order::create([
+        $amountService = new OrderAmountService();
+        $amounts = $amountService->calculateTotal($vendorCart, $coupon, $shipping, $vendorId);
+        $orderCreator = new OrderCreatorService();
+        $order = $orderCreator->create([
             'customer_id' => $userId,
             'order_number' => $orderNumber,
-            'status' => 'pending',
-            'total_amount' => number_format($totalAmount, 2, '.', ''),
-            'payment_status' => 'pending',
+            'total_amount' => $amounts['total_amount'],
             'payment_method' => $paymentMethodName,
-            'shipping_address' => json_encode($shippingAddress),
-            'billing_address' => json_encode($shippingAddress),
-            'shipping_cost' => number_format($shippingCost, 2, '.', ''),
-            'total_weight' => $totalWeight,
-            'discount_amount' => number_format($vendorDiscount, 2, '.', ''),
-            'tax_amount' => 0,
+            'shipping_address' => $shippingAddress,
+            'billing_address' => $shippingAddress,
+            'shipping_cost' => $amounts['shipping_cost'],
+            'total_weight' => $amounts['total_weight'],
+            'discount_amount' => $amounts['discount_amount'],
             'notes' => $checkoutData['notes'] ?? null,
             'vendor_id' => $vendorId,
-            'sub_total' => $cartAmount,
+            'sub_total' => $amounts['sub_total'],
             'shipping_method_id' => $checkoutData['shipping_method'],
-            'coupon_id' => $couponId,
+            'coupon_id' => $amounts['coupon_id'] ?? null,
         ]);
-        foreach ($products as $item) {
-            $order->items()->create([
-                'product_id' => $item['id'],
-                'product_name' => $item['name'],
-                'product_price' => $item['discountedPrice'],
-                'quantity' => $item['quantity'],
-                'total_price' => $item['discountedPrice'] * $item['quantity'],
-            ]);
-        }
+
+        $orderItemService = new OrderItemService();
+        $orderItemService->createItems($order, $products);
         return $order;
     }
-    private function uniqueNumber()
-    {
-        do {
-            $number = 'ORD-' . mt_rand(1000, 9999);
-        } while (Order::where('order_number', $number)->exists());
-        return $number;
-    }
+
     private function calculateTotalAmount($orders)
     {
         $totalAmount = 0;
