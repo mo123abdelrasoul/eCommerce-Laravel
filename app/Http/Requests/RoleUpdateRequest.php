@@ -16,13 +16,14 @@ class RoleUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $role = Role::findOrFail($this->route('id'));
+        $roleId = $this->route('role');
+        // dd($roleId, $this->guard_name);
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('roles')->ignore($role->id)->where(function ($query) {
+                Rule::unique('roles')->ignore($roleId)->where(function ($query) {
                     return $query->where('guard_name', $this->guard_name);
                 })
             ],

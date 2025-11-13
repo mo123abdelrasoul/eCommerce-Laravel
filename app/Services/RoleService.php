@@ -41,19 +41,25 @@ class RoleService
         return $role;
     }
 
-    public function update(Role $role, array $data)
+    public function update($roleId, array $data)
     {
-        $role->update([
-            'name' => $data['name'],
-            'guard_name' => $data['guard_name']
-        ]);
+        $role = Role::findOrFail($roleId);
+
         $permissions = Permission::whereIn('id', $data['permissions'])
             ->where('guard_name', $data['guard_name'])
             ->pluck('id')
             ->toArray();
+
+        $role->update([
+            'name' => $data['name'],
+            'guard_name' => $data['guard_name'],
+        ]);
+
         $role->syncPermissions($permissions);
+
         return $role;
     }
+
 
     public function delete(Role $role)
     {

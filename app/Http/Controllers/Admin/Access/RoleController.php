@@ -8,6 +8,8 @@ use App\Http\Requests\RoleUpdateRequest;
 use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
@@ -50,13 +52,13 @@ class RoleController extends Controller
         return view('admin.roles.edit', compact('role', 'guards', 'permissions', 'rolePermissions'));
     }
 
-    public function update($lang, $role, RoleUpdateRequest $request)
+    public function update($lang, RoleUpdateRequest $request, $id, RoleService $roleService)
     {
         try {
-            $this->service->update($role, $request->validated());
+            $roleService->update($id, $request->validated());
             return back()->with('success', 'Role updated successfully!');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Failed to update the role. Please try again.');
+            return back()->with('error', 'Failed to update the role. Please try again. ' . $e->getMessage());
         }
     }
 

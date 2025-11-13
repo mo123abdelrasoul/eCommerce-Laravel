@@ -74,6 +74,9 @@
                             <div class="mb-3">
                                 <label class="form-label">Assign Permissions</label>
                                 <div class="row" id="edit-permissions-wrapper">
+                                    @error('permissions')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                     @foreach ($permissions as $permission)
                                         <div class="col-md-3 mb-2">
                                             <div class="form-check">
@@ -87,9 +90,6 @@
                                             </div>
                                         </div>
                                     @endforeach
-                                    @error('permissions')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end gap-2">

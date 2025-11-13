@@ -292,7 +292,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
 
             Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])->name('roles.getPermissions');
             Route::resource('permissions', AdminPermissionController::class)->middleware('check.admin.permission:Manage Permissions');
-            Route::resource('roles', AdminRoleController::class)->middleware('check.admin.permission:Manage Roles')->except('show');
+            Route::resource('roles', AdminRoleController::class)->except('show');
             Route::get('vendors/{id}/assign-role', [AdminVendorController::class, 'showAssignRoleForm'])->name('vendors.assignRoleForm');
             Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])->name('vendors.assignRole');
 
