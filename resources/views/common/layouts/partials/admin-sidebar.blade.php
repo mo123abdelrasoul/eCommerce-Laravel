@@ -1,5 +1,5 @@
 <!--begin::Sidebar-->
-<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+<aside class="app-sidebar bg-body-secondary shadow admin" data-bs-theme="dark">
     <!--begin::Sidebar Brand-->
     <div class="sidebar-brand">
         <a href="{{ route('admin.dashboard', app()->getLocale()) }}" class="brand-link">
@@ -26,6 +26,14 @@
                     </a>
                 </li>
 
+
+                <li class="nav-item">
+                    <a href="{{ route($prefix . 'dashboard.analytics', app()->getLocale()) }}"
+                        class="nav-link {{ request()->routeIs($prefix . 'dashboard*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>{{ 'Dashboard Analytics' }}</p>
+                    </a>
+                </li>
 
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'admins.index', app()->getLocale()) }}"

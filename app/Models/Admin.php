@@ -28,8 +28,14 @@ class Admin extends Authenticatable
     {
         $this->notify(new AdminResetPassword($token));
     }
+
     public function chats()
     {
         return $this->hasMany(Chat::class);
+    }
+
+    public function isOnline()
+    {
+        return cache()->has('admin-is-online-' . $this->id);
     }
 }

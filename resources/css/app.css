@@ -14,3 +14,17 @@
 .pagination-container .text-muted {
     padding-right: 10px;
 }
+
+
+/* Vendor Chat */
+
+#chat-window {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+}
+
+#chat-messages {
+    overflow-y: auto;
+    word-break: break-word;
+}

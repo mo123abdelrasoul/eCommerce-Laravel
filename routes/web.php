@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Access\PermissionController as AdminPermissionController;
 use App\Http\Controllers\Admin\Access\RoleController as AdminRoleController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\Analytics\GoogleAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 // Common Controllers
@@ -29,6 +30,7 @@ use App\Http\Controllers\Admin\Shipping\ShippingCityController as AdminShippingC
 use App\Http\Controllers\Admin\Shipping\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\Admin\Shipping\ShippingRegionController as AdminShippingRegionController;
 use App\Http\Controllers\Admin\Chat\ChatController as AdminChatController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\Email\EmailController as AdminEmailController;
 
 // Vendor Controllers
@@ -47,6 +49,7 @@ use App\Http\Controllers\Vendor\Wallet\WalletController as VendorWalletControlle
 use App\Http\Controllers\Vendor\Wallet\Withdraw\WithdrawController as VendorWithdrawController;
 use App\Http\Controllers\Vendor\Auth\EmailVerificationController as VendorEmailVerificationController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
+use App\Http\Controllers\Vendor\Chat\ChatController as VendorChatController;
 
 
 // Customer Controllers
@@ -56,6 +59,7 @@ use App\Http\Controllers\Customer\Auth\ResetPasswordController as CustomerResetP
 use App\Http\Controllers\Customer\Cart\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\Checkout\CheckoutController as CustomerCheckoutController;
 use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippingController;
+use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,8 +68,15 @@ use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippin
 */
 
 Route::get('/{language}/change-language', [LocalizationLanguageController::class, 'changeLanguage'])->name('change.language');
+Broadcast::routes(['middleware' => ['web', 'auth:admins', 'auth:vendors']]);
 
-
+Broadcast::channel('chat.admin.{adminId}', function ($admin, $adminId) {
+    return (int) $admin->id === (int) $adminId;
+});
+Broadcast::channel('chat.vendor.{vendorId}', function ($vendor, $vendorId) {
+    return (int) $vendor->id === (int) $vendorId;
+});
+// Broadcast::routes();
 /*
 |--------------------------------------------------------------------------
 | Public Routes (Register / Login / Socialite / Password Reset)
@@ -73,6 +84,13 @@ Route::get('/{language}/change-language', [LocalizationLanguageController::class
 */
 
 Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
+    Route::get('vendor/chats/vendor/messages', [VendorChatController::class, 'loadMessages'])
+        ->name('vendor.chats.load.messages');
+    Route::post('vendor/chat/send', [VendorChatController::class, 'sendMessage'])
+        ->name('vendor.chat.send.message');
+    Route::post('vendor/chat/mark-read', [VendorChatController::class, 'markLatestMessageAsRead'])
+        ->name('vendor.chat.markRead');
+
 
     // Registration
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])
@@ -277,6 +295,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
         Route::prefix('admin')->name('admin.')->group(function () {
 
 
+            Route::get('/dashboard/analytics', [GoogleAnalyticsController::class, 'dashboard'])->name('dashboard.analytics');
 
             // Admins CRUD
             Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
@@ -298,7 +317,7 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
 
             Route::post('logout', [AdminLoginController::class, 'logout'])
                 ->name('logout.submit');
-            Route::get('dashboard', [AdminLoginController::class, 'dashboard'])
+            Route::get('dashboard', [AdminDashboardController::class, 'index'])
                 ->name('dashboard')
                 ->middleware('check.admin.permission:view dashboard');
 
@@ -380,9 +399,10 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
             });
 
             // Chats
+
             Route::middleware(['check.admin.permission:manage chats'])->group(function () {
                 Route::resource('chats', AdminChatController::class);
-                Route::post('chats/{chat}/send-message', [AdminChatController::class, 'sendMessage'])
+                Route::post('chats/{receiverId}/send', [AdminChatController::class, 'sendMessage'])
                     ->name('chats.send.message');
             });
         });

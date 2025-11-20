@@ -67,11 +67,11 @@
                                     @foreach ($chats as $index => $chat)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $chat['vendor_name'] }}</td>
+                                            <td>{{ $chat['vendor']->name }}</td>
                                             <td>{{ Str::limit($chat['last_message'], 50) }}</td>
                                             <td>{{ \Carbon\Carbon::parse($chat['updated_at'])->diffForHumans() }}</td>
                                             <td>
-                                                <a href="{{ route('admin.chats.show', ['lang' => app()->getLocale(), 'chat' => $chat['id']]) }}"
+                                                <a href="{{ route('admin.chats.show', ['lang' => app()->getLocale(), 'chat' => $chat['vendor_id']]) }}"
                                                     class="btn btn-info btn-sm">
                                                     View
                                                 </a>

@@ -18,11 +18,6 @@ class LoginController extends Controller
         return redirect()->route('admin.dashboard', app()->getLocale());
     }
 
-    public function dashboard()
-    {
-        $admin = Auth::guard('admins')->user();
-        return view('admin.dashboard', compact('admin'));
-    }
     public function login(Request $request)
     {
         $validatedData = $request->validate([

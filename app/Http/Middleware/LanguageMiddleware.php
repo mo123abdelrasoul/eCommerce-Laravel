@@ -19,6 +19,16 @@ class LanguageMiddleware
 
     public function handle(Request $request, Closure $next)
     {
+        $except = [
+            'broadcasting/auth',
+            'broadcasting/*',
+        ];
+
+        foreach ($except as $pattern) {
+            if ($request->is($pattern)) {
+                return $next($request);
+            }
+        }
         $segment = $request->segment(1);
 
         if (!in_array($segment, $this->supported)) {

@@ -98,4 +98,9 @@ class Vendor extends Authenticatable implements MustVerifyEmail
         $debits = $this->walletTransaction()->where('type', 'debit')->sum('amount');
         return $credits + $debits;
     }
+
+    public function isOnline()
+    {
+        return cache()->has('vendor-is-online-' . $this->id);
+    }
 }

@@ -12,7 +12,9 @@ class Chat extends Model
     protected $fillable = [
         'vendor_id',
         'admin_id',
+        'last_message',
         'last_message_at',
+        'is_read'
     ];
     public function vendor()
     {

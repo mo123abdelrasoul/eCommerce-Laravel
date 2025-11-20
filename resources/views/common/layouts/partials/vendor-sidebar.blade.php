@@ -1,5 +1,5 @@
 <!--begin::Sidebar-->
-<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+<aside class="app-sidebar bg-body-secondary shadow vendor" data-bs-theme="dark">
     <!--begin::Sidebar Brand-->
     <div class="sidebar-brand">
         <a href="{{ route('vendor.dashboard', app()->getLocale()) }}" class="brand-link">
@@ -228,3 +228,56 @@
     </div>
 </aside>
 <!--end::Sidebar-->
+
+
+
+
+
+
+
+
+<!-- resources/views/vendor/layouts/app.blade.php أو أي Blade عام للفيندور -->
+@php
+    $isRead = App\Http\Controllers\Vendor\Chat\ChatController::isLatestMessageRead();
+    $vendorId = auth()->guard('vendors')->id();
+@endphp
+<div id="vendor-chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+    <!-- زرار الفتح مع Badge -->
+    <button id="chat-toggle" class="btn btn-primary position-relative rounded-circle"
+        style="width: 60px; height: 60px;">
+        <i class="bi bi-chat-dots fs-4"></i>
+        <span id="chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            0
+        </span>
+    </button>
+
+    <div id="chat-window" class="card shadow"
+        style="width: 300px; height: 400px; display: none; flex-direction: column; margin-top: 10px;">
+        <div class="card-header bg-primary text-white position-relative">
+            <span>Chat with Admin</span>
+            <button id="chat-close" class="btn btn-sm btn-light position-absolute top-50 translate-middle-y"
+                style="right: 8px;">&times;</button>
+        </div>
+
+        <div class="card-body overflow-y-auto" id="chat-messages" style="flex-grow: 1;">
+            <div class="mb-3 text-start chat">
+            </div>
+        </div>
+        <div class="card-footer">
+            <form id="chat-form">
+                @csrf
+                <div class="input-group">
+                    <input type="text" id="chat-input" class="form-control" placeholder="Type a message..."
+                        required>
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const fetchMessagesUrl =
+        "{{ route('vendor.chats.load.messages', ['lang' => app()->getLocale()]) }}";
+    const vendorSendMessageUrl = "{{ route('vendor.chat.send.message', ['lang' => app()->getLocale()]) }}";
+    let vendorId = {{ $vendorId }}
+</script>

@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/js/home.js',
                 'resources/js/checkout.js',
                 'resources/js/cart.js',
+                'resources/js/bootstrap.js',
             ],
             refresh: true,
         }),

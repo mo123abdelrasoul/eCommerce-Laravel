@@ -3,22 +3,32 @@
 @section('title', 'Chat with ' . $chat['vendor_name'])
 
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4>Chat: {{ $chat['vendor_name'] }}</h4>
             <a href="{{ route('admin.chats.index', app()->getLocale()) }}" class="btn btn-secondary btn-sm">← Back</a>
         </div>
 
-        <div class="card">
-            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+        <div class="card" style="display: flex; flex-direction: column; height: 400px;">
+            <div id="chat-messages" class="card-body flex-grow-1 overflow-auto">
                 @foreach ($chat['messages'] as $message)
-                    <div class="mb-3 {{ $message['sender'] === 'admin' ? 'text-start' : 'text-end' }}">
+                    <div class="mb-3 {{ $message['sender'] === 'admin' ? 'text-end' : 'text-start' }}">
                         <div
                             class="d-inline-block p-2 rounded {{ $message['sender'] === 'admin' ? 'bg-primary text-white' : 'bg-light' }}">
                             {{ $message['content'] }}
                         </div>
                         <div class="small text-muted mt-1">
-                            {{ \Carbon\Carbon::parse($message['created_at'])->format('H:i') }}
+                            {{ $message['created_at'] }}
                         </div>
                     </div>
                 @endforeach
@@ -26,11 +36,11 @@
 
             <div class="card-footer bg-light border-0 shadow-sm">
                 <form
-                    action="{{ route('admin.chats.send.message', ['lang' => app()->getLocale(), 'chat' => $chat['id']]) }}"
-                    method="POST" class="d-flex align-items-center gap-2">
+                    action="{{ route('admin.chats.send.message', ['lang' => app()->getLocale(), 'receiverId' => $chat['id'] ?? 1]) }}"
+                    id="admin-send-message" method="POST" class="d-flex align-items-center gap-2">
                     @csrf
                     <div class="flex-grow-1 position-relative">
-                        <input type="text" name="message" class="form-control rounded-pill ps-3 pe-5"
+                        <input type="text" name="message" id="message-input" class="form-control rounded-pill ps-3 pe-5"
                             placeholder="Type your message..." required>
                         <button type="submit"
                             class="btn btn-primary rounded-circle position-absolute end-0 top-50 translate-middle-y px-3 py-2">
@@ -40,5 +50,15 @@
                 </form>
             </div>
         </div>
+
     </div>
 @endsection
+
+
+@push('scripts')
+    <script>
+        let receiverId = {{ $vendorId }};
+        let senderId = {{ $adminId }};
+        const adminSendMessageUrl =
+            "{{ route('admin.chats.send.message', ['lang' => app()->getLocale(), 'receiverId' => $vendorId]) }}";
+    </script>

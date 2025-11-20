@@ -12,7 +12,7 @@
     {{-- Hero Section --}}
     <section class="relative bg-blue-600 text-white py-20">
         <div class="container mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-4">Welcome to MyShop</h2>
+            <h2 class="text-4xl font-bold mb-4">Welcome to MyShops</h2>
             <p class="text-lg mb-6">Find the best products at the best prices</p>
             <a href="/shop" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">
                 Shop Now
@@ -32,7 +32,9 @@
                         <p class="text-gray-600 mb-2">{{ format_currency($product->price) }}</p>
                         <form action="" class="inline">
                             @csrf
-                            <button type="button"
+                            <button
+                                onclick="trackEvent('add_to_cart', { item_id: {{ $product->id }}, value: {{ $product->price }} })"
+                                type="button"
                                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 add-cart-btn"
                                 data-product-id="{{ $product->id }}">Add
                                 to cart
@@ -56,7 +58,9 @@
                         <p class="text-gray-600">{{ format_currency($product->price) }}</p>
                         <form action="" class="inline">
                             @csrf
-                            <button type="button"
+                            <button
+                                onclick="trackEvent('add_to_cart', { item_id: {{ $product->id }}, value: {{ $product->price }} })"
+                                type="button"
                                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 add-cart-btn"
                                 data-product-id="{{ $product->id }}">Add
                                 to cart
