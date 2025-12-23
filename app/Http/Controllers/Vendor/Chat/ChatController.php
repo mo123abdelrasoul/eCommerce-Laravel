@@ -13,18 +13,32 @@ class ChatController extends Controller
     public function loadMessages($lang)
     {
         $vendorId = auth()->guard('vendors')->user()->id;
-        $messages = Message::where('sender_id', $vendorId)
-            ->where('receiver_id', $vendorId)
+        if (!$vendorId) {
+            return response()->json([]);
+        }
+        $messages = Message::where(function ($q) use ($vendorId) {
+            $q->where('sender_id', $vendorId)
+                ->where('sender_type', 'vendor')
+                ->where('receiver_type', 'admin');
+        })
+            ->orWhere(function ($q) use ($vendorId) {
+                $q->where('receiver_id', $vendorId)
+                    ->where('receiver_type', 'vendor')
+                    ->where('sender_type', 'admin');
+            })
             ->orderBy('created_at', 'asc')
             ->get();
-        $messages = $messages->map(function ($m) use ($vendorId) {
-            return [
-                'sender' => $m->sender_type === 'admin' ? 'admin' : 'vendor',
-                'content' => $m->message,
-                'created_at' => $m->created_at->timezone('Africa/Cairo')->format('H:i A')
-            ];
-        });
-        return response()->json($messages);
+        return response()->json(
+            $messages->map(function ($m) {
+                return [
+                    'sender' => $m->sender_type === 'admin' ? 'admin' : 'vendor',
+                    'content' => $m->message,
+                    'created_at' => $m->created_at
+                        ->timezone('Africa/Cairo')
+                        ->format('h:i A'),
+                ];
+            })
+        );
     }
 
     public function sendMessage(Request $request, $lang)
@@ -55,7 +69,13 @@ class ChatController extends Controller
             broadcast(new MessageSent($message));
             return response()->json([
                 'status' => 'success',
-                'message' => $message
+                'message' => [
+                    'content' => $message->message,
+                    'sender' => 'customer',
+                    'created_at' => $message->created_at
+                        ->timezone('Africa/Cairo')
+                        ->format('h:i A')
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

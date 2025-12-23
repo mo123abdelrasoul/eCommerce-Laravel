@@ -23,7 +23,13 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'paymob' => [
+        'base_url' => env('PAYMOB_BASE_URL', 'https://accept.paymob.com'),
+        'api_key' => env('PAYMOB_API_KEY', ''),
+        'card_integration_id' => env('PAYMOB_CARD_INTEGRATION_ID', '4250566'),
+        'wallet_integration_id' => env('PAYMOB_MOBILE_WALLET_INTEGRATION_ID', '4261378'),
+        'card_iframe_id' => env('PAYMOB_CARD_IFRAME_ID', '791174'),
+    ],
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],

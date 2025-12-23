@@ -55,6 +55,8 @@
 
     @yield('layout-footer')
 
+    @include('common.layouts.partials.customer-chat')
+
     @vite(['resources/js/home.js', 'resources/js/checkout.js', 'resources/js/cart.js'])
     @stack('scripts')
 </body>

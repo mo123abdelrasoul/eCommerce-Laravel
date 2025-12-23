@@ -37,6 +37,7 @@ class CartController extends Controller
         $total = 0;
         foreach ($products as $product) {
             $product->formatted_price = format_currency($product->price);
+            $product->formatted_line_total = format_currency($product->price * $cart[$product->id]);
             $total += $product->price * $cart[$product->id];
         }
         return response()->json([
@@ -83,25 +84,69 @@ class CartController extends Controller
         $productId = $request->product_id;
         $cart = Session::get('cart', []);
         $total = 0;
+        
         if (isset($cart[$productId])) {
             unset($cart[$productId]);
             Session::put('cart', $cart);
-            $products = Product::select('id', 'price')->whereIn('id', array_keys($cart))->get();
-            foreach ($products as $product) {
-                $total += $product->price * $cart[$product->id];
-            }
+        }
+
+        // Always return the updated state even if item wasn't found (just in case)
+        $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys($cart))->get();
+        
+        foreach ($products as $product) {
+            $product->formatted_price = format_currency($product->price);
+            $product->formatted_line_total = format_currency($product->price * $cart[$product->id]);
+            $total += $product->price * $cart[$product->id];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Item deleted successfully!',
+            'cartCount' => count($cart),
+            'cart' => $cart,
+            'products' => $products,
+            'cartTotal' => $total,
+            'formatted' => [
+                'cartTotal' => format_currency($total)
+            ]
+        ]);
+    }
+
+    public function getData($lang)
+    {
+        $cart = Session::get('cart', []);
+        $total = 0;
+        
+        if (empty($cart)) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Item deleted successfully!',
-                'cartCount' => count($cart),
-                'cartTotal' => $total ?? 0
+                'cartCount' => 0,
+                'cart' => [],
+                'products' => [],
+                'cartTotal' => 0,
+                'formatted' => [
+                    'cartTotal' => format_currency(0)
+                ]
             ]);
         }
+
+        $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys($cart))->get();
+        
+        foreach ($products as $product) {
+            $product->formatted_price = format_currency($product->price);
+            $product->formatted_line_total = format_currency($product->price * $cart[$product->id]);
+            $total += $product->price * $cart[$product->id];
+        }
+
         return response()->json([
-            'status' => 'failed',
-            'message' => 'Failed to deleted Item!',
+            'status' => 'success',
             'cartCount' => count($cart),
-            'cartTotal' => $total ?? 0
+            'cart' => $cart,
+            'products' => $products,
+            'cartTotal' => $total,
+            'formatted' => [
+                'cartTotal' => format_currency($total)
+            ]
         ]);
     }
 }

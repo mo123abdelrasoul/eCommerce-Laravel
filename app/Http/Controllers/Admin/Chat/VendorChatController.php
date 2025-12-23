@@ -10,19 +10,29 @@ use App\Models\Vendor;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 
-class ChatController extends Controller
+class VendorChatController extends Controller
 {
     public function index($lang)
     {
         $chats = Chat::with('vendor')->get();
-        return view('admin.chats.index', compact('chats'));
+        return view('admin.chats.vendor.index', compact('chats'));
     }
 
     public function show($lang, $vendorId)
     {
         $adminId = auth()->guard('admins')->id();
-        $messages = Message::where('sender_id', $vendorId)
-            ->where('receiver_id', $vendorId)
+        $messages = Message::where(function ($q) use ($vendorId, $adminId) {
+            $q->where('sender_id', $vendorId)
+                ->where('sender_type', 'vendor')
+                ->where('receiver_id', $adminId)
+                ->where('receiver_type', 'admin');
+        })
+            ->orWhere(function ($q) use ($vendorId, $adminId) {
+                $q->where('sender_id', $adminId)
+                    ->where('sender_type', 'admin')
+                    ->where('receiver_id', $vendorId)
+                    ->where('receiver_type', 'vendor');
+            })
             ->orderBy('created_at', 'asc')
             ->get();
         $chat = [
@@ -36,7 +46,7 @@ class ChatController extends Controller
                 ];
             })->toArray()
         ];
-        return view('admin.chats.show', compact('chat', 'vendorId', 'adminId'));
+        return view('admin.chats.vendor.show', compact('chat', 'vendorId', 'adminId'));
     }
 
 
@@ -65,10 +75,11 @@ class ChatController extends Controller
                     'is_read' => false
                 ]
             );
-            broadcast(new MessageSent($message));
+            broadcast(new MessageSent($message))->toOthers();
             return response()->json([
                 'success' => true,
                 'message' => $message->message,
+                'created_at' => $message->created_at->timezone('Africa/Cairo')->format('h:i A')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -77,44 +88,4 @@ class ChatController extends Controller
             ], 500);
         }
     }
-
-
-
-    // public function sendMessage(Request $request, $lang, $receiverId)
-    // {
-    //     try {
-    //         $validated = $request->validate([
-    //             'message' => 'required|string|max:1000',
-    //         ]);
-    //         $adminId = auth()->guard('admins')->user()->id;
-    //         $message = Message::create([
-    //             'sender_id' => $adminId,
-    //             'sender_type' => 'admin',
-    //             'receiver_id' => $receiverId,
-    //             'receiver_type' => 'vendor',
-    //             'message' => $validated['message']
-    //         ]);
-    //         $chat = Chat::updateOrCreate(
-    //             [
-    //                 'vendor_id' => $receiverId,
-    //                 'admin_id' => $adminId,
-    //             ],
-    //             [
-    //                 'last_message' => $validated['message'],
-    //                 'last_message_at' => $message->created_at,
-    //                 'is_read' => false
-    //             ]
-    //         );
-    //         broadcast(new MessageSent($message));
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'message' => $message
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
 }

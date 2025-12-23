@@ -10,15 +10,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "combindma/laravel-facebook-pixel": "^5.1",
-        "google/analytics-data": "^0.23.1",
+        "combindma/laravel-facebook-pixel": "^5.0",
+        "google/analytics-data": "^0.22.0",
         "google/apiclient": "^2.18",
-        "jeroennoten/laravel-adminlte": "^3.15",
-        "laravel/framework": "^12.0",
+        "jeroennoten/laravel-adminlte": "^3.14",
+        "laravel/framework": "^11.0",
         "laravel/reverb": "^1.0",
-        "laravel/socialite": "^5.23",
-        "laravel/tinker": "^2.10.1",
+        "laravel/socialite": "^5.10",
+        "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
+        "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-permission": "^6.21"
     },
     "require-dev": {
@@ -73,7 +74,7 @@
         }
     },
     "config": {
-        "optimize-autoloader": true,
+        "optimize-autoloader": false,
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
@@ -81,6 +82,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

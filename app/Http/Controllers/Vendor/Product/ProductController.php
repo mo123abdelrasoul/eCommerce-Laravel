@@ -63,6 +63,10 @@ class ProductController extends Controller
             'vendor_id' => 'required|exists:vendors,id',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
+            'weight' => 'nullable|numeric|min:0|max:100000',
+            'width' => 'nullable|numeric|min:0|max:100000',
+            'height' => 'nullable|numeric|min:0|max:100000',
+            'length' => 'nullable|numeric|min:0|max:100000',
         ]);
         $this->productService->create($validated, $request->file('image'));
         return back()->with('success', 'Product added successfully! Please wait for admin approval.');
@@ -112,6 +116,10 @@ class ProductController extends Controller
             'discount' => 'nullable|numeric|min:0|max:100',
             'tags' => 'nullable|string',
             'description' => 'nullable|string',
+            'weight' => 'nullable|numeric|min:0|max:100000',
+            'width' => 'nullable|numeric|min:0|max:100000',
+            'height' => 'nullable|numeric|min:0|max:100000',
+            'length' => 'nullable|numeric|min:0|max:100000',
         ]);
 
         $this->productService->update($product, $validated, $request->file('image'));

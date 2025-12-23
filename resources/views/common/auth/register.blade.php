@@ -1,152 +1,157 @@
-@extends('vendor.layouts.app')
-@section('hideLayout', true)
-@section('title', 'Register')
+@extends('customer.layouts.app')
+
+@section('title', 'Register - Mstore24')
 
 @section('content')
-
-    <div class="register-box">
-        <div class="register-logo">
-            <a href="{{ route('home', app()->getLocale()) }}"><b>Your</b>App</a>
+    <div class="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Create a new account
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Or
+                <a href="{{ route('user.login', app()->getLocale()) }}" class="font-medium text-primary hover:text-primary-dark">
+                    sign in to your existing account
+                </a>
+            </p>
         </div>
-        <!-- /.register-logo -->
 
-        <div class="card">
-            <div class="card-body register-card-body">
-                <p class="register-box-msg">Register a new membership</p>
-
-                <form action="{{ route('registerForm', app()->getLocale()) }}" method="POST">
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form class="space-y-6" action="{{ route('registerForm', app()->getLocale()) }}" method="POST">
                     @csrf
 
                     @if (session('success'))
-                        <div class="alert alert-success alert-dismissible">
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            {{ session('success') }}
+                        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
-                    <!-- Name Field -->
-                    <div class="input-group mb-3">
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                            placeholder="Full Name" value="{{ old('name') }}" required>
-                        <div class="input-group-text">
-                            <span class="bi bi-person"></span>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">
+                            Full Name
+                        </label>
+                        <div class="mt-1">
+                            <input id="name" name="name" type="text" autocomplete="name" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('name') }}">
                         </div>
                         @error('name')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Email Field -->
-                    <div class="input-group mb-3">
-                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                            placeholder="Email" value="{{ old('email') }}" required>
-                        <div class="input-group-text">
-                            <span class="bi bi-envelope"></span>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">
+                            Email address
+                        </label>
+                        <div class="mt-1">
+                            <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('email') }}">
                         </div>
                         @error('email')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Phone Field -->
-                    <div class="input-group mb-3">
-                        <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                            placeholder="Phone Number" value="{{ old('phone') }}" required>
-                        <div class="input-group-text">
-                            <span class="bi bi-telephone"></span>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">
+                            Phone Number
+                        </label>
+                        <div class="mt-1">
+                            <input id="phone" name="phone" type="tel" autocomplete="tel" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('phone') }}">
                         </div>
                         @error('phone')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Password Field -->
-                    <div class="input-group mb-3">
-                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
-                            placeholder="Password" required>
-                        <div class="input-group-text">
-                            <span class="bi bi-lock-fill"></span>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <div class="mt-1">
+                            <input id="password" name="password" type="password" autocomplete="new-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
                         </div>
                         @error('password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Confirm Password Field -->
-                    <div class="input-group mb-3">
-                        <input type="password" name="password_confirmation" class="form-control"
-                            placeholder="Confirm Password" required>
-                        <div class="input-group-text">
-                            <span class="bi bi-lock"></span>
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+                            Confirm Password
+                        </label>
+                        <div class="mt-1">
+                            <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
                         </div>
                     </div>
 
-                    <!-- Role Selection -->
-                    <div class="mb-3">
-                        <p class="mb-2">Role:</p>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="role" value="customer" id="customer"
-                                {{ old('role') == 'customer' ? 'checked' : '' }} required>
-                            <label class="form-check-label" for="customer">
-                                <i class="bi bi-person-check me-1"></i>Customer
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="role" value="vendor" id="vendor"
-                                {{ old('role') == 'vendor' ? 'checked' : '' }} required>
-                            <label class="form-check-label" for="vendor">
-                                <i class="bi bi-shop me-1"></i>Vendor
-                            </label>
-                        </div>
-                        @error('role')
-                            <div class="text-danger small">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!--begin::Row-->
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="agreeTerms" required>
-                                <label class="form-check-label" for="agreeTerms">
-                                    I agree to the <a href="#" class="text-decoration-none">terms</a>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <input id="customer" name="role" type="radio" value="customer" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" {{ old('role', 'customer') == 'customer' ? 'checked' : '' }}>
+                                <label for="customer" class="ml-2 block text-sm text-gray-700">
+                                    Customer
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="vendor" name="role" type="radio" value="vendor" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" {{ old('role') == 'vendor' ? 'checked' : '' }}>
+                                <label for="vendor" class="ml-2 block text-sm text-gray-700">
+                                    Vendor
                                 </label>
                             </div>
                         </div>
-                        <!-- /.col -->
-                        <div class="col-4">
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Register</button>
-                            </div>
-                        </div>
-                        <!-- /.col -->
+                        @error('role')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <!--end::Row-->
+
+                    <div class="flex items-center">
+                        <input id="agreeTerms" name="agreeTerms" type="checkbox" required class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="agreeTerms" class="ml-2 block text-sm text-gray-900">
+                            I agree to the <a href="{{ route('terms', app()->getLocale()) }}" class="font-medium text-primary hover:text-primary-dark">terms</a>
+                        </label>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Register
+                        </button>
+                    </div>
                 </form>
 
-                <!-- Social Auth Links (Optional) -->
-                <div class="social-auth-links text-center mb-3 d-grid gap-2">
-                    <p>- OR -</p>
-                    {{-- <a href="#" class="btn btn-primary">
-                        <i class="bi bi-facebook me-2"></i> Register using Facebook
-                    </a> --}}
-                    <a href="{{ route('google.redirect', ['lang' => app()->getLocale()]) }}?type=user"
-                        class="btn btn-danger">
-                        <i class="bi bi-google me-2"></i> Register using Google+
-                    </a>
-                </div>
-                <!-- /.social-auth-links -->
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">
+                                Or continue with
+                            </span>
+                        </div>
+                    </div>
 
-                <p class="mb-0 text-center">
-                    <a href="{{ route('user.login', app()->getLocale()) }}" class="text-center">I already have a
-                        membership</a>
-                </p>
+                    <div class="mt-6 grid grid-cols-1 gap-3">
+                        <div>
+                            <a href="{{ route('google.redirect', ['lang' => app()->getLocale()]) }}?type=user" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Sign in with Google</span>
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.133 8.053-3.24 2.08-2.16 2.72-5.333 2.72-8.053 0-.72-.067-1.413-.187-2.08h-10.58z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- /.register-card-body -->
         </div>
     </div>
-    <!-- /.register-box -->
-
 @endsection
-
-@section('body-class', 'register-page bg-body-secondary')

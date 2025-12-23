@@ -12,20 +12,21 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
 {
     protected $api_key;
     protected $integrations_id;
-    protected $base_url;
+    // protected $base_url;
     protected array $header = [];
     protected $auth_token;
     public function __construct()
     {
-        $this->base_url = env('PAYMOB_BASE_URL');
-        $this->api_key = env('PAYMOB_API_KEY');
+        $this->base_url = config('services.paymob.base_url');
+        $this->api_key = config('services.paymob.api_key');
         $this->header = [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
         ];
+        // dd($this->base_url, $this->api_key);
         $this->integrations_id = [
-            'card' => env('PAYMOB_CARD_INTEGRATION_ID', '4250566'),
-            'wallet' => env('PAYMOB_MOBILE_WALLET_INTEGRATION_ID', '4261378'),
+            'card' => config('services.paymob.card_integration_id'),
+            'wallet' => config('services.paymob.wallet_integration_id'),
         ];
     }
 

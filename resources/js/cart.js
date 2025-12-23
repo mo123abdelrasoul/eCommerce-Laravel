@@ -1,12 +1,13 @@
 console.log('Cart JS Loaded');
+import './bootstrap';
 
 // ======================
 // 🔹 Helpers
 // ======================
 
 function getCSRFToken() {
-    const input = document.querySelector('input[name="_token"]');
-    return input ? input.value : '';
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
 }
 
 function parsePrice(value) {
@@ -22,9 +23,55 @@ function updateText(selector, value) {
 // 🔹 UI Handlers
 // ======================
 
-function openCart() {
+// Fetch fresh cart data from server
+async function fetchCartData() {
+    try {
+        const url = window.getCartDataUrl;
+        if (!url) {
+            console.error('getCartDataUrl is not defined');
+            return null;
+        }
+        console.log('Fetching cart data from:', url);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCSRFToken()
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            console.error('Cart data fetch failed with status:', response.status);
+            return null;
+        }
+
+        const data = await response.json();
+        console.log('Cart data received:', data);
+
+        if (data.status === 'success') {
+            return data;
+        }
+    } catch (error) {
+        console.error('Error fetching cart data:', error);
+    }
+    return null;
+}
+
+async function openCart(skipFetch = false) {
+    // ✅ OPEN SIDEBAR IMMEDIATELY - No delay!
     document.getElementById('cartSidebar').classList.add('active');
     document.getElementById('cartOverlay').classList.add('active');
+
+    // ✅ THEN fetch fresh data in the background (if needed)
+    if (!skipFetch) {
+        const cartData = await fetchCartData();
+        if (cartData) {
+            updateCartCount(cartData.cartCount);
+            renderCartItems(cartData.products, cartData.cart, cartData.formatted.cartTotal);
+        }
+    }
 }
 
 function closeCart() {
@@ -32,21 +79,52 @@ function closeCart() {
     document.getElementById('cartOverlay').classList.remove('active');
 }
 
+function toggleCart() {
+    const sidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('cartOverlay');
+
+    if (sidebar.classList.contains('active')) {
+        // Cart is open, close it
+        closeCart();
+    } else {
+        // Cart is closed, open it
+        openCart();
+    }
+}
+
 function renderCartItems(products, cart, formattedCartTotal) {
     const cartContent = document.querySelector('#cartSidebar .cart-content');
     if (!cartContent) return;
+
     cartContent.innerHTML = '';
+
+    if (!products || products.length === 0) {
+        cartContent.innerHTML = '<p class="text-center text-gray-500">Your cart is empty.</p>';
+        updateText('#cartTotalPrice', formattedCartTotal);
+        return;
+    }
+
     products.forEach(product => {
         const qty = cart[product.id] || 0;
         const itemDiv = document.createElement('div');
         itemDiv.classList.add('cart-item');
+        itemDiv.dataset.productId = product.id;
+
+        // Construct image URL - assuming storage is at root
+        const imageUrl = `${window.location.origin}/storage/${product.image}`;
+
         itemDiv.innerHTML = `
-            <img src="storage/${product.image}" alt="${product.name}">
+            <img src="${imageUrl}" alt="${product.name}">
             <div class="cart-item-details">
                 <h4 class="cart-item-title">${product.name}</h4>
                 <p class="cart-item-qty">Quantity: ${qty}</p>
-                <p class="cart-item-price">${product.formatted_price}</p>
+                <p class="cart-item-price">${product.formatted_line_total || product.formatted_price}</p>
             </div>
+            <button class="remove-from-sidebar" onclick="removeFromSidebar(${product.id})" aria-label="Remove item">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         `;
         cartContent.appendChild(itemDiv);
     });
@@ -54,18 +132,53 @@ function renderCartItems(products, cart, formattedCartTotal) {
 }
 
 function updateCartCount(count) {
-    updateText('.cart-count', count);
+    // Update all elements with cart-count class
+    const cartCountElements = document.querySelectorAll('.cart-count');
+    cartCountElements.forEach(el => {
+        el.textContent = count;
+        // Always show badge with count (show 0 if empty)
+        el.classList.remove('d-none', 'hidden');
+    });
+
+    // Also update by ID for the header badge specifically
+    const cartBadge = document.getElementById('cart-badge');
+    if (cartBadge) {
+        cartBadge.textContent = count;
+        // Always visible, even if 0
+        cartBadge.classList.remove('d-none', 'hidden');
+    }
 }
 
 function handleEmptyCart() {
     const container = document.querySelector('.cart-container');
     if (container) {
+        // Get the shop URL (replace 'en' with current language)
+        const lang = document.documentElement.lang || 'en';
+        const shopUrl = `${window.location.origin}/${lang}/shop`;
+
+        // Replace entire container content (removes title and shows empty state)
         container.innerHTML = `
-            <div class="text-center py-5">
-                <div class="alert alert-danger">Your cart is empty.</div>
-                <a href="${window.location.origin + '/' + document.documentElement.lang}" class="btn btn-primary btn-lg">
-                    Continue Shopping
-                </a>
+            <div class="flex items-center justify-center min-h-[60vh]">
+                <div class="text-center max-w-md mx-auto px-4">
+                    <!-- Cart Icon -->
+                    <div class="mb-8">
+                        <svg class="w-32 h-32 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Text Content -->
+                    <h2 class="text-3xl font-bold text-gray-900 mb-3">Your Cart is Empty</h2>
+                    <p class="text-gray-500 mb-8 text-lg">Looks like you haven't added anything to your cart yet. Start shopping to find amazing products!</p>
+
+                    <!-- Button -->
+                    <a href="${shopUrl}" class="inline-flex items-center justify-center px-8 py-4 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        Start Shopping
+                    </a>
+                </div>
             </div>
         `;
     }
@@ -91,7 +204,7 @@ async function updateCartQuantities() {
         return false;
     }
 
-    await fetch(updateCartQuantity, {
+    await fetch(window.updateCartQuantity, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items })
@@ -101,27 +214,58 @@ async function updateCartQuantities() {
 }
 
 async function addToCart(productId) {
+    console.log('Adding to cart:', productId);
     const csrf = getCSRFToken();
-    const response = await fetch(addToCartUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrf
-        },
-        credentials: 'include',
-        body: JSON.stringify({ product_id: productId, quantity: 1 })
-    });
-    const data = await response.json();
-    if (data.status === 'success') {
-        updateCartCount(data.cartCount);
-        renderCartItems(data.products, data.cart, data.formatted.cartTotal);
-        openCart();
+    if (!window.addToCartUrl) {
+        console.error('addToCartUrl is not defined');
+        return;
+    }
+
+    // ⚡ INSTANT UI UPDATES - No waiting for server!
+
+    // 1. Get current cart count from badge
+    const currentCount = parseInt(document.querySelector('.cart-count')?.textContent || '0');
+    const optimisticCount = currentCount + 1;
+
+    // 2. Update cart count IMMEDIATELY (optimistic update)
+    updateCartCount(optimisticCount);
+    // 4. NOW send AJAX request in background
+    console.log('Requesting URL:', window.addToCartUrl);
+
+    try {
+        const response = await fetch(window.addToCartUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            },
+            credentials: 'include',
+            body: JSON.stringify({ product_id: productId, quantity: 1 })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // 4. Update with REAL data from server
+            updateCartCount(data.cartCount);
+            renderCartItems(data.products, data.cart, data.formatted.cartTotal);
+
+            // 5. Open sidebar AFTER rendering (product already visible!)
+            openCart(true);
+        } else {
+            console.error('Add to cart failed:', data);
+            // Revert optimistic update on failure
+            updateCartCount(currentCount);
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        // Revert optimistic update on error
+        updateCartCount(currentCount);
     }
 }
 
 async function removeFromCart(productId, button) {
     const csrf = getCSRFToken();
-    const response = await fetch(`${removeCartUrl}/${productId}`, {
+    const response = await fetch(`${window.removeCartUrl}/${productId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -136,10 +280,78 @@ async function removeFromCart(productId, button) {
         if (row) row.remove();
 
         updateCartCount(data.cartCount);
-        updateText(".cartTotal h3", `Grand Total: ${data.cartTotal.toFixed(2)}`);
+        // Update main cart total if on cart page
+        const mainCartTotal = document.querySelector(".cartTotal h3");
+        if (mainCartTotal && data.formatted && data.formatted.cartTotal) {
+            mainCartTotal.textContent = `Grand Total: ${data.formatted.cartTotal}`;
+        } else if (mainCartTotal) {
+            // Fallback if formatted not present in delete response (it is now)
+            mainCartTotal.textContent = `Grand Total: ${data.cartTotal.toFixed(2)}`;
+        }
 
         const tbody = document.querySelector("table tbody");
         if (tbody && tbody.children.length === 0) handleEmptyCart();
+
+        // Sync Sidebar
+        renderCartItems(data.products, data.cart, data.formatted.cartTotal);
+    }
+}
+
+async function removeFromSidebar(productId) {
+    const csrf = getCSRFToken();
+
+    try {
+        const response = await fetch(`${window.removeCartUrl}/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            },
+            body: JSON.stringify({ product_id: productId })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // Update cart count
+            updateCartCount(data.cartCount);
+
+            // Re-render cart items in sidebar
+            renderCartItems(data.products, data.cart, data.formatted.cartTotal);
+
+            // If cart is empty, close sidebar
+            if (data.cartCount === 0) {
+                closeCart();
+            }
+
+            // Update cart page DOM if it's currently open (soft sync, no reload)
+            // This keeps the sidebar open while updating the table in the background
+            const cartContainer = document.querySelector('.cart-container');
+            if (cartContainer) {
+                // If cart is now empty, show empty state
+                if (data.cartCount === 0) {
+                    handleEmptyCart();
+                } else {
+                    // Remove the row from the table that matches this product
+                    const cartTable = document.querySelector('table tbody');
+                    if (cartTable) {
+                        const rows = cartTable.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const input = row.querySelector('[data-product-id]');
+                            if (input && parseInt(input.dataset.productId) === productId) {
+                                row.remove();
+                            }
+                        });
+                        // Update grand total if present (use plain text, not template syntax)
+                        const mainCartTotal = document.querySelector(".cartTotal h3");
+                        if (mainCartTotal && data.formatted && data.formatted.cartTotal) {
+                            mainCartTotal.innerHTML = `Grand Total: <span class="text-primary">${data.formatted.cartTotal}</span>`;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error removing from cart:', error);
     }
 }
 
@@ -149,7 +361,8 @@ async function removeFromCart(productId, button) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const proceedBtn = document.querySelector("#proceed-to-checkout");
-    const addCartBtns = document.querySelectorAll(".add-cart-btn");
+    // Support both legacy and current button classes (some templates use `add-cart-btn`, others `add-to-cart-btn`)
+    const addCartBtns = document.querySelectorAll(".add-cart-btn, .add-to-cart-btn");
     const removeBtns = document.querySelectorAll(".remove-cart-item");
 
     if (proceedBtn) {
@@ -161,7 +374,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     addCartBtns.forEach(btn => {
-        btn.addEventListener("click", () => addToCart(btn.dataset.productId));
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const pid = btn.dataset.productId || btn.getAttribute('data-product-id');
+            if (!pid) {
+                console.error('No product id found on button', btn);
+                return;
+            }
+            addToCart(pid);
+        });
     });
 
     removeBtns.forEach(btn => {
@@ -171,4 +392,141 @@ document.addEventListener("DOMContentLoaded", () => {
     // expose to window (optional)
     window.openCart = openCart;
     window.closeCart = closeCart;
+    window.toggleCart = toggleCart;
+    window.removeFromSidebar = removeFromSidebar;
+});
+
+
+
+
+// Customer Chat Script
+document.addEventListener('DOMContentLoaded', function() {
+    if(document.getElementById('customer-chat-widget')){
+        const toggleBtn = document.getElementById('customer-chat-toggle');
+        const chatWindow = document.getElementById('customer-chat-window');
+        const closeBtn = document.getElementById('customer-chat-close');
+        const chatForm = document.getElementById('customer-chat-form');
+        const chatInput = document.getElementById('customer-chat-input');
+        const chatMessages = document.getElementById('customer-chat-messages');
+
+        const customerId = window.Customer.id;
+        console.log('Customer ID:', customerId);
+        window.Echo.private('chat.customer.' + customerId)
+            .listen('MessageSentWithPusher', (e) => {
+                appendMessageFromAdmin('admin', e.message);
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = (chatWindow.style.display === '' && getComputedStyle(chatWindow).display === 'none') || chatWindow.style.display === 'none';
+            if (isHidden) {
+                chatWindow.style.display = 'flex';
+                toggleBtn.style.display = 'none';
+                scrollChatToBottom();
+                loadChatData(fetchMessagesUrlFromCustomer);
+            } else {
+                chatWindow.style.display = 'none';
+                toggleBtn.style.display = 'flex';
+            }
+        });
+        closeBtn.addEventListener('click', () => {
+            chatWindow.style.display = 'none';
+            toggleBtn.style.display = 'flex';
+        });
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            sendMessage(message);
+        });
+
+        function sendMessage(message) {
+            if(message === '') return;
+            fetch(customerSendMessageUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success'){
+                    appendMessage('customer', data.message.content, data.message.created_at);
+                    chatInput.value = '';
+                } else {
+                    console.error('Error sending message:', data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+            });
+        }
+
+        function scrollChatToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendMessage(sender, content, time = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `mb-3 ${sender === 'customer' ? 'text-start' : 'text-end'}`;
+            msgDiv.innerHTML = `
+                <div class="d-inline-block p-2 rounded ${sender === 'customer' ? 'bg-primary text-white' : 'bg-light'}">
+                    ${content}
+                </div>
+                <div class="small text-muted mt-1">
+                    ${time ? time : ''}
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            scrollChatToBottom();
+        }
+
+        function appendMessageFromAdmin(sender, messageObj, time = null) {
+            const msgDiv = document.createElement('div');
+            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+            let displayTime = time;
+            if (!displayTime && messageObj && messageObj.created_at) {
+                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+            msgDiv.className = `mb-3 ${sender === 'customer' ? 'text-start' : 'text-end'}`;
+            msgDiv.innerHTML = `
+                <div class="d-inline-block p-2 rounded ${sender === 'customer' ? 'bg-primary text-white' : 'bg-light'}">
+                    ${content}
+                </div>
+                <div class="small text-muted mt-1">
+                    ${displayTime || ''}
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            scrollChatToBottom();
+        }
+
+        function loadChatData(fetchMessagesUrlFromCustomer) {
+            fetch(fetchMessagesUrlFromCustomer)
+                .then(res => res.json())
+                .then(messages => {
+                    const chatMessages = document.getElementById('customer-chat-messages');
+                    chatMessages.innerHTML = '';
+                    messages.forEach(message => {
+                        const div = document.createElement('div');
+                        div.className = `mb-3 ${message.sender === 'customer' ? 'text-start' : 'text-end'}`;
+                        div.innerHTML = `
+                            <div class="d-inline-block p-2 rounded ${message.sender === 'customer' ? 'bg-primary text-white' : 'bg-light'}">
+                                ${message.content}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                ${message.created_at}
+                            </div>
+                        `;
+                        chatMessages.appendChild(div);
+                    });
+                    scrollChatToBottom();
+                });
+        }
+    }
 });

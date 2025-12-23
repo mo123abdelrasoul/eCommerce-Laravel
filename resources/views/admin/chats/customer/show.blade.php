@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Chat with ' . $chat['vendor_name'])
+@section('title', 'Chat with ' . $chat['customer_name'])
 
 @section('content')
     @if (session('success'))
@@ -15,8 +15,9 @@
     @endif
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Chat: {{ $chat['vendor_name'] }}</h4>
-            <a href="{{ route('admin.chats.index', app()->getLocale()) }}" class="btn btn-secondary btn-sm">← Back</a>
+            <h4>Chat: {{ $chat['customer_name'] }}</h4>
+            <a href="{{ route('admin.customer-chats.index', app()->getLocale()) }}" class="btn btn-secondary btn-sm">←
+                Back</a>
         </div>
 
         <div class="card" style="display: flex; flex-direction: column; height: 400px;">
@@ -36,8 +37,8 @@
 
             <div class="card-footer bg-light border-0 shadow-sm">
                 <form
-                    action="{{ route('admin.chats.send.message', ['lang' => app()->getLocale(), 'receiverId' => $chat['id'] ?? 1]) }}"
-                    id="admin-send-message" method="POST" class="d-flex align-items-center gap-2">
+                    action="{{ route('admin.chats.customer-chat.send.message', ['lang' => app()->getLocale(), 'receiverId' => $chat['id'] ?? 1]) }}"
+                    id="admin-send-message-to-customer" method="POST" class="d-flex align-items-center gap-2">
                     @csrf
                     <div class="flex-grow-1 position-relative">
                         <input type="text" name="message" id="message-input" class="form-control rounded-pill ps-3 pe-5"
@@ -57,8 +58,8 @@
 
 @push('scripts')
     <script>
-        let receiverId = {{ $vendorId }};
+        let receiverId = {{ $customerId }};
         let senderId = {{ $adminId }};
-        const adminSendMessageUrl =
-            "{{ route('admin.chats.send.message', ['lang' => app()->getLocale(), 'receiverId' => $vendorId]) }}";
+        const adminSendMessageUrlToCustomer =
+            "{{ route('admin.chats.customer-chat.send.message', ['lang' => app()->getLocale(), 'receiverId' => $customerId]) }}";
     </script>

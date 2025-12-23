@@ -40,8 +40,8 @@
                 <div class="col-md-12">
                     <div class="card mb-12">
                         <div class="d-flex justify-content-between align-items-center mb-3 p-3">
-                            <form action="{{ route('admin.chats.index', ['lang' => app()->getLocale()]) }}" method="GET"
-                                class="d-flex">
+                            <form action="{{ route('admin.vendor-chats.index', ['lang' => app()->getLocale()]) }}"
+                                method="GET" class="d-flex">
                                 <input type="text" name="search" class="form-control me-2"
                                     placeholder="Search by vendor name..." style="width: 300px;"
                                     value="{{ request('search') }}">
@@ -52,7 +52,7 @@
                         <div class="card-body p-0">
                             <table class="table table-striped text-center">
                                 <thead>
-                                    @if (empty($chats))
+                                    @if ($chats->isEmpty())
                                         <p style="padding: 15px 0 0 15px;">No Chats found.</p>
                                     @else
                                         <tr>
@@ -71,7 +71,7 @@
                                             <td>{{ Str::limit($chat['last_message'], 50) }}</td>
                                             <td>{{ \Carbon\Carbon::parse($chat['updated_at'])->diffForHumans() }}</td>
                                             <td>
-                                                <a href="{{ route('admin.chats.show', ['lang' => app()->getLocale(), 'chat' => $chat['vendor_id']]) }}"
+                                                <a href="{{ route('admin.vendor-chats.show', ['lang' => app()->getLocale(), 'vendor_chat' => $chat['vendor_id']]) }}"
                                                     class="btn btn-info btn-sm">
                                                     View
                                                 </a>

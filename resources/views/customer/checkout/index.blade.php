@@ -1,6 +1,11 @@
 @extends('customer.layouts.app')
 
 @section('title', 'Checkout')
+
+@push('styles')
+    @vite(['resources/css/checkout.scss', 'resources/js/checkout.js'])
+@endpush
+
 @section('content')
     <div class="checkout-container">
         @if (session('error'))
@@ -18,12 +23,12 @@
             </div>
         @endif
 
-        <h1 class="checkout-title">Checkout</h1>
+        <h1 class="checkout-title">{{ __('checkout') }}</h1>
 
         <div class="checkout-grid">
             <!-- User Details -->
             <div class="checkout-section checkout-user">
-                <h2 class="checkout-subtitle">User Details</h2>
+                <h2 class="checkout-subtitle">{{ __('billing_details') }}</h2>
 
                 <form id="checkout-form" action="{{ route('user.checkout.process', ['lang' => app()->getLocale()]) }}"
                     method="POST">
@@ -33,23 +38,23 @@
 
                         <div class="checkout-form-row">
                             <div class="checkout-form-group">
-                                <label for="name">Full Name</label>
+                                <label for="name">{{ __('full_name') }}</label>
                                 <input type="text" id="name" name="name" value="{{ old('name') }}" required>
                             </div>
                             <div class="checkout-form-group">
-                                <label for="email">Email</label>
+                                <label for="email">{{ __('email_address') }}</label>
                                 <input type="email" id="email" name="email" value="{{ old('email') }}" required>
                             </div>
                         </div>
                         <div class="checkout-form-row">
                             <div class="checkout-form-group">
-                                <label for="phone">Phone</label>
+                                <label for="phone">{{ __('phone_number') }}</label>
                                 <input type="text" id="phone" name="phone" value="{{ old('phone') }}" required>
                             </div>
                             <div class="checkout-form-group">
-                                <label for="city">City</label>
+                                <label for="city">{{ __('city') }}</label>
                                 <select name="city" id="city" autocomplete="off" required>
-                                    <option value="">Select City</option>
+                                    <option value="">{{ __('select_city') }}</option>
                                     @if (!empty($cities))
                                         @foreach ($cities as $city)
                                             <option value="{{ $city['id'] }}">
@@ -62,34 +67,34 @@
                         </div>
                         <div class="checkout-form-row">
                             <div class="checkout-form-group">
-                                <label for="street_number">Street Number</label>
+                                <label for="street_number">{{ __('street_number') }}</label>
                                 <input type="text" id="street_number" name="street_number"
                                     value="{{ old('street_number') }}" required>
                             </div>
                             <div class="checkout-form-group">
-                                <label for="street_name">Street Name</label>
+                                <label for="street_name">{{ __('street_name') }}</label>
                                 <input type="text" id="street_name" name="street_name" value="{{ old('street_name') }}"
                                     required>
                             </div>
                         </div>
                         <div class="checkout-form-group full-width">
-                            <label for="zip_code">ZIP Code</label>
+                            <label for="zip_code">{{ __('zip_code') }}</label>
                             <input type="text" id="zip_code" name="zip_code" value="{{ old('zip_code') }}" required>
                         </div>
                         <div class="checkout-form-group full-width">
-                            <label for="coupon_code">Coupon Code</label>
+                            <label for="coupon_code">{{ __('have_coupon') }}</label>
                             <div class="checkout-coupon">
                                 <input type="text" id="coupon_code" name="coupon_code"
-                                    placeholder="Please enter a coupon code." autocomplete="off"
+                                    autocomplete="off"
                                     class="checkout-coupon-input">
-                                <button type="button" class="checkout-coupon-btn">Apply</button>
+                                <button type="button" class="checkout-coupon-btn">{{ __('apply') }}</button>
                             </div>
                             <div class="coupon-msg"></div>
                         </div>
                         <div class="checkout-form-group full-width">
-                            <label for="shipping_method">Shipping Method</label>
+                            <label for="shipping_method">{{ __('shipping_method') }}</label>
                             <select name="shipping_method" id="shipping_method" autocomplete="off" required>
-                                <option value="">Select Shipping Method</option>
+                                <option value="">{{ __('select_shipping_method') }}</option>
                                 @if (!empty($shipping_methods))
                                     @foreach ($shipping_methods as $method)
                                         <option value="{{ $method['id'] }}">
@@ -100,15 +105,15 @@
                             </select>
                         </div>
                         <div class="checkout-form-group full-width">
-                            <label for="notes">Order Notes (optional)</label>
-                            <textarea id="notes" name="notes" rows="3" placeholder="Add any notes about your order...">{{ old('notes') }}</textarea>
+                            <label for="notes">{{ __('order_notes') }}</label>
+                            <textarea id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                     <!-- Payment -->
-                    <h2 class="checkout-subtitle">Payment Method</h2>
+                    <h2 class="checkout-subtitle">{{ __('payment_method') }}</h2>
                     <div class="checkout-payment">
                         <select name="payment_method" id="payment-method" required>
-                            <option value="">Select Payment Method</option>
+                            <option value="">{{ __('select_payment_method') }}</option>
                             @if (!empty($payment_methods))
                                 @foreach ($payment_methods as $payment)
                                     <option value="{{ $payment['id'] }}">
@@ -119,13 +124,13 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="checkout-btn-submit">Place Order</button>
+                    <button type="submit" class="checkout-btn-submit">{{ __('place_order') }}</button>
                 </form>
             </div>
 
             <!-- Order Summary -->
             <div class="checkout-section checkout-summary">
-                <h2 class="checkout-subtitle">Order Summary</h2>
+                <h2 class="checkout-subtitle">{{ __('order_summary') }}</h2>
                 <div class="checkout-order-box">
                     @php
                         $cart = session('cart');
@@ -147,26 +152,25 @@
                         @endforeach
                     @endif
                     <div class="checkout-order-total">
-                        <strong>SubTotal:</strong> <strong id="sub-total">{{ format_currency($cartTotal) }}</strong>
+                        <strong>{{ __('subtotal') }}:</strong> <strong id="sub-total" data-value="{{ $cartTotal }}">{{ format_currency($cartTotal) }}</strong>
                     </div>
                     <div class="checkout-order-shipping">
-                        <strong>Shipping:</strong><strong id="shipping-cost">{{ 'Not calculated yet' }}</strong>
+                        <strong>{{ __('shipping') }}:</strong><strong id="shipping-cost" data-value="0">{{ __('calculated_at_next_step') }}</strong>
                     </div>
                     <div class="checkout-order-coupon">
-                        <strong>Coupon:</strong><strong id="coupon-discount">{{ format_currency(0) }}</strong>
+                        <strong>{{ __('discount') }}:</strong><strong id="coupon-discount" data-value="0">{{ format_currency(0) }}</strong>
                     </div>
                     <div class="checkout-order-total-final">
-                        <strong>Total:</strong>
-                        <strong id="final-total">{{ format_currency($cartTotal) }}</strong>
+                        <strong>{{ __('total') }}:</strong>
+                        <strong id="final-total" data-value="{{ $cartTotal }}">{{ format_currency($cartTotal) }}</strong>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script>
+        const ShippingUrl = "{{ url(app()->getLocale() . '/user/checkout/shipping-rate') }}";
+        const CouponUrl = "{{ url(app()->getLocale() . '/user/checkout/apply-coupon') }}";
+    </script>
 @endsection
-
-<script>
-    const ShippingUrl = "{{ url(app()->getLocale() . '/user/checkout/shipping-rate') }}";
-    const CouponUrl = "{{ url(app()->getLocale() . '/user/checkout/apply-coupon') }}";
-</script>

@@ -120,10 +120,10 @@
 
                 <!-- Shipping -->
                 <li
-                    class="nav-item 
+                    class="nav-item
     {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'menu-open' : '' }}">
                     <a href="#"
-                        class="nav-link 
+                        class="nav-link
         {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'active' : '' }}">
                         <i class="bi bi-ticket-perforated"></i>
                         <p>
@@ -257,13 +257,41 @@
                 </li>
 
                 <!-- Chats -->
+                <li class="nav-item {{ request()->is('*chat*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('*chat*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-dots"></i>
+                        <p>
+                            Chats
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route($prefix . 'vendor-chats.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is(app()->getLocale() . '/admin/chats/vendor*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Vendor</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route($prefix . 'customer-chats.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->is(app()->getLocale() . '/admin/chats/customer*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Customer</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                {{--
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'chats.index', app()->getLocale()) }}"
                         class="nav-link {{ request()->is(app()->getLocale() . '/admin/chats*') ? 'active' : '' }}">
                         <i class="bi bi-chat-dots"></i>
                         <p>Chats</p>
                     </a>
-                </li>
+                </li> --}}
 
 
                 <!-- Roles -->

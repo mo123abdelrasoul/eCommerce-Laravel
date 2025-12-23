@@ -37,11 +37,14 @@ class ShippingController
         }
         $shippingService = $this->shippingService->calculate($validated);
         if (!$shippingService['success']) {
+            \Illuminate\Support\Facades\Log::error('Shipping calculation failed', [
+                'request' => $validated,
+                'service_response' => $shippingService
+            ]);
             return response()->json([
                 'status' => 'failed',
-                'message' => 'shipping calculation failed',
+                'message' => $shippingService['message'] ?? 'shipping calculation failed',
                 'shipping_rate' => null
-
             ], 422);
         }
         $shipping = $shippingService['total_shipping'];

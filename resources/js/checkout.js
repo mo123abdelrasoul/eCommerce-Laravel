@@ -4,20 +4,24 @@ console.log('Checkout JS Loaded');
 // 🔹 Helper Functions
 // ======================
 
-function parsePrice(elementSelector) {
+// ======================
+// 🔹 Helper Functions
+// ======================
+
+function getPrice(elementSelector) {
     const el = document.querySelector(elementSelector);
     if (!el) return 0;
-    const text = el.innerText.trim();
-    if (!text || text.toLowerCase().includes('not') || !text.match(/\d/)) {
-        return 0;
-    }
-    const clean = text.replace(/[^\d.]/g, '');
-    return parseFloat(clean) || 0;
+    return parseFloat(el.getAttribute('data-value')) || 0;
 }
 
-function updateElementText(selector, value) {
+function updateElementText(selector, value, rawValue = null) {
     const el = document.querySelector(selector);
-    if (el) el.innerText = value;
+    if (el) {
+        el.innerText = value;
+        if (rawValue !== null) {
+            el.setAttribute('data-value', rawValue);
+        }
+    }
 }
 
 function calculateFinalTotal(subtotal, shipping, discount) {
@@ -36,23 +40,24 @@ async function updateShippingRate(cityId, shippingMethodId, csrf) {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrf
             },
-            body: JSON.stringify({ 
-                city: cityId, 
-                shipping_method: shippingMethodId,
-                subtotal: parsePrice("#sub-total"),
-                discount: parsePrice("#coupon-discount")
+            body: JSON.stringify({
+                city: parseInt(cityId),
+                shipping_method: parseInt(shippingMethodId),
+                subtotal: getPrice("#sub-total"),
+                discount: getPrice("#coupon-discount")
             })
         });
 
         const data = await response.json();
         if (data.status === 'success') {
             const shippingCost = parseFloat(data.total_shipping) || 0;
-            updateElementText("#shipping-cost", data.formatted.total_shipping);
+            updateElementText("#shipping-cost", data.formatted.total_shipping, shippingCost);
 
-            const subtotal = parsePrice("#sub-total");
-            const discount = parsePrice("#coupon-discount");
-            const total = calculateFinalTotal(subtotal, shippingCost, discount);
-            updateElementText("#final-total", data.formatted.total);
+            const subtotal = getPrice("#sub-total");
+            const discount = getPrice("#coupon-discount");
+            const total = subtotal + shippingCost - discount;
+
+            updateElementText("#final-total", data.formatted.total, total);
         } else {
             console.warn("Failed to fetch shipping rate:", data.message);
         }
@@ -68,8 +73,8 @@ async function updateShippingRate(cityId, shippingMethodId, csrf) {
 async function applyCoupon(code, csrf) {
     const couponMsg = document.querySelector(".coupon-msg");
 
-    const subtotal = parsePrice("#sub-total");
-    const shipping = parsePrice("#shipping-cost");
+    const subtotal = getPrice("#sub-total");
+    const shipping = getPrice("#shipping-cost");
 
     try {
         const response = await fetch(CouponUrl, {
@@ -88,14 +93,22 @@ async function applyCoupon(code, csrf) {
         const data = await response.json();
 
         if (data.status === 'success') {
-            updateElementText("#coupon-discount", data.formatted.discount);
-            updateElementText("#final-total", data.formatted.total);
-            couponMsg.className = "coupon-msg success";
+            updateElementText("#coupon-discount", data.formatted.discount, data.discount);
+
+            // Recalculate total
+            const total = subtotal + shipping - data.discount;
+            updateElementText("#final-total", data.formatted.total, total);
+
+            couponMsg.className = "coupon-msg text-success";
             couponMsg.innerHTML = data.message;
         } else {
-            updateElementText("#coupon-discount", data.formatted.discount);
-            updateElementText("#final-total", data.formatted.total);
-            couponMsg.className = "coupon-msg error";
+            updateElementText("#coupon-discount", data.formatted.discount, 0);
+
+            // Recalculate total (revert discount)
+            const total = subtotal + shipping;
+            updateElementText("#final-total", data.formatted.total, total);
+
+            couponMsg.className = "coupon-msg text-danger";
             couponMsg.innerHTML = data.message;
         }
 
@@ -113,11 +126,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const couponBtn = document.querySelector(".checkout-coupon-btn");
 
     if (checkoutForm) {
-        checkoutForm.addEventListener("change", () => {
-            const cityId = document.querySelector("#city").value;
-            const shippingMethodId = document.querySelector("#shipping_method").value;
-            const csrf = document.querySelector('input[name="_token"]').value;
-            if (cityId && shippingMethodId) updateShippingRate(cityId, shippingMethodId, csrf);
+        checkoutForm.addEventListener("change", (e) => {
+            // Only trigger if city or shipping method changed
+            if (e.target.id === 'city' || e.target.id === 'shipping_method') {
+                const cityId = document.querySelector("#city").value;
+                const shippingMethodId = document.querySelector("#shipping_method").value;
+                const csrf = document.querySelector('input[name="_token"]').value;
+
+                if (cityId && shippingMethodId) {
+                    updateShippingRate(cityId, shippingMethodId, csrf);
+                }
+            }
         });
     }
 
@@ -130,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 const couponMsg = document.querySelector(".coupon-msg");
                 if (couponMsg) {
-                    couponMsg.className = "coupon-msg error";
+                    couponMsg.className = "coupon-msg text-danger";
                     couponMsg.innerHTML = "Please enter a coupon code.";
                 }
             }

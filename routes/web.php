@@ -29,7 +29,8 @@ use App\Http\Controllers\Admin\Payment\PaymentController as AdminPaymentControll
 use App\Http\Controllers\Admin\Shipping\ShippingCityController as AdminShippingCityController;
 use App\Http\Controllers\Admin\Shipping\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\Admin\Shipping\ShippingRegionController as AdminShippingRegionController;
-use App\Http\Controllers\Admin\Chat\ChatController as AdminChatController;
+use App\Http\Controllers\Admin\Chat\VendorChatController as AdminVendorChatController;
+use App\Http\Controllers\Admin\Chat\CustomerChatController as AdminCustomerChatController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\Email\EmailController as AdminEmailController;
 
@@ -57,8 +58,10 @@ use App\Http\Controllers\Customer\Auth\LoginController as CustomerLoginControlle
 use App\Http\Controllers\Customer\Auth\ForgotPasswordController as CustomerForgotPasswordController;
 use App\Http\Controllers\Customer\Auth\ResetPasswordController as CustomerResetPasswordController;
 use App\Http\Controllers\Customer\Cart\CartController as CustomerCartController;
+use App\Http\Controllers\Customer\Chat\ChatController as CustomerChatController;
 use App\Http\Controllers\Customer\Checkout\CheckoutController as CustomerCheckoutController;
 use App\Http\Controllers\Customer\Shipping\ShippingController as CustomerShippingController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -68,15 +71,24 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Route::get('/{language}/change-language', [LocalizationLanguageController::class, 'changeLanguage'])->name('change.language');
-Broadcast::routes(['middleware' => ['web', 'auth:admins', 'auth:vendors']]);
+Broadcast::routes(['middleware' => ['web']]);
 
-Broadcast::channel('chat.admin.{adminId}', function ($admin, $adminId) {
-    return (int) $admin->id === (int) $adminId;
+// Admin channels
+Broadcast::channel('chat.admin.{adminId}', function ($user, $adminId) {
+    return auth('admins')->check() && auth('admins')->id() == $adminId;
 });
-Broadcast::channel('chat.vendor.{vendorId}', function ($vendor, $vendorId) {
-    return (int) $vendor->id === (int) $vendorId;
+
+// Vendor channels
+Broadcast::channel('chat.vendor.{vendorId}', function ($user, $vendorId) {
+    return auth('vendors')->check() && auth('vendors')->id() == $vendorId;
 });
-// Broadcast::routes();
+
+// Customer channels
+Broadcast::channel('chat.customer.{customerId}', function ($user, $customerId) {
+    return auth('web')->check() && auth('web')->id() == $customerId;
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes (Register / Login / Socialite / Password Reset)
@@ -84,12 +96,7 @@ Broadcast::channel('chat.vendor.{vendorId}', function ($vendor, $vendorId) {
 */
 
 Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
-    Route::get('vendor/chats/vendor/messages', [VendorChatController::class, 'loadMessages'])
-        ->name('vendor.chats.load.messages');
-    Route::post('vendor/chat/send', [VendorChatController::class, 'sendMessage'])
-        ->name('vendor.chat.send.message');
-    Route::post('vendor/chat/mark-read', [VendorChatController::class, 'markLatestMessageAsRead'])
-        ->name('vendor.chat.markRead');
+
 
 
     // Registration
@@ -99,9 +106,29 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
         ->name('registerForm');
 
 
-    Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/', [CustomerLoginController::class, 'index']);
-    });
+    // Public Pages
+    Route::get('/', [CustomerLoginController::class, 'index'])->name('home');
+    Route::get('/shop', [App\Http\Controllers\Customer\ShopController::class, 'index'])->name('shop');
+    Route::get('/product/{product}', [CustomerProductController::class, 'show'])->name('product.show');
+    Route::get('/about', [App\Http\Controllers\Customer\PageController::class, 'about'])->name('about');
+    Route::get('/contact', [App\Http\Controllers\Customer\PageController::class, 'contact'])->name('contact');
+    Route::post('/contact', [App\Http\Controllers\Customer\PageController::class, 'contactSubmit'])->name('contact.submit');
+    Route::get('/privacy', [App\Http\Controllers\Customer\PageController::class, 'privacy'])->name('privacy');
+    Route::get('/terms', [App\Http\Controllers\Customer\PageController::class, 'terms'])->name('terms');
+    Route::get('/shipping-policy', [App\Http\Controllers\Customer\PageController::class, 'shipping'])->name('shipping.policy');
+    Route::get('/returns-policy', [App\Http\Controllers\Customer\PageController::class, 'returns'])->name('returns.policy');
+
+    // FAQ
+    Route::get('/faq', [App\Http\Controllers\Customer\FaqController::class, 'index'])->name('faq');
+
+    // Public Cart Routes (Accessible by Guests)
+    Route::get('/cart', [CustomerCartController::class, 'index'])->name('user.cart.index');
+    Route::post('/user/cart/add', [CustomerCartController::class, 'add'])->name('cart.add');
+    Route::get('/user/cart/data', [CustomerCartController::class, 'getData'])->name('cart.data');
+    Route::post('/user/cart/update', [CustomerCartController::class, 'update'])->name('cart.update');
+    Route::delete('/user/cart/delete/{id}', [CustomerCartController::class, 'delete'])->name('cart.delete');
+    Route::post('/user/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])->name('checkout.shipping.rate');
+    Route::post('/user/checkout/apply-coupon', [CustomerCheckoutController::class, 'applyCoupon'])->name('apply.coupon');
 
 
     // Socialite
@@ -203,31 +230,27 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
     */
 
     Route::middleware(['checkUserRole:user'])->group(function () {
-        Route::get('/', [CustomerLoginController::class, 'index'])
-            ->name('home');
-        Route::get('/cart', [CustomerCartController::class, 'index'])
-            ->name('user.cart.index');
+
+        Route::get('customer/chat', [CustomerChatController::class, 'loadMessages'])
+            ->name('customer.chats.load.messages');
+        Route::post('customer/chat/send', [CustomerChatController::class, 'sendMessage'])
+            ->name('customer.chat.send.message');
+
         Route::get('/checkout', [CustomerCheckoutController::class, 'showCheckoutForm'])
             ->name('user.checkout.index');
         Route::prefix('user')->name('user.')->group(function () {
             Route::post('logout', [CustomerLoginController::class, 'logout'])
                 ->name('logout.submit');
-            // Cart & Checkout
-            Route::post('/cart/add', [CustomerCartController::class, 'add'])
-                ->name('cart.add');
-            Route::post('/cart/update', [CustomerCartController::class, 'update'])
-                ->name('cart.update');
-            Route::delete('/cart/delete/{id}', [CustomerCartController::class, 'delete'])
-                ->name('cart.delete');
-            Route::post('/checkout/shipping-rate', [CustomerShippingController::class, 'getShippingRate'])
-                ->name('checkout.shipping.rate');
-            Route::post('/checkout/apply-coupon', [CustomerCheckoutController::class, 'applyCoupon'])
-                ->name('apply.coupon');
 
+            // Checkout Process
             Route::post('/checkout', [CustomerCheckoutController::class, 'process'])
                 ->name('checkout.process');
             Route::get('/checkout/success', [CustomerCheckoutController::class, 'success'])
                 ->name('checkout.success');
+
+            // Profile
+            Route::get('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'index'])
+                ->name('profile.index');
         });
     });
 
@@ -237,6 +260,14 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['checkUserRole:vendor'])->group(function () {
+
+        Route::get('vendor/chats/vendor/messages', [VendorChatController::class, 'loadMessages'])
+            ->name('vendor.chats.load.messages');
+        Route::post('vendor/chat/send', [VendorChatController::class, 'sendMessage'])
+            ->name('vendor.chat.send.message');
+        Route::post('vendor/chat/mark-read', [VendorChatController::class, 'markLatestMessageAsRead'])
+            ->name('vendor.chat.markRead');
+
         Route::prefix('vendor')->name('vendor.')->group(function () {
             Route::post('logout', [VendorLoginController::class, 'logout'])
                 ->name('logout.submit');
@@ -401,9 +432,13 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
             // Chats
 
             Route::middleware(['check.admin.permission:manage chats'])->group(function () {
-                Route::resource('chats', AdminChatController::class);
-                Route::post('chats/{receiverId}/send', [AdminChatController::class, 'sendMessage'])
-                    ->name('chats.send.message');
+                Route::resource('vendor-chats', AdminVendorChatController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+                Route::post('chats/vendor-chats/{receiverId}/send', [AdminVendorChatController::class, 'sendMessage'])
+                    ->name('chats.vendor-chat.send.message');
+
+                Route::resource('customer-chats', AdminCustomerChatController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+                Route::post('chats/customer-chats/{receiverId}/send', [AdminCustomerChatController::class, 'sendMessage'])
+                    ->name('chats.customer-chat.send.message');
             });
         });
     });

@@ -13,7 +13,7 @@ class Product extends Model
     use HasRoles;
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['name', 'description', "image", "tags", 'price', 'quantity', 'category_id', 'brand_id', 'vendor_id', 'status', 'sku', 'discount', 'admin_feedback'];
+    protected $fillable = ['name', 'description', "image", "tags", 'price', 'quantity', 'category_id', 'brand_id', 'vendor_id', 'status', 'sku', 'discount', 'admin_feedback', 'weight', 'width', 'height', 'length'];
 
 
     public function vendor()

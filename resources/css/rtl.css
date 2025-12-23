@@ -1,0 +1,206 @@
+/* RTL/LTR Support Styles */
+
+/* Bootstrap RTL Adjustments */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+}
+
+[dir="rtl"] .dropdown-menu-end {
+    right: auto !important;
+    left: 0 !important;
+}
+
+/* Header RTL Adjustments */
+[dir="rtl"] .gap-3,
+[dir="rtl"] .gap-4 {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .translate-middle {
+    transform: translate(50%, -50%) !important;
+}
+
+[dir="rtl"] .start-100 {
+    right: 100% !important;
+    left: auto !important;
+}
+
+/* Home Pgae RTL */
+[dir="rtl"] .cart-item-details {
+    margin-left: 0px !important;
+    margin-left: 1rem;
+}
+
+/* Checkout Page RTL */
+[dir="rtl"] .bi-arrow-right {
+    transform: rotate(180deg);
+}
+
+[dir="rtl"] .ms-2,
+[dir="rtl"] .me-2 {
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
+}
+
+[dir="rtl"] .ms-3 {
+    margin-left: 0 !important;
+    margin-right: 1rem !important;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    #mobile-menu {
+        display: none;
+    }
+
+    #mobile-menu.show {
+        display: flex !important;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        z-index: 1000;
+    }
+
+    [dir="rtl"] #mobile-menu.show {
+        text-align: right;
+    }
+}
+
+/* Ensure Bootstrap icons work in RTL */
+[dir="rtl"] .bi {
+    display: inline-block;
+}
+
+/* Fix input groups in RTL */
+[dir="rtl"] .input-group> :not(:first-child) {
+    margin-left: 0;
+    margin-right: -1px;
+}
+
+[dir="rtl"] .input-group> :not(:last-child) {
+    margin-right: 0;
+    margin-left: -1px;
+}
+
+/* =========================================
+   RTL Fixes for Cart, Shop & Sidebar
+   ========================================= */
+
+/* 1. Sidebar Cart Positioning (Left Side) */
+[dir="rtl"] .cart-sidebar {
+    right: auto;
+    left: 0;
+    transform: translateX(-100%);
+}
+
+[dir="rtl"] .cart-sidebar.active {
+    transform: translateX(0);
+}
+
+/* Sidebar Item Spacing */
+[dir="rtl"] .cart-item> :not(:first-child) {
+    margin-right: 1rem;
+    margin-left: 0;
+}
+
+/* 2. Text Alignment Overrides */
+[dir="rtl"] .text-left {
+    text-align: right !important;
+}
+
+[dir="rtl"] .text-right {
+    text-align: left !important;
+}
+
+/* Table Alignment */
+[dir="rtl"] table.text-left th,
+[dir="rtl"] table.text-left td {
+    text-align: right !important;
+}
+
+/* Form Inputs */
+[dir="rtl"] input,
+[dir="rtl"] select,
+[dir="rtl"] textarea {
+    text-align: right;
+}
+
+/* 3. Margin & Spacing Utilities Flip */
+[dir="rtl"] .mr-2 {
+    margin-right: 0 !important;
+    margin-left: 0.5rem !important;
+}
+
+[dir="rtl"] .ml-2 {
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
+}
+
+[dir="rtl"] .ml-3 {
+    margin-left: 0 !important;
+    margin-right: 0.75rem !important;
+}
+
+[dir="rtl"] .mr-4 {
+    margin-right: 0 !important;
+    margin-left: 1rem !important;
+}
+
+[dir="rtl"] .ml-auto {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+[dir="rtl"] .mr-auto {
+    margin-right: 0 !important;
+    margin-left: auto !important;
+}
+
+/* Tailwind space-x- utilities override for RTL */
+[dir="rtl"] .space-x-2> :not([hidden])~ :not([hidden]) {
+    margin-right: 0.5rem;
+    margin-left: 0;
+}
+
+[dir="rtl"] .space-x-3> :not([hidden])~ :not([hidden]) {
+    margin-right: 0.75rem;
+    margin-left: 0;
+}
+
+[dir="rtl"] .space-x-4> :not([hidden])~ :not([hidden]) {
+    margin-right: 1rem;
+    margin-left: 0;
+}
+
+[dir="rtl"] .space-x-6> :not([hidden])~ :not([hidden]) {
+    margin-right: 1.5rem;
+    margin-left: 0;
+}
+
+/* 4. Shop Page Sidebar */
+[dir="rtl"] .cursor-pointer.flex.items-center.space-x-2 input {
+    margin-left: 0.5rem;
+}
+
+/* 5. Product Card & General Icons */
+[dir="rtl"] svg.mr-2 {
+    margin-right: 0 !important;
+    margin-left: 0.5rem !important;
+}
+
+/* 6. Cart Total Section */
+/* Natural flex-direction works for RTL */
+
+
+/* 7. Close Buttons */
+/* Close button positioning handled by flex-direction and justify-content naturally in RTL */

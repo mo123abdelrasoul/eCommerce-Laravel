@@ -58,10 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const chatInput = document.getElementById('chat-input');
         const chatMessages = document.getElementById('chat-messages');
 
-
         window.Echo.private('chat.vendor.' + vendorId)
             .listen('MessageSent', (e) => {
-                appendMessageFromAdmin('admin', e.message.message);
+                appendMessageFromAdmin('admin', e.message);
             });
 
         toggleBtn.addEventListener('click', () => {
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = chatInput.value.trim();
             sendMessage(message);
         });
-        
+
         function sendMessage(message) {
             if(message === '') return;
             fetch(vendorSendMessageUrl, {
@@ -95,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success'){
-                    appendMessage('vendor', data.message.message);
+                    appendMessage('vendor', data.message.content, data.message.created_at);
                     chatInput.value = '';
                 } else {
                     console.error('Error sending message:', data.error);
@@ -118,22 +117,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${content}
                 </div>
                 <div class="small text-muted mt-1">
-                    ${time ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    ${time ? time : ''}
                 </div>
             `;
             chatMessages.appendChild(msgDiv);
             scrollChatToBottom();
         }
 
-        function appendMessageFromAdmin(sender, content, time = null) {
+        function appendMessageFromAdmin(sender, messageObj, time = null) {
             const msgDiv = document.createElement('div');
+            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+            let displayTime = time;
+            if (!displayTime && messageObj && messageObj.created_at) {
+                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
             msgDiv.className = `mb-3 ${sender === 'vendor' ? 'text-start' : 'text-end'}`;
             msgDiv.innerHTML = `
                 <div class="d-inline-block p-2 rounded ${sender === 'vendor' ? 'bg-primary text-white' : 'bg-light'}">
                     ${content}
                 </div>
                 <div class="small text-muted mt-1">
-                    ${time ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    ${displayTime || ''}
                 </div>
             `;
             chatMessages.appendChild(msgDiv);
@@ -146,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(messages => {
                     const chatMessages = document.getElementById('chat-messages');
                     chatMessages.innerHTML = '';
-
                     messages.forEach(message => {
                         const div = document.createElement('div');
                         div.className = `mb-3 ${message.sender === 'vendor' ? 'text-start' : 'text-end'}`;
@@ -169,26 +176,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Chat Admin
 document.addEventListener("DOMContentLoaded", function() {
-    if(document.querySelector('aside.app-sidebar.admin')){
+    if (!document.querySelector('aside.app-sidebar.admin')) return;
         const chatBody = document.querySelector('.card-body');
         if (chatBody) {
             chatBody.scrollTop = chatBody.scrollHeight;
         }
         let chatMessages = document.getElementById('chat-messages');
         let messageForm = document.getElementById('admin-send-message');
+        let messageFormToCustomer = document.getElementById('admin-send-message-to-customer');
         let messageInput = document.getElementById('message-input');
 
-        window.Echo.private('chat.admin.' + senderId)
-            .listen('MessageSent', (e) => {
-                appendMessageFromVendor('vendor', e.message.message);
-            });
+        if(!messageFormToCustomer) {
+            if (typeof senderId !== 'undefined') {
+                window.Echo.private('chat.admin.' + senderId)
+                    .listen('MessageSent', (e) => {
+                        appendMessageFromVendor('vendor', e.message);
+                    });
+            }
+        }else {
+            if (typeof senderId !== 'undefined') {
+                window.Echo.private('chat.admin.' + senderId)
+                    .listen('MessageSentWithPusher', (e) => {
+                        appendMessageFromCustomer('customer', e.message);
+                    });
+            }
+        }
 
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const message = messageInput.value;
-            sendMessage(message);
-            
-        });
+        // form admin to vendor
+        if (messageForm && messageInput) {
+            messageForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                sendMessage(messageInput.value);
+            });
+        }
+
+        // form admin to customer
+        if (messageFormToCustomer && messageInput) {
+            messageFormToCustomer.addEventListener('submit', function (e) {
+                e.preventDefault();
+                sendMessageToCustomer(messageInput.value);
+            });
+        }
 
         function sendMessage(message){
             if (message) {
@@ -205,14 +233,36 @@ document.addEventListener("DOMContentLoaded", function() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            appendMessage('admin', data.message);
+                            appendMessage('admin', data.message, data.created_at);
                             messageInput.value = '';
                         }
                     });
             }
         }
 
-        function appendMessage(sender, content, time = null) {
+        function sendMessageToCustomer(message){
+            if (message) {
+                fetch(adminSendMessageUrlToCustomer, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            message
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            appendMessage('admin', data.message, data.created_at);
+                            messageInput.value = '';
+                        }
+                    });
+            }
+        }
+
+        function appendMessage(sender, content, time = '') {
             const msgDiv = document.createElement('div');
             msgDiv.className = `mb-3 ${sender === 'admin' ? 'text-end' : 'text-start'}`;
             msgDiv.innerHTML = `
@@ -220,30 +270,63 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${content}
                 </div>
                 <div class="small text-muted mt-1">
-                    ${time ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    ${time}
                 </div>
             `;
             chatMessages.appendChild(msgDiv);
             scrollChatToBottom();
         }
 
-        function appendMessageFromVendor(sender, content, time = null) {
+        function appendMessageFromVendor(sender, messageObj, time = '') {
             const msgDiv = document.createElement('div');
+            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+            let displayTime = time;
+            if (!displayTime && messageObj && messageObj.created_at) {
+                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
             msgDiv.className = `mb-3 ${sender === 'vendor' ? 'text-start' : 'text-end'}`;
             msgDiv.innerHTML = `
                 <div class="d-inline-block p-2 rounded ${sender === 'vendor' ? 'bg-light' : 'bg-primary text-white'}">
                     ${content}
                 </div>
                 <div class="small text-muted mt-1">
-                    ${time ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    ${displayTime || ''}
                 </div>
             `;
             chatMessages.appendChild(msgDiv);
             scrollChatToBottom();
         }
-        
+
+
+        function appendMessageFromCustomer(sender, messageObj, time = '') {
+            const msgDiv = document.createElement('div');
+            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+            let displayTime = time;
+            if (!displayTime && messageObj && messageObj.created_at) {
+                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+            msgDiv.className = `mb-3 ${sender === 'customer' ? 'text-start' : 'text-end'}`;
+            msgDiv.innerHTML = `
+                <div class="d-inline-block p-2 rounded ${sender === 'vendor' ? 'bg-light' : 'bg-primary text-white'}">
+                    ${content}
+                </div>
+                <div class="small text-muted mt-1">
+                    ${displayTime}
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            scrollChatToBottom();
+        }
+
         function scrollChatToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    }
 });

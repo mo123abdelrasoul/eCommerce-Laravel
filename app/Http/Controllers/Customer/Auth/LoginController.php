@@ -18,7 +18,7 @@ class LoginController extends Controller
             ->limit(4)
             ->get();
         $best_selling_products = Product::where('status', 'approved')
-            ->limit(7)
+            ->limit(8)
             ->get();
         return view('customer.pages.home', [
             'lang' => app()->getLocale(),

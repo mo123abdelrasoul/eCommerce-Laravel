@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $orders = Order::with(['customer:id,name'])
             ->where('vendor_id', $vendor->id)
             ->get();
-        $total_orders = $orders->sum('total_amount');
+        $total_revenue = $orders->sum('total_amount');
         $ordersCount = $orders->count();
         $productsCount = Product::where('vendor_id', $vendor->id)->count();
 
@@ -23,7 +23,7 @@ class DashboardController extends Controller
             'orders',
             'ordersCount',
             'productsCount',
-            'total_orders'
+            'total_revenue'
         ));
     }
 }

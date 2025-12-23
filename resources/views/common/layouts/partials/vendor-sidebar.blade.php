@@ -28,7 +28,7 @@
                 </li>
                 <!-- Products -->
                 <li
-                    class="nav-item 
+                    class="nav-item
     {{ request()->is('*products*') || request()->is('*categories*') || request()->is('*brands*') ? 'menu-open' : '' }}">
                     <a href="#"
                         class="nav-link {{ request()->is('*products*') || request()->is('*categories*') || request()->is('*brands*') ? 'active' : '' }}">
@@ -67,7 +67,7 @@
                 <!-- Coupons -->
                 <li class="nav-item {{ request()->is('*coupons*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('*coupons*') ? 'active' : '' }}">
-                        <i class="bi bi-ticket-perforated"></i>
+                        <i class="nav-icon bi bi-percent"></i>
                         <p>
                             Coupons
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -93,12 +93,12 @@
 
                 <!-- Shipping -->
                 <li
-                    class="nav-item 
+                    class="nav-item
     {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'menu-open' : '' }}">
                     <a href="#"
-                        class="nav-link 
+                        class="nav-link
         {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'active' : '' }}">
-                        <i class="bi bi-ticket-perforated"></i>
+                        <i class="nav-icon bi bi-truck"></i>
                         <p>
                             Shipping
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -135,7 +135,7 @@
                 <!-- Wallet -->
                 <li class="nav-item {{ request()->routeIs($prefix . 'wallet.*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs($prefix . 'wallet.*') ? 'active' : '' }}">
-                        <i class="bi bi-ticket-perforated"></i>
+                        <i class="nav-icon bi bi-wallet2"></i>
                         <p>
                             Wallet
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -246,9 +246,9 @@
     <button id="chat-toggle" class="btn btn-primary position-relative rounded-circle"
         style="width: 60px; height: 60px;">
         <i class="bi bi-chat-dots fs-4"></i>
-        <span id="chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{-- <span id="chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
             0
-        </span>
+        </span> --}}
     </button>
 
     <div id="chat-window" class="card shadow"

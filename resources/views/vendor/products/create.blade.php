@@ -163,6 +163,47 @@
                             @enderror
                         </div>
                         <!--end::Col-->
+
+                        <!--begin::Dimensions-->
+                        <div class="col-12 mt-2">
+                            <h5>Dimensions (optional)</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="weight" class="form-label">Weight</label>
+                            <input type="number" step="any" name="weight" value="{{ old('weight') }}"
+                                class="form-control" id="weight" />
+                            @error('weight')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="width" class="form-label">Width</label>
+                            <input type="number" step="any" name="width" value="{{ old('width') }}"
+                                class="form-control" id="width" />
+                            @error('width')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="height" class="form-label">Height</label>
+                            <input type="number" step="any" name="height" value="{{ old('height') }}"
+                                class="form-control" id="height" />
+                            @error('height')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="length" class="form-label">Length</label>
+                            <input type="number" step="any" name="length" value="{{ old('length') }}"
+                                class="form-control" id="length" />
+                            @error('length')
+                                <p class="msg-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <!--end::Dimensions-->
                     </div>
                     <!--end::Row-->
                 </div>

@@ -8,6 +8,7 @@ use Database\Factories\PaymentFactory;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
@@ -52,9 +53,18 @@ class PaymentService
     protected function buildRequest($method, $url, $data = null, $type = 'json')
     {
         try {
-            $response = Http::withHeaders($this->header)->send($method, $this->base_url . $url, [
-                $type => $data
+            $fullUrl = $this->base_url . $url;
+            Log::info('Sending request to: ' . $fullUrl, [
+                'method' => $method,
+                'data' => $data,
             ]);
+            $response = Http::withHeaders($this->header)
+                ->withoutVerifying() // لازم قبل send()
+                ->send($method, $this->base_url . $url, [
+                    $type => $data
+                ]);
+
+
             if ($response->successful()) {
                 return response()->json([
                     'success' => true,
@@ -68,6 +78,12 @@ class PaymentService
                 'message' => $response->body()
             ], $response->status());
         } catch (Exception $e) {
+            Log::error('Paymob HTTP Exception', [
+                'message' => $e->getMessage(),
+                'method' => $method,
+                'url' => $fullUrl,
+                'data' => $data,
+            ]);
             return response()->json([
                 'success' => false,
                 'status' => 500,
