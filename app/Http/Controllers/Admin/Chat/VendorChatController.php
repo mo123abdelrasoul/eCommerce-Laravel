@@ -6,8 +6,6 @@ use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Message;
-use App\Models\Vendor;
-use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 
 class VendorChatController extends Controller

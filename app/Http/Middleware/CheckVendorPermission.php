@@ -16,12 +16,15 @@ class CheckVendorPermission
     public function handle(Request $request, Closure $next, $permission): Response
     {
         $vendor = auth()->guard('vendors')->user();
+
         if (!$vendor) {
             return redirect()->route('vendor.login', app()->getLocale());
         }
-        if (!$vendor->hasRole('vendor') || !$vendor->can($permission)) {
+
+        if (!($vendor->hasRole('vendor') || $vendor->hasRole('vendor viewer')) || !$vendor->can($permission)) {
             abort(403, 'Unauthorized');
         }
+
         return $next($request);
     }
 }

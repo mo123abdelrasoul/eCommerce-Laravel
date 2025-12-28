@@ -1,10 +1,8 @@
 import './bootstrap';
-// Js for Create Role Page In Admin Dashboard
 let guardName = document.getElementById('guard_name');
 if(guardName){
     guardName.addEventListener('change', function() {
         let selectedGuard = this.value;
-        // hide all permission groups
         document.querySelectorAll('.permissions-group').forEach(g => g.style.display = 'none');
         if(selectedGuard) {
             document.getElementById('permissions_section').style.display = 'block';

@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Common\Localization;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 
 class LanguageController extends Controller
 {
@@ -14,8 +12,6 @@ class LanguageController extends Controller
         if (in_array($language, ['en', 'ar'])) {
             session(['locale' => $language]);
             App::setLocale($language);
-
-            // Get previous URL and replace the lang segment
             $previousUrl = url()->previous();
             $parsed = parse_url($previousUrl);
             $segments = explode('/', $parsed['path']);

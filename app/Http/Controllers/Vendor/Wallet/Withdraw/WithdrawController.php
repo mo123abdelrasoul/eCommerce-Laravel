@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Vendor\Wallet\Withdraw;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Withdrawal;
 use App\Services\WithdrawService;
 
 class WithdrawController extends Controller

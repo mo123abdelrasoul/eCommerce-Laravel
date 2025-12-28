@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer\Shipping;
 
-use App\Http\Controllers\Controller;
 use App\Services\CheckoutService;
 use App\Services\ShippingService;
 use Illuminate\Http\Request;

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Mail\productRejection;
 use Illuminate\Http\Request;
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -28,7 +27,7 @@ class ProductController extends Controller
     public function edit($lang, $id)
     {
         $product = Product::withTrashed()->findOrFail($id);
-        $categories = Category::select('id', 'name')->where('vendor_id', $product->vendor_id)->get();
+        $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 

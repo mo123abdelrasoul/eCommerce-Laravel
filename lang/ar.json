@@ -116,5 +116,19 @@
     "start_shopping": "ابدأ التسوق",
     "pending": "قيد الانتظار",
     "completed": "مكتمل",
-    "cancelled": "ملغى"
+    "cancelled": "ملغى",
+    "create_account": "إنشاء حساب جديد",
+    "sign_in_existing": "تسجيل الدخول إلى حسابك الحالي",
+    "confirm_password": "تأكيد كلمة المرور",
+    "role": "الدور",
+    "customer": "عميل",
+    "vendor": "بائع",
+    "i_agree_to": "أوافق على",
+    "terms": "الشروط",
+    "or_continue_with": "أو المتابعة باستخدام",
+    "sign_in_with_google": "تسجيل الدخول باستخدام جوجل",
+    "results": "نتائج",
+    "contact_address": "123 شارع التجارة، مدينة السوق، ST 12345",
+    "contact_phone": "+1 (555) 123-4567",
+    "contact_email": "support@mstore24.com"
 }

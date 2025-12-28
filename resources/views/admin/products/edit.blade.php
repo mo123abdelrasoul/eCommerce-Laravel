@@ -26,7 +26,8 @@
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('admin.products.index') }}">Products</a></li>
+                            <li class="breadcrumb-item"><a
+                                    href="{{ route('admin.products.index', app()->getLocale()) }}">Products</a></li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
                         </ol>
                     </div>
@@ -64,7 +65,7 @@
                             <label for="description" class="form-label">Description</label>
                             <input type="text" name="description"
                                 value="{{ old('description', $product->description ?? '') }}" class="form-control"
-                                id="description" required />
+                                id="description" />
                             @error('description')
                                 <p class="msg-error">{{ $message }}</p>
                             @enderror

@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Customer\Cart;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Redirect;
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -84,7 +81,7 @@ class CartController extends Controller
         $productId = $request->product_id;
         $cart = Session::get('cart', []);
         $total = 0;
-        
+
         if (isset($cart[$productId])) {
             unset($cart[$productId]);
             Session::put('cart', $cart);
@@ -92,7 +89,7 @@ class CartController extends Controller
 
         // Always return the updated state even if item wasn't found (just in case)
         $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys($cart))->get();
-        
+
         foreach ($products as $product) {
             $product->formatted_price = format_currency($product->price);
             $product->formatted_line_total = format_currency($product->price * $cart[$product->id]);
@@ -116,7 +113,7 @@ class CartController extends Controller
     {
         $cart = Session::get('cart', []);
         $total = 0;
-        
+
         if (empty($cart)) {
             return response()->json([
                 'status' => 'success',
@@ -131,7 +128,7 @@ class CartController extends Controller
         }
 
         $products = Product::select('id', 'name', 'image', 'price')->whereIn('id', array_keys($cart))->get();
-        
+
         foreach ($products as $product) {
             $product->formatted_price = format_currency($product->price);
             $product->formatted_line_total = format_currency($product->price * $cart[$product->id]);

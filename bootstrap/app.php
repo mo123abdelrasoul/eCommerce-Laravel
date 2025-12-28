@@ -16,8 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         // Register middleware aliases
         $middleware->alias([
-            'checkUserRole' => \App\Http\Middleware\CheckUserRole::class,
             'setLocale' => \App\Http\Middleware\LanguageMiddleware::class,
+            'checkUserRole' => \App\Http\Middleware\checkUserRole::class, // Restored original middleware
             'check.admin.permission' => \App\Http\Middleware\CheckAdminPermission::class,
             'check.vendor.permission' => \App\Http\Middleware\CheckVendorPermission::class,
             'check.customer.permission' => \App\Http\Middleware\CheckCustomerPermission::class,

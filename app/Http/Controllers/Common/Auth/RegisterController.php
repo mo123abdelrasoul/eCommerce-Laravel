@@ -7,15 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
-    /* Start Show Register Form */
     public function showRegisterForm()
     {
         if (Auth::check()) {
@@ -23,10 +20,7 @@ class RegisterController extends Controller
         }
         return view('common.auth.register');
     }
-    /* End Show Register Form */
 
-
-    /* Start Handle Register Form */
     public function registerForm(Request $request)
     {
         $role = $request->input('role');
@@ -42,7 +36,7 @@ class RegisterController extends Controller
                 ],
                 'password' => 'required|min:6|confirmed',
                 'phone' => 'required|digits_between:10,15',
-                'role' => 'required'
+                'role' => 'required|in:customer,vendor'
             ]
         );
         if ($validatedData['role'] == 'customer') {
@@ -65,8 +59,6 @@ class RegisterController extends Controller
             auth('vendors')->login($vendor);
             return redirect()->route('vendor.verification.notice', ['lang' => app()->getLocale()])
                 ->with('message', 'A verification link has been sent to your email.');
-            // return redirect()->route('vendor.login', ['lang' => app()->getLocale()]);
         }
     }
-    /* End Handle Register Form */
 }

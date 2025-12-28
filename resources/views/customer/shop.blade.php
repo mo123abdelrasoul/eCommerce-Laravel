@@ -26,7 +26,7 @@
                             @if(isset($products))
                                 {{ __('showing_results', ['count' => $products->count()]) }}
                             @else
-                                0 results
+                                {{ __('showing_results', ['count' => 0]) }}
                             @endif
                         </span>
                     </div>

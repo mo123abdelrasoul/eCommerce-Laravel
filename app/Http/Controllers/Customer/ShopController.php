@@ -12,13 +12,9 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $query = Product::where('status', 'approved');
-
-        // Search
         if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
-
-        // Category Filter
         if ($request->has('category')) {
             $categories = $request->category;
             if (is_array($categories)) {
@@ -27,16 +23,12 @@ class ShopController extends Controller
                 $query->where('category_id', $categories);
             }
         }
-
-        // Price Range
         if ($request->has('min_price') && $request->min_price != '') {
             $query->where('price', '>=', $request->min_price);
         }
         if ($request->has('max_price') && $request->max_price != '') {
             $query->where('price', '<=', $request->max_price);
         }
-
-        // Sorting
         if ($request->has('sort')) {
             switch ($request->sort) {
                 case 'newest':
@@ -58,10 +50,8 @@ class ShopController extends Controller
         } else {
             $query->orderBy('created_at', 'desc');
         }
-
         $products = $query->paginate(12);
         $categories = Category::all();
-
         return view('customer.shop', compact('products', 'categories'));
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 
 class RoleUpdateRequest extends FormRequest
 {
@@ -17,7 +16,6 @@ class RoleUpdateRequest extends FormRequest
     public function rules(): array
     {
         $roleId = $this->route('role');
-        // dd($roleId, $this->guard_name);
         return [
             'name' => [
                 'required',

@@ -14,9 +14,10 @@ class DashboardController extends Controller
         $vendor = Auth::guard('vendors')->user();
         $orders = Order::with(['customer:id,name'])
             ->where('vendor_id', $vendor->id)
+            ->take(8)
             ->get();
-        $total_revenue = $orders->sum('total_amount');
-        $ordersCount = $orders->count();
+        $total_revenue = Order::where('vendor_id', $vendor->id)->sum('total_amount');
+        $ordersCount = Order::where('vendor_id', $vendor->id)->count();
         $productsCount = Product::where('vendor_id', $vendor->id)->count();
 
         return view('vendor.dashboard', compact(

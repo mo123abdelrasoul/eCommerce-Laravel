@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers\Admin\Chat;
 
-use App\Events\MessageSent;
 use App\Events\MessageSentWithPusher;
 use App\Http\Controllers\Controller;
-use App\Models\Chat;
 use App\Models\CustomerChat;
 use App\Models\Message;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class CustomerChatController extends Controller

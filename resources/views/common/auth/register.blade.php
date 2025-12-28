@@ -6,12 +6,12 @@
     <div class="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
         <div class="sm:mx-auto sm:w-full sm:max-w-md">
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Create a new account
+                {{ __('create_account') }}
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-                Or
+                {{ __('or') }}
                 <a href="{{ route('user.login', app()->getLocale()) }}" class="font-medium text-primary hover:text-primary-dark">
-                    sign in to your existing account
+                    {{ __('sign_in_existing') }}
                 </a>
             </p>
         </div>
@@ -38,7 +38,7 @@
 
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700">
-                            Full Name
+                            {{ __('full_name') }}
                         </label>
                         <div class="mt-1">
                             <input id="name" name="name" type="text" autocomplete="name" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('name') }}">
@@ -50,7 +50,7 @@
 
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700">
-                            Email address
+                            {{ __('email_address') }}
                         </label>
                         <div class="mt-1">
                             <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('email') }}">
@@ -62,7 +62,7 @@
 
                     <div>
                         <label for="phone" class="block text-sm font-medium text-gray-700">
-                            Phone Number
+                            {{ __('phone_number') }}
                         </label>
                         <div class="mt-1">
                             <input id="phone" name="phone" type="tel" autocomplete="tel" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="{{ old('phone') }}">
@@ -74,7 +74,7 @@
 
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700">
-                            Password
+                            {{ __('password') }}
                         </label>
                         <div class="mt-1">
                             <input id="password" name="password" type="password" autocomplete="new-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
@@ -86,7 +86,7 @@
 
                     <div>
                         <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
-                            Confirm Password
+                            {{ __('confirm_password') }}
                         </label>
                         <div class="mt-1">
                             <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
@@ -94,18 +94,18 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('role') }}</label>
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center">
                                 <input id="customer" name="role" type="radio" value="customer" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" {{ old('role', 'customer') == 'customer' ? 'checked' : '' }}>
                                 <label for="customer" class="ml-2 block text-sm text-gray-700">
-                                    Customer
+                                    {{ __('customer') }}
                                 </label>
                             </div>
                             <div class="flex items-center">
                                 <input id="vendor" name="role" type="radio" value="vendor" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" {{ old('role') == 'vendor' ? 'checked' : '' }}>
                                 <label for="vendor" class="ml-2 block text-sm text-gray-700">
-                                    Vendor
+                                    {{ __('vendor') }}
                                 </label>
                             </div>
                         </div>
@@ -117,13 +117,13 @@
                     <div class="flex items-center">
                         <input id="agreeTerms" name="agreeTerms" type="checkbox" required class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
                         <label for="agreeTerms" class="ml-2 block text-sm text-gray-900">
-                            I agree to the <a href="{{ route('terms', app()->getLocale()) }}" class="font-medium text-primary hover:text-primary-dark">terms</a>
+                            {{ __('i_agree_to') }} <a href="{{ route('terms', app()->getLocale()) }}" class="font-medium text-primary hover:text-primary-dark">{{ __('terms') }}</a>
                         </label>
                     </div>
 
                     <div>
                         <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            Register
+                            {{ __('register') }}
                         </button>
                     </div>
                 </form>
@@ -135,7 +135,7 @@
                         </div>
                         <div class="relative flex justify-center text-sm">
                             <span class="px-2 bg-white text-gray-500">
-                                Or continue with
+                                {{ __('or_continue_with') }}
                             </span>
                         </div>
                     </div>
@@ -143,7 +143,7 @@
                     <div class="mt-6 grid grid-cols-1 gap-3">
                         <div>
                             <a href="{{ route('google.redirect', ['lang' => app()->getLocale()]) }}?type=user" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Sign in with Google</span>
+                                <span class="sr-only">{{ __('sign_in_with_google') }}</span>
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.133 8.053-3.24 2.08-2.16 2.72-5.333 2.72-8.053 0-.72-.067-1.413-.187-2.08h-10.58z" />
                                 </svg>

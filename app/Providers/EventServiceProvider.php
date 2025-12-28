@@ -12,7 +12,9 @@ use App\Models\Vendor;
 use App\Observers\AdminObserver;
 use App\Observers\UserObserver;
 use App\Observers\VendorObserver;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class EventServiceProvider extends ServiceProvider
      * Register services.
      */
     protected $listen = [
+        Registered::class => [
+            SendEmailVerificationNotification::class,
+        ],
         OrderUpdated::class => [
             AddVendorTransaction::class,
         ],

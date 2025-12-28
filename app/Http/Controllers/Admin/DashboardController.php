@@ -7,10 +7,8 @@ use App\Models\Chat;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-// Google Analytics client removed — replaced with local calculations
 
 class DashboardController extends Controller
 {
@@ -30,7 +28,6 @@ class DashboardController extends Controller
             'latestOrders' => $this->getLatestOrders(),
             'latestProducts' => $this->getLatestProducts(),
         ];
-
         return view('admin.dashboard', compact('admin', 'data'));
     }
 
@@ -45,8 +42,6 @@ class DashboardController extends Controller
 
     private function getPageViews(int $days = 7): int
     {
-        // Google Analytics calls removed. Provide local-calculated estimate for page views.
-        // Strategy: estimate page views from recent orders, new users and product count.
         $startDate = now()->subDays($days)->startOfDay();
         $endDate = now()->endOfDay();
 
@@ -54,7 +49,6 @@ class DashboardController extends Controller
         $newUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
         $products = Product::count();
 
-        // Weighted heuristic to produce a reasonable pageViews number without external API.
         $pageViews = ($ordersCount * 15) + ($newUsers * 5) + ($products * 2);
 
         return (int) $pageViews;
@@ -72,18 +66,12 @@ class DashboardController extends Controller
 
     private function getUniqueVisitors(int $days = 7): int
     {
-        // Google Analytics calls removed. Use local DB counts for unique visitors.
         $startDate = now()->subDays($days)->startOfDay();
         $endDate = now()->endOfDay();
-
-        // Best-effort: number of users created in the period represents unique, otherwise
-        // fallback to number of distinct users who placed orders in that period.
         $newUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
         if ($newUsers > 0) {
             return (int) $newUsers;
         }
-
-        // Fallback: count unique users from orders in the period (if user_id exists on orders)
         if (Schema::hasColumn('orders', 'user_id')) {
             $uniqueFromOrders = Order::whereBetween('created_at', [$startDate, $endDate])
                 ->distinct('user_id')
@@ -92,8 +80,6 @@ class DashboardController extends Controller
                 return (int) $uniqueFromOrders;
             }
         }
-
-        // Final fallback: a small static number so views don't break
         return 1;
     }
 
@@ -101,14 +87,10 @@ class DashboardController extends Controller
     {
         return Product::sum('quantity');
     }
-
-    // Google Analytics client removed — all API calls replaced with local calculations.
-
     private function getDirectMessages(int $days = 1): int
     {
         $startDate = now()->subDays($days - 1)->startOfDay();
         $endDate = now()->toDateString();
-
         return Chat::whereBetween('created_at', [$startDate, $endDate])->count();
     }
 
@@ -138,13 +120,11 @@ class DashboardController extends Controller
             ->get();
         $orderData = [];
         foreach ($orders as $order) {
-            foreach ($order->items as $item) {
-                $orderData[] = [
-                    'order_number' => $order->order_number,
-                    'product_name' => $item->product_name,
-                    'status'       => $order->status,
-                ];
-            }
+            $orderData[] = [
+                'order_number' => $order->order_number,
+                'items_count'  => $order->items->count(),
+                'status'       => $order->status,
+            ];
         }
         return $orderData;
     }

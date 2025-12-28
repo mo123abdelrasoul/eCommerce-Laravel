@@ -60,11 +60,9 @@ async function fetchCartData() {
 }
 
 async function openCart(skipFetch = false) {
-    // ✅ OPEN SIDEBAR IMMEDIATELY - No delay!
     document.getElementById('cartSidebar').classList.add('active');
     document.getElementById('cartOverlay').classList.add('active');
 
-    // ✅ THEN fetch fresh data in the background (if needed)
     if (!skipFetch) {
         const cartData = await fetchCartData();
         if (cartData) {
@@ -84,10 +82,8 @@ function toggleCart() {
     const overlay = document.getElementById('cartOverlay');
 
     if (sidebar.classList.contains('active')) {
-        // Cart is open, close it
         closeCart();
     } else {
-        // Cart is closed, open it
         openCart();
     }
 }
@@ -110,7 +106,6 @@ function renderCartItems(products, cart, formattedCartTotal) {
         itemDiv.classList.add('cart-item');
         itemDiv.dataset.productId = product.id;
 
-        // Construct image URL - assuming storage is at root
         const imageUrl = `${window.location.origin}/storage/${product.image}`;
 
         itemDiv.innerHTML = `
@@ -132,19 +127,15 @@ function renderCartItems(products, cart, formattedCartTotal) {
 }
 
 function updateCartCount(count) {
-    // Update all elements with cart-count class
     const cartCountElements = document.querySelectorAll('.cart-count');
     cartCountElements.forEach(el => {
         el.textContent = count;
-        // Always show badge with count (show 0 if empty)
         el.classList.remove('d-none', 'hidden');
     });
 
-    // Also update by ID for the header badge specifically
     const cartBadge = document.getElementById('cart-badge');
     if (cartBadge) {
         cartBadge.textContent = count;
-        // Always visible, even if 0
         cartBadge.classList.remove('d-none', 'hidden');
     }
 }
@@ -152,11 +143,8 @@ function updateCartCount(count) {
 function handleEmptyCart() {
     const container = document.querySelector('.cart-container');
     if (container) {
-        // Get the shop URL (replace 'en' with current language)
         const lang = document.documentElement.lang || 'en';
         const shopUrl = `${window.location.origin}/${lang}/shop`;
-
-        // Replace entire container content (removes title and shows empty state)
         container.innerHTML = `
             <div class="flex items-center justify-center min-h-[60vh]">
                 <div class="text-center max-w-md mx-auto px-4">
@@ -221,15 +209,10 @@ async function addToCart(productId) {
         return;
     }
 
-    // ⚡ INSTANT UI UPDATES - No waiting for server!
-
-    // 1. Get current cart count from badge
     const currentCount = parseInt(document.querySelector('.cart-count')?.textContent || '0');
     const optimisticCount = currentCount + 1;
 
-    // 2. Update cart count IMMEDIATELY (optimistic update)
     updateCartCount(optimisticCount);
-    // 4. NOW send AJAX request in background
     console.log('Requesting URL:', window.addToCartUrl);
 
     try {
@@ -245,20 +228,15 @@ async function addToCart(productId) {
         const data = await response.json();
 
         if (data.status === 'success') {
-            // 4. Update with REAL data from server
             updateCartCount(data.cartCount);
             renderCartItems(data.products, data.cart, data.formatted.cartTotal);
-
-            // 5. Open sidebar AFTER rendering (product already visible!)
             openCart(true);
         } else {
             console.error('Add to cart failed:', data);
-            // Revert optimistic update on failure
             updateCartCount(currentCount);
         }
     } catch (error) {
         console.error('Error adding to cart:', error);
-        // Revert optimistic update on error
         updateCartCount(currentCount);
     }
 }
@@ -280,19 +258,15 @@ async function removeFromCart(productId, button) {
         if (row) row.remove();
 
         updateCartCount(data.cartCount);
-        // Update main cart total if on cart page
         const mainCartTotal = document.querySelector(".cartTotal h3");
         if (mainCartTotal && data.formatted && data.formatted.cartTotal) {
             mainCartTotal.textContent = `Grand Total: ${data.formatted.cartTotal}`;
         } else if (mainCartTotal) {
-            // Fallback if formatted not present in delete response (it is now)
             mainCartTotal.textContent = `Grand Total: ${data.cartTotal.toFixed(2)}`;
         }
 
         const tbody = document.querySelector("table tbody");
         if (tbody && tbody.children.length === 0) handleEmptyCart();
-
-        // Sync Sidebar
         renderCartItems(data.products, data.cart, data.formatted.cartTotal);
     }
 }
@@ -312,26 +286,16 @@ async function removeFromSidebar(productId) {
         const data = await response.json();
 
         if (data.status === 'success') {
-            // Update cart count
             updateCartCount(data.cartCount);
-
-            // Re-render cart items in sidebar
             renderCartItems(data.products, data.cart, data.formatted.cartTotal);
-
-            // If cart is empty, close sidebar
             if (data.cartCount === 0) {
                 closeCart();
             }
-
-            // Update cart page DOM if it's currently open (soft sync, no reload)
-            // This keeps the sidebar open while updating the table in the background
             const cartContainer = document.querySelector('.cart-container');
             if (cartContainer) {
-                // If cart is now empty, show empty state
                 if (data.cartCount === 0) {
                     handleEmptyCart();
                 } else {
-                    // Remove the row from the table that matches this product
                     const cartTable = document.querySelector('table tbody');
                     if (cartTable) {
                         const rows = cartTable.querySelectorAll('tr');
@@ -341,7 +305,6 @@ async function removeFromSidebar(productId) {
                                 row.remove();
                             }
                         });
-                        // Update grand total if present (use plain text, not template syntax)
                         const mainCartTotal = document.querySelector(".cartTotal h3");
                         if (mainCartTotal && data.formatted && data.formatted.cartTotal) {
                             mainCartTotal.innerHTML = `Grand Total: <span class="text-primary">${data.formatted.cartTotal}</span>`;
@@ -361,7 +324,6 @@ async function removeFromSidebar(productId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const proceedBtn = document.querySelector("#proceed-to-checkout");
-    // Support both legacy and current button classes (some templates use `add-cart-btn`, others `add-to-cart-btn`)
     const addCartBtns = document.querySelectorAll(".add-cart-btn, .add-to-cart-btn");
     const removeBtns = document.querySelectorAll(".remove-cart-item");
 
@@ -389,7 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => removeFromCart(btn.dataset.productId, btn));
     });
 
-    // expose to window (optional)
     window.openCart = openCart;
     window.closeCart = closeCart;
     window.toggleCart = toggleCart;

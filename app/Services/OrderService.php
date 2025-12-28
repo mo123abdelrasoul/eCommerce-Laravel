@@ -3,11 +3,7 @@
 namespace App\Services;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use App\Services\OrderAmountService;
-use App\Models\PaymentMethod;
-use App\Models\ShippingMethod;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\OrderItemService;

@@ -6,7 +6,6 @@
     <div class="container py-4">
         <h4 class="mb-4">Manage Shipping Rates</h4>
 
-        {{-- ✅ رسائل النجاح أو الخطأ --}}
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -15,7 +14,6 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        {{-- ✅ أخطاء الفاليديشن --}}
         @if ($errors->any())
             <div class="alert alert-danger">
                 <strong>There were some errors with your input:</strong>
@@ -42,7 +40,6 @@
                         </tr>
                     </thead>
                     <tbody id="rates-table">
-                        {{-- ✅ لو في بيانات في الداتابيز --}}
                         @forelse ($rates as $index => $rate)
                             <tr>
                                 <td>
@@ -74,7 +71,6 @@
                                 <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
                             </tr>
                         @empty
-                            {{-- ✅ لو مفيش بيانات خالص --}}
                             <tr>
                                 <td>
                                     <select name="rates[0][region]" class="form-select">

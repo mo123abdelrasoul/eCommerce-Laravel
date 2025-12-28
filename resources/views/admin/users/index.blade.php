@@ -101,7 +101,7 @@
                                                         @csrf
                                                         @method('PUT')
                                                         <button type="submit"
-                                                            class="btn btn-warning btn-sm">Restore</button>
+                                                            class="btn btn-success btn-sm">Restore</button>
                                                     </form>
                                                 @else
                                                     <form

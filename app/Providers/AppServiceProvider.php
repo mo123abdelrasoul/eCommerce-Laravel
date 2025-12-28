@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Session;
 use App\Models\Product;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -38,17 +39,17 @@ class AppServiceProvider extends ServiceProvider
                 Config::set('mail.from.name', $settings->from_name);
             }
         }
-    View::composer('customer.layouts.app', function ($view) {
-        $cart = Session::get('cart', []);
-        $products = collect();
+        View::composer('customer.layouts.app', function ($view) {
+            $cart = Session::get('cart', []);
+            $products = collect();
 
-        if (!empty($cart)) {
-            $products = Product::select('id', 'name', 'image', 'price')
-                ->whereIn('id', array_keys($cart))
-                ->get();
-        }
+            if (!empty($cart)) {
+                $products = Product::select('id', 'name', 'image', 'price')
+                    ->whereIn('id', array_keys($cart))
+                    ->get();
+            }
 
-        $view->with(compact('products', 'cart'));
-    });
+            $view->with(compact('products', 'cart'));
+        });
     }
 }

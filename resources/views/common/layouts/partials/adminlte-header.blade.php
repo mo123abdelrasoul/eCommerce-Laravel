@@ -28,6 +28,11 @@
                     $guard === 'admins'
                         ? route('admin.logout.submit', ['lang' => app()->getLocale()])
                         : route('vendor.logout.submit', ['lang' => app()->getLocale()]);
+                $profileRoute =
+                    $guard === 'admins'
+                        ? route('admin.profile.index', ['lang' => app()->getLocale()])
+                        : route('vendor.profile.index', ['lang' => app()->getLocale()]);
+
                 $logoutMethod = 'POST';
             @endphp
 
@@ -47,15 +52,9 @@
                             {{-- {{ $user->created_at?->format('M. Y') ?? 'N/A' }} --}}
                         </p>
                     </li>
-                    <li class="user-body">
-                        <div class="row">
-                            <div class="col-4 text-center"><a href="#">Followers</a></div>
-                            <div class="col-4 text-center"><a href="#">Sales</a></div>
-                            <div class="col-4 text-center"><a href="#">Friends</a></div>
-                        </div>
-                    </li>
+
                     <li class="user-footer">
-                        <a href="#" class="btn btn-default btn-flat">Profile</a>
+                        <a href="{{ $profileRoute }}" class="btn btn-default btn-flat">Profile</a>
                         <form method="POST" action="{{ $logoutRoute }}" class="d-inline">
                             @csrf
                             @method($logoutMethod)

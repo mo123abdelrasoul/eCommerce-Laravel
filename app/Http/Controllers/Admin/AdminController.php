@@ -16,6 +16,7 @@ class AdminController extends Controller
         $admins = Admin::with('roles')->when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%");
         })
+            ->where('id', '!=', auth('admins')->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('admin.admins.index', compact('admins'));

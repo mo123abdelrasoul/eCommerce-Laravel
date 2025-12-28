@@ -16,12 +16,18 @@ class CheckAdminPermission
     public function handle(Request $request, Closure $next, $permission): Response
     {
         $admin = auth()->guard('admins')->user();
+
         if (!$admin) {
             return redirect()->route('admin.login', app()->getLocale());
         }
-        if (!$admin->hasRole('admin') || !$admin->can($permission)) {
+
+        if (
+            !$admin->hasAnyRole(['admin', 'admin viewer']) ||
+            !$admin->can($permission)
+        ) {
             abort(403, 'Unauthorized');
         }
+
         return $next($request);
     }
 }

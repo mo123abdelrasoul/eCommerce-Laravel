@@ -3,6 +3,11 @@
 
 @section('content')
     <h1>Analytics Dashboard</h1>
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <canvas id="pageViewsChart"></canvas>
 

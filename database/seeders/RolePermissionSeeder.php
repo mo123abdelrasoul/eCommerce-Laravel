@@ -11,7 +11,6 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Permissions for vendors
         $vendorPermissions = [
             'manage own products',
             'manage own orders',
@@ -37,7 +36,6 @@ class RolePermissionSeeder extends Seeder
         $vendor->syncPermissions($vendorPermissions);
 
 
-        // Permissions for admins
         $adminPermissions = [
             'manage users',
             'manage vendors',
@@ -63,7 +61,6 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'admins']);
         $admin->syncPermissions($adminPermissions);
 
-        // Permissions for customers
         $customerPermissions = [
             'place order',
             'update user profile',

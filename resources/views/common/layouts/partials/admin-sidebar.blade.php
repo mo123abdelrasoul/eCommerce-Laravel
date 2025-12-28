@@ -20,32 +20,32 @@
                 <!-- Dashboard -->
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'dashboard', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs($prefix . 'dashboard*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'dashboard') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>{{ 'Dashboard' }}</p>
                     </a>
                 </li>
 
 
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a href="{{ route($prefix . 'dashboard.analytics', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs($prefix . 'dashboard*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'dashboard.analytics') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>{{ 'Dashboard Analytics' }}</p>
                     </a>
-                </li>
+                </li> -->
 
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'admins.index', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs($prefix . 'admins.index*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'admins.*') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i>
                         <p>{{ 'Admins' }}</p>
                     </a>
                 </li>
                 <!-- Vendors -->
-                <li class="nav-item {{ request()->is('*admin/vendors*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*admin/vendors*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                <li class="nav-item {{ request()->routeIs($prefix . 'vendors.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'vendors.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-shop"></i>
                         <p>
                             Vendors
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -72,9 +72,9 @@
 
 
                 <!-- Users -->
-                <li class="nav-item {{ request()->is('*admin/users*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*admin/users*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                <li class="nav-item {{ request()->routeIs($prefix . 'users.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'users.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-people"></i>
                         <p>
                             Users
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -92,9 +92,10 @@
                 </li>
 
                 <!-- Categories -->
-                <li class="nav-item {{ request()->is('*categories*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*categories*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-people-fill"></i>
+                <li class="nav-item {{ request()->routeIs($prefix . 'categories.*') ? 'menu-open' : '' }}">
+                    <a href="#"
+                        class="nav-link {{ request()->routeIs($prefix . 'categories.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-tags"></i>
                         <p>
                             Categories
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -121,11 +122,11 @@
                 <!-- Shipping -->
                 <li
                     class="nav-item
-    {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'menu-open' : '' }}">
+    {{ request()->routeIs($prefix . 'cities.*') || request()->routeIs($prefix . 'regions.*') || request()->routeIs($prefix . 'methods.*') ? 'menu-open' : '' }}">
                     <a href="#"
                         class="nav-link
-        {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'active' : '' }}">
-                        <i class="bi bi-ticket-perforated"></i>
+        {{ request()->routeIs($prefix . 'cities.*') || request()->routeIs($prefix . 'regions.*') || request()->routeIs($prefix . 'methods.*') ? 'active' : '' }}">
+                        <i class="bi bi-truck"></i>
                         <p>
                             Shipping
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -157,8 +158,8 @@
                 </li>
 
                 <!-- Brands -->
-                <li class="nav-item {{ request()->is('*brands*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*brands*') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs($prefix . 'brands.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'brands.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-tags-fill"></i>
                         <p>
                             Brands
@@ -168,7 +169,7 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'brands.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->routeIs($prefix . 'brands.index', app()->getLocale()) ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'brands.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>All Brands</p>
                             </a>
@@ -186,7 +187,7 @@
                 <!-- Coupons -->
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'coupons.index', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs('coupons.*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'coupons.*') ? 'active' : '' }}">
                         <i class="bi bi-ticket-perforated"></i>
                         <p>Coupons</p>
                     </a>
@@ -195,17 +196,38 @@
                 <!-- Orders -->
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'orders.index', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'orders.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-cart-fill"></i>
                         <p>Orders</p>
                     </a>
                 </li>
 
+                <!-- Products -->
+                <li class="nav-item {{ request()->routeIs($prefix . 'products.*') ? 'menu-open' : '' }}">
+                    <a href="#"
+                        class="nav-link {{ request()->routeIs($prefix . 'products.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-box-seam"></i>
+                        <p>
+                            Products
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route($prefix . 'products.index', app()->getLocale()) }}"
+                                class="nav-link {{ request()->routeIs($prefix . 'products.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>All Products</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Finance -->
                 <li
-                    class="nav-item {{ request()->is('*finance*') || request()->is('*withdraw*') ? 'menu-open' : '' }}">
+                    class="nav-item {{ request()->routeIs($prefix . 'finance.*') || request()->routeIs($prefix . 'withdraw.*') ? 'menu-open' : '' }}">
                     <a href="#"
-                        class="nav-link {{ request()->is('*finance*') || request()->is('*withdraw*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'finance.*') || request()->routeIs($prefix . 'withdraw.*') ? 'active' : '' }}">
                         <i class="bi bi-graph-up-arrow"></i>
                         <p>
                             Finance
@@ -215,14 +237,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'finance.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*finance*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'finance.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Overview</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'withdraw.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*withdraw*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'withdraw.*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Withdraw Requests</p>
                             </a>
@@ -230,8 +252,8 @@
                     </ul>
                 </li>
 
-                <li class="nav-item {{ request()->is('*email*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*email*') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs($prefix . 'email.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'email.*') ? 'active' : '' }}">
                         <i class="bi bi-envelope"></i>
                         <p>
                             Email
@@ -241,14 +263,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route('admin.email.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*email*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'email.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Settings</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.email.test', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*email/test*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'email.test*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Test Email</p>
                             </a>
@@ -257,8 +279,10 @@
                 </li>
 
                 <!-- Chats -->
-                <li class="nav-item {{ request()->is('*chat*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*chat*') ? 'active' : '' }}">
+                <li
+                    class="nav-item {{ request()->routeIs($prefix . 'vendor-chats.*') || request()->routeIs($prefix . 'customer-chats.*') ? 'menu-open' : '' }}">
+                    <a href="#"
+                        class="nav-link {{ request()->routeIs($prefix . 'vendor-chats.*') || request()->routeIs($prefix . 'customer-chats.*') ? 'active' : '' }}">
                         <i class="bi bi-chat-dots"></i>
                         <p>
                             Chats
@@ -268,14 +292,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'vendor-chats.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is(app()->getLocale() . '/admin/chats/vendor*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'vendor-chats.*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Vendor</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route($prefix . 'customer-chats.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is(app()->getLocale() . '/admin/chats/customer*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs($prefix . 'customer-chats.*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Customer</p>
                             </a>
@@ -295,8 +319,8 @@
 
 
                 <!-- Roles -->
-                <li class="nav-item {{ request()->is('*roles*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*roles*') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs($prefix . 'roles.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'roles.*') ? 'active' : '' }}">
                         <i class="bi bi-shield-lock"></i>
                         <p>
                             Roles
@@ -306,14 +330,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route('admin.roles.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*roles*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs('admin.roles.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>All Roles</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.roles.create', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*roles/create*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs('admin.roles.create') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Create Role</p>
                             </a>
@@ -322,8 +346,9 @@
                 </li>
 
                 <!-- Permissions -->
-                <li class="nav-item {{ request()->is('*permissions*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*permissions*') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs($prefix . 'permissions.*') ? 'menu-open' : '' }}">
+                    <a href="#"
+                        class="nav-link {{ request()->routeIs($prefix . 'permissions.*') ? 'active' : '' }}">
                         <i class="bi bi-key"></i>
                         <p>
                             Permissions
@@ -333,14 +358,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route('admin.permissions.index', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*permissions*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs('admin.permissions.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>All Permissions</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.permissions.create', app()->getLocale()) }}"
-                                class="nav-link {{ request()->is('*permissions/create*') ? 'active' : '' }}">
+                                class="nav-link {{ request()->routeIs('admin.permissions.create') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Create Permission</p>
                             </a>
@@ -350,38 +375,10 @@
 
 
 
-                <!-- Reports -->
-                <li class="nav-item {{ request()->is('reports*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('reports*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-bar-chart-fill"></i>
-                        <p>
-                            Reports
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Sales Report</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>User Report</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+
                 <!-- Settings -->
                 <li class="nav-header">SETTINGS</li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-gear-fill"></i>
-                        <p>Settings</p>
-                    </a>
-                </li>
+
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'profile.index', app()->getLocale()) }}" class="nav-link">
                         <i class="nav-icon bi bi-person-gear"></i>

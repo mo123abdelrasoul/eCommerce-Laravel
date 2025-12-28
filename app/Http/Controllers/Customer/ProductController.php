@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -13,7 +12,6 @@ class ProductController extends Controller
         $product = Product::with(['vendor:id,name', 'category:id,name', 'brand:id,name'])
             ->where('id', $id)
             ->firstOrFail();
-        // Determine availability — don't immediately abort so we can display a friendly message
         $available = ($product->status === 'approved');
 
         if ($product->category_id) {

@@ -29,9 +29,9 @@
                 <!-- Products -->
                 <li
                     class="nav-item
-    {{ request()->is('*products*') || request()->is('*categories*') || request()->is('*brands*') ? 'menu-open' : '' }}">
+    {{ request()->routeIs($prefix . 'products.*') || request()->routeIs($prefix . 'categories.*') || request()->routeIs($prefix . 'brands.*') ? 'menu-open' : '' }}">
                     <a href="#"
-                        class="nav-link {{ request()->is('*products*') || request()->is('*categories*') || request()->is('*brands*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'products.*') || request()->routeIs($prefix . 'categories.*') || request()->routeIs($prefix . 'brands.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
                         <p>
                             Products
@@ -65,8 +65,8 @@
 
 
                 <!-- Coupons -->
-                <li class="nav-item {{ request()->is('*coupons*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('*coupons*') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs($prefix . 'coupons.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs($prefix . 'coupons.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-percent"></i>
                         <p>
                             Coupons
@@ -94,10 +94,10 @@
                 <!-- Shipping -->
                 <li
                     class="nav-item
-    {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'menu-open' : '' }}">
+    {{ request()->routeIs($prefix . 'shipping.methods.*') || request()->routeIs($prefix . 'rates.*') ? 'menu-open' : '' }}">
                     <a href="#"
                         class="nav-link
-        {{ request()->is('*cities*') || request()->is('*regions*') || request()->is('*shipping/methods*') ? 'active' : '' }}">
+        {{ request()->routeIs($prefix . 'shipping.methods.*') || request()->routeIs($prefix . 'rates.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-truck"></i>
                         <p>
                             Shipping
@@ -125,7 +125,7 @@
                 <!-- Orders -->
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'orders.index', app()->getLocale()) }}"
-                        class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs($prefix . 'orders.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-cart-fill"></i>
                         <p>Orders</p>
                     </a>
@@ -163,38 +163,11 @@
 
 
 
-                <li class="nav-item {{ request()->is('reports*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('reports*') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-bar-chart-fill"></i>
-                        <p>
-                            Reports
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Sales Report</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>User Report</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+
 
                 <!-- Settings -->
                 <li class="nav-header">SETTINGS</li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-gear-fill"></i>
-                        <p>Settings</p>
-                    </a>
-                </li>
+
                 <li class="nav-item">
                     <a href="{{ route($prefix . 'profile.index', app()->getLocale()) }}" class="nav-link">
                         <i class="nav-icon bi bi-person-gear"></i>
@@ -238,7 +211,6 @@
 
 <!-- resources/views/vendor/layouts/app.blade.php أو أي Blade عام للفيندور -->
 @php
-    $isRead = App\Http\Controllers\Vendor\Chat\ChatController::isLatestMessageRead();
     $vendorId = auth()->guard('vendors')->id();
 @endphp
 <div id="vendor-chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">

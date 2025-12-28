@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\Admin\Access\PermissionController as AdminPermissionController;
-use App\Http\Controllers\Admin\Access\RoleController as AdminRoleController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\Analytics\GoogleAnalyticsController;
-use Illuminate\Support\Facades\Route;
 
 // Common Controllers
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Common\Auth\RegisterController;
 use App\Http\Controllers\Common\Auth\Socialite\GoogleController as SocialiteGoogleController;
 use App\Http\Controllers\Common\Localization\LanguageController as LocalizationLanguageController;
 
 // Admin Controllers
+use App\Http\Controllers\Admin\Analytics\GoogleAnalyticsController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\Access\PermissionController as AdminPermissionController;
+use App\Http\Controllers\Admin\Access\RoleController as AdminRoleController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\Auth\ForgotPasswordController as AdminForgotPasswordController;
 use App\Http\Controllers\Admin\Auth\ResetPasswordController as AdminResetPasswordController;
@@ -51,7 +51,6 @@ use App\Http\Controllers\Vendor\Wallet\Withdraw\WithdrawController as VendorWith
 use App\Http\Controllers\Vendor\Auth\EmailVerificationController as VendorEmailVerificationController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\Chat\ChatController as VendorChatController;
-
 
 // Customer Controllers
 use App\Http\Controllers\Customer\Auth\LoginController as CustomerLoginController;
@@ -264,9 +263,8 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
         Route::get('vendor/chats/vendor/messages', [VendorChatController::class, 'loadMessages'])
             ->name('vendor.chats.load.messages');
         Route::post('vendor/chat/send', [VendorChatController::class, 'sendMessage'])
+            ->middleware('check.vendor.permission:Create Data')
             ->name('vendor.chat.send.message');
-        Route::post('vendor/chat/mark-read', [VendorChatController::class, 'markLatestMessageAsRead'])
-            ->name('vendor.chat.markRead');
 
         Route::prefix('vendor')->name('vendor.')->group(function () {
             Route::post('logout', [VendorLoginController::class, 'logout'])
@@ -275,17 +273,44 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 ->name('dashboard')
                 ->middleware('check.vendor.permission:manage dashboard');
 
-            // Vendor resources
+            // Categories
             Route::resource('categories', VendorCategoryController::class)
+                ->only(['index'])
                 ->middleware('check.vendor.permission:view categories');
+
+            // Products
             Route::resource('products', VendorProductController::class)
                 ->middleware('check.vendor.permission:manage own products');
+
+            // Brands
             Route::resource('brands', VendorBrandController::class)
+                ->only(['index'])
                 ->middleware('check.vendor.permission:view brands');
+
+            // Coupons
             Route::resource('coupons', VendorCouponController::class)
+                ->except(['store', 'update', 'destroy'])
                 ->middleware('check.vendor.permission:manage own coupons');
-            Route::resource('orders', VendorOrderController::class)->except(['create', 'store'])
+            Route::post('coupons', [VendorCouponController::class, 'store'])
+                ->middleware('check.vendor.permission:Create Data,manage own coupons')
+                ->name('coupons.store');
+            Route::put('coupons/{coupon}', [VendorCouponController::class, 'update'])
+                ->middleware('check.vendor.permission:Update Data,manage own coupons')
+                ->name('coupons.update');
+            Route::delete('coupons/{coupon}', [VendorCouponController::class, 'destroy'])
+                ->middleware('check.vendor.permission:Delete Data,manage own coupons')
+                ->name('coupons.destroy');
+
+            // Orders
+            Route::resource('orders', VendorOrderController::class)
+                ->except(['create', 'store', 'update', 'destroy'])
                 ->middleware('check.vendor.permission:manage own orders');
+            Route::put('orders/{order}', [VendorOrderController::class, 'update'])
+                ->middleware('check.vendor.permission:Update Data,manage own orders')
+                ->name('orders.update');
+            Route::delete('orders/{order}', [VendorOrderController::class, 'destroy'])
+                ->middleware('check.vendor.permission:Delete Data,manage own orders')
+                ->name('orders.destroy');
 
             // Profile
             Route::middleware(['check.vendor.permission:manage own profile'])->group(function () {
@@ -294,16 +319,24 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 Route::get('profile/{profile}/edit', [VendorProfileController::class, 'edit'])
                     ->name('profile.edit');
                 Route::put('profile/{profile}', [VendorProfileController::class, 'update'])
+                    ->middleware('check.vendor.permission:Update Data')
                     ->name('profile.update');
             });
 
-
-
             // Shipping
             Route::middleware(['check.vendor.permission:manage shipping options'])->group(function () {
-                Route::get('shipping/methods', [VendorShippingMethodController::class, 'index'])->name('shipping.methods.index');
-                Route::post('shipping/methods', [VendorShippingMethodController::class, 'store'])->name('shipping.methods.store');
-                Route::resource('shipping/rates', VendorShippingRateController::class)->except(['show', 'edit']);
+                Route::get('shipping/methods', [VendorShippingMethodController::class, 'index'])
+                    ->name('shipping.methods.index');
+                Route::post('shipping/methods', [VendorShippingMethodController::class, 'store'])
+                    ->middleware('check.vendor.permission:Create Data')
+                    ->name('shipping.methods.store');
+                // Route::resource('shipping/rates', VendorShippingRateController::class)
+                //     ->except(['show', 'edit']);
+                Route::resource('shipping/rates', VendorShippingRateController::class)
+                    ->only(['index']);
+                Route::post('shipping/rates', [VendorShippingRateController::class, 'store'])
+                    ->middleware('check.vendor.permission:Create Data,view shipping rates')
+                    ->name('rates.store');
             });
 
             // Wallet
@@ -311,8 +344,17 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 ->name('wallet.index')
                 ->middleware('check.vendor.permission:view own wallet');
             Route::resource('wallet/withdraw', VendorWithdrawController::class)
-                ->except(['show'])
+                ->except(['show', 'store', 'update', 'destroy'])
                 ->middleware('check.vendor.permission:request withdraw');
+            Route::post('wallet/withdraw', [VendorWithdrawController::class, 'store'])
+                ->middleware('check.vendor.permission:Create Data,request withdraw')
+                ->name('withdraw.store');
+            Route::put('wallet/withdraw/{withdraw}', [VendorWithdrawController::class, 'update'])
+                ->middleware('check.vendor.permission:Update Data,request withdraw')
+                ->name('withdraw.update');
+            Route::delete('wallet/withdraw/{withdraw}', [VendorWithdrawController::class, 'destroy'])
+                ->middleware('check.vendor.permission:Delete Data,request withdraw')
+                ->name('withdraw.destroy');
         });
     });
 
@@ -322,29 +364,68 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['checkUserRole:admin'])->group(function () {
-
         Route::prefix('admin')->name('admin.')->group(function () {
-
-
             Route::get('/dashboard/analytics', [GoogleAnalyticsController::class, 'dashboard'])->name('dashboard.analytics');
-
             // Admins CRUD
-            Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
-            Route::get('/admins/create', [AdminController::class, 'create'])->name('admins.create');
-            Route::post('/admins', [AdminController::class, 'store'])->name('admins.store');
-            Route::get('/admins/{admin}/edit', [AdminController::class, 'edit'])->name('admins.edit');
-            Route::put('/admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
-            Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');
+            Route::get('/admins', [AdminController::class, 'index'])
+                ->name('admins.index');
+            Route::get('/admins/create', [AdminController::class, 'create'])
+                ->name('admins.create');
+            Route::post('/admins', [AdminController::class, 'store'])
+                ->name('admins.store')
+                ->middleware('check.admin.permission:Create Data');
+            Route::get('/admins/{admin}/edit', [AdminController::class, 'edit'])
+                ->name('admins.edit');
+            Route::put('/admins/{admin}', [AdminController::class, 'update'])
+                ->name('admins.update')
+                ->middleware('check.admin.permission:Update Data');
+            Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])
+                ->name('admins.destroy')
+                ->middleware('check.admin.permission:Delete Data');
 
             // Assign roles
-            Route::get('/admins/{admin}/roles', [AdminController::class, 'assignRoleForm'])->name('admins.assignRoleForm');
-            Route::post('/admins/{admin}/roles', [AdminController::class, 'assignRole'])->name('admins.assignRole');
+            Route::get('/admins/{admin}/roles', [AdminController::class, 'assignRoleForm'])
+                ->name('admins.assignRoleForm');
+            Route::post('/admins/{admin}/roles', [AdminController::class, 'assignRole'])
+                ->name('admins.assignRole')
+                ->middleware('check.admin.permission:Update Data');
 
-            Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])->name('roles.getPermissions');
-            Route::resource('permissions', AdminPermissionController::class)->middleware('check.admin.permission:Manage Permissions');
-            Route::resource('roles', AdminRoleController::class)->except('show');
             Route::get('vendors/{id}/assign-role', [AdminVendorController::class, 'showAssignRoleForm'])->name('vendors.assignRoleForm');
-            Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])->name('vendors.assignRole');
+            Route::post('vendors/{id}/assign-role', [AdminVendorController::class, 'assignRole'])
+                ->name('vendors.assignRole')
+                ->middleware('check.admin.permission:Update Data');
+
+            // Roles
+            Route::resource('roles', AdminRoleController::class)
+                ->except(['show', 'store', 'update', 'destroy'])
+                ->middleware('check.admin.permission:Manage Roles');
+            Route::post('roles', [AdminRoleController::class, 'store'])
+                ->middleware('check.admin.permission:Create Data,Manage Roles')
+                ->name('roles.store');
+            Route::put('roles/{role}', [AdminRoleController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,Manage Roles')
+                ->name('roles.update');
+            Route::delete('roles/{role}', [AdminRoleController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,Manage Roles')
+                ->name('roles.destroy');
+            Route::get('roles/get-permissions/{guard}', [AdminRoleController::class, 'getPermissions'])
+                ->name('roles.getPermissions');
+
+            // Permissions
+            Route::resource('permissions', AdminPermissionController::class)
+                ->except(['store', 'update', 'destroy'])
+                ->middleware('check.admin.permission:Manage Permissions');
+            Route::post('permissions', [AdminPermissionController::class, 'store'])
+                ->middleware('check.admin.permission:Create Data,Manage Permissions')
+                ->name('permissions.store');
+            Route::put('permissions/{permission}', [AdminPermissionController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,Manage Permissions')
+                ->name('permissions.update');
+            Route::delete('permissions/{permission}', [AdminPermissionController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,Manage Permissions')
+                ->name('permissions.destroy');
+
+
 
             Route::post('logout', [AdminLoginController::class, 'logout'])
                 ->name('logout.submit');
@@ -357,54 +438,152 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 Route::get('vendors/pending', [AdminVendorController::class, 'pending'])
                     ->name('vendors.pending');
                 Route::put('vendors/pending/{vendor}', [AdminVendorController::class, 'updateStatus'])
-                    ->name('vendors.update.status');
+                    ->name('vendors.update.status')->middleware('check.admin.permission:Update Data');
                 Route::resource('vendors', AdminVendorController::class)
-                    ->except(['create', 'store']);
+                    ->except(['create', 'store', 'update', 'destroy']);
+                Route::put('vendors/{vendor}', [AdminVendorController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data')
+                    ->name('vendors.update');
+                Route::delete('vendors/{vendor}', [AdminVendorController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data')
+                    ->name('vendors.destroy');
             });
 
             // Users
             Route::middleware(['check.admin.permission:manage users'])->group(function () {
                 Route::resource('users', AdminUserController::class)
-                    ->except(['create', 'store']);
+                    ->except(['create', 'store', 'update', 'destroy']);
+                Route::put('users/{user}', [AdminUserController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data')
+                    ->name('users.update');
+                Route::delete('users/{user}', [AdminUserController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data')
+                    ->name('users.destroy');
                 Route::put('users/restore/{user}', [AdminUserController::class, 'restore'])
-                    ->name('users.restore');
+                    ->name('users.restore')->middleware('check.admin.permission:Update Data');
             });
 
             // Admin Resources
             Route::resource('brands', AdminBrandController::class)
+                ->except(['store', 'update', 'destroy'])
                 ->middleware('check.admin.permission:manage brands');
-            Route::resource('categories', AdminCategoryController::class)
-                ->middleware('check.admin.permission:manage categories');
-            Route::resource('coupons', AdminCouponController::class)
-                ->middleware('check.admin.permission:manage coupons');
-            Route::resource('orders', AdminOrderController::class)
-                ->except(['create', 'store'])
-                ->middleware('check.admin.permission:manage orders');
+            Route::post('brands', [AdminBrandController::class, 'store'])
+                ->middleware('check.admin.permission:Create Data,manage brands')
+                ->name('brands.store');
+            Route::put('brands/{brand}', [AdminBrandController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,manage brands')
+                ->name('brands.update');
+            Route::delete('brands/{brand}', [AdminBrandController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,manage brands')
+                ->name('brands.destroy');
 
+            Route::resource('categories', AdminCategoryController::class)
+                ->except(['store', 'update', 'destroy'])
+                ->middleware('check.admin.permission:manage categories');
+            Route::post('categories', [AdminCategoryController::class, 'store'])
+                ->middleware('check.admin.permission:Create Data,manage categories')
+                ->name('categories.store');
+            Route::put('categories/{category}', [AdminCategoryController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,manage categories')
+                ->name('categories.update');
+            Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,manage categories')
+                ->name('categories.destroy');
+
+            Route::resource('coupons', AdminCouponController::class)
+                ->except(['store', 'update', 'destroy'])
+                ->middleware('check.admin.permission:manage coupons');
+            Route::post('coupons', [AdminCouponController::class, 'store'])
+                ->middleware('check.admin.permission:Create Data,manage coupons')
+                ->name('coupons.store');
+            Route::put('coupons/{coupon}', [AdminCouponController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,manage coupons')
+                ->name('coupons.update');
+            Route::delete('coupons/{coupon}', [AdminCouponController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,manage coupons')
+                ->name('coupons.destroy');
+
+            Route::resource('orders', AdminOrderController::class)
+                ->except(['create', 'store', 'update', 'destroy'])
+                ->middleware('check.admin.permission:manage orders');
+            Route::put('orders/{order}', [AdminOrderController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,manage orders')
+                ->name('orders.update');
+            Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,manage orders')
+                ->name('orders.destroy');
 
 
 
             // Profile
             Route::resource('profile', AdminProfileController::class)
-                ->except(['create', 'store', 'show'])
+                ->except(['create', 'store', 'show', 'update', 'destroy'])
                 ->middleware('check.admin.permission:manage profile');
+            Route::put('profile/{profile}', [AdminProfileController::class, 'update'])
+                ->middleware('check.admin.permission:Update Data,manage profile')
+                ->name('profile.update');
+            Route::delete('profile/{profile}', [AdminProfileController::class, 'destroy'])
+                ->middleware('check.admin.permission:Delete Data,manage profile')
+                ->name('profile.destroy');
 
             // Products
             Route::middleware(['check.admin.permission:manage products'])->group(function () {
                 Route::resource('products', AdminProductController::class)
-                    ->except(['create', 'store']);
+                    ->except(['create', 'store', 'update', 'destroy']);
+                Route::put('products/{product}', [AdminProductController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data')
+                    ->name('products.update');
+                Route::delete('products/{product}', [AdminProductController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data')
+                    ->name('products.destroy');
                 Route::put('products/restore/{product}', [AdminProductController::class, 'restore'])
+                    ->middleware('check.admin.permission:Update Data')
                     ->name('products.restore');
             });
 
             // Shipping
             Route::middleware(['check.admin.permission:manage shipping'])->group(function () {
+                // Methods
                 Route::resource('shipping/methods', AdminShippingMethodController::class)
-                    ->except('show');
+                    ->except(['show', 'store', 'update', 'destroy'])
+                    ->middleware('check.admin.permission:manage shipping');
+                Route::post('shipping/methods', [AdminShippingMethodController::class, 'store'])
+                    ->middleware('check.admin.permission:Create Data,manage shipping')
+                    ->name('shipping.methods.store');
+                Route::put('shipping/methods/{method}', [AdminShippingMethodController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data,manage shipping')
+                    ->name('shipping.methods.update');
+                Route::delete('shipping/methods/{method}', [AdminShippingMethodController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data,manage shipping')
+                    ->name('shipping.methods.destroy');
+
+                // Cities
                 Route::resource('cities', AdminShippingCityController::class)
-                    ->except('show');
+                    ->except(['show', 'store', 'update', 'destroy'])
+                    ->middleware('check.admin.permission:manage shipping');
+                Route::post('cities', [AdminShippingCityController::class, 'store'])
+                    ->middleware('check.admin.permission:Create Data,manage shipping')
+                    ->name('cities.store');
+                Route::put('cities/{city}', [AdminShippingCityController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data,manage shipping')
+                    ->name('cities.update');
+                Route::delete('cities/{city}', [AdminShippingCityController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data,manage shipping')
+                    ->name('cities.destroy');
+
+                // Regions
                 Route::resource('regions', AdminShippingRegionController::class)
-                    ->except('show');
+                    ->except(['show', 'store', 'update', 'destroy'])
+                    ->middleware('check.admin.permission:manage shipping');
+                Route::post('regions', [AdminShippingRegionController::class, 'store'])
+                    ->middleware('check.admin.permission:Create Data,manage shipping')
+                    ->name('regions.store');
+                Route::put('regions/{region}', [AdminShippingRegionController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data,manage shipping')
+                    ->name('regions.update');
+                Route::delete('regions/{region}', [AdminShippingRegionController::class, 'destroy'])
+                    ->middleware('check.admin.permission:Delete Data,manage shipping')
+                    ->name('regions.destroy');
             });
 
 
@@ -415,29 +594,36 @@ Route::group(['prefix' => '{lang}', 'middleware' => 'setLocale'], function () {
                 Route::resource('withdraw', AdminWithdrawController::class)
                     ->except(['create', 'store', 'show', 'edit', 'update', 'destroy']);
                 Route::post('withdraw/approve', [AdminWithdrawController::class, 'approve'])
+                    ->middleware('check.admin.permission:Update Data')
                     ->name('withdraw.approve');
                 Route::post('withdraw/reject', [AdminWithdrawController::class, 'reject'])
+                    ->middleware('check.admin.permission:Update Data')
                     ->name('withdraw.reject');
             });
 
             // Emails
             Route::middleware(['check.admin.permission:manage emails'])->group(function () {
-                Route::resource('email', AdminEmailController::class)->except(['show', 'create', 'store', 'destroy']);
+                Route::resource('email', AdminEmailController::class)->except(['show', 'create', 'store', 'destroy', 'update']);
+                Route::put('email/{email}', [AdminEmailController::class, 'update'])
+                    ->middleware('check.admin.permission:Update Data')
+                    ->name('email.update');
                 Route::get('email/test', [AdminEmailController::class, 'emailTest'])
                     ->name('email.test');
                 Route::post('email/send', [AdminEmailController::class, 'sendEmailTest'])
+                    ->middleware('check.admin.permission:Update Data')
                     ->name('email.test.send');
             });
 
             // Chats
-
             Route::middleware(['check.admin.permission:manage chats'])->group(function () {
                 Route::resource('vendor-chats', AdminVendorChatController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
                 Route::post('chats/vendor-chats/{receiverId}/send', [AdminVendorChatController::class, 'sendMessage'])
+                    ->middleware('check.admin.permission:Create Data')
                     ->name('chats.vendor-chat.send.message');
 
                 Route::resource('customer-chats', AdminCustomerChatController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
                 Route::post('chats/customer-chats/{receiverId}/send', [AdminCustomerChatController::class, 'sendMessage'])
+                    ->middleware('check.admin.permission:Create Data')
                     ->name('chats.customer-chat.send.message');
             });
         });

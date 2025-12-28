@@ -3,13 +3,7 @@
 namespace App\Http\Controllers\Vendor\Product;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Vendor;
 use App\Models\Category;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
-
 
 class CategoryController extends Controller
 {

@@ -9,8 +9,9 @@ use App\Notifications\VendorOrderPlacedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class NotifyVendorsOnOrderPlaced
+class NotifyVendorsOnOrderPlaced implements ShouldQueue
 {
+    use InteractsWithQueue;
     /**
      * Create the event listener.
      */

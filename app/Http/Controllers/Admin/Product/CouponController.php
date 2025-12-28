@@ -38,7 +38,8 @@ class CouponController extends Controller
 
     public function update(Request $request, $lang, $coupon)
     {
-        $coupon = Coupon::Where('id', $coupon)->first();
+        $coupon = Coupon::findOrFail($coupon);
+
         $validated = $request->validate([
             'code' => 'required|string|min:3|max:50|unique:coupons,code,' . $coupon->id,
             'description' => 'nullable|string|max:1000',

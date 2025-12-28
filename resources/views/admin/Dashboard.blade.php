@@ -327,10 +327,10 @@
                                                                         {{ $order['order_number'] }}
                                                                     </span>
                                                                 </td>
-                                                                <td>{{ $order['product_name'] }}</td>
+                                                                <td>{{ $order['items_count'] }}</td>
                                                                 <td>
                                                                     <span
-                                                                        class="badge 
+                                                                        class="badge
                     @if ($order['status'] == 'completed') text-bg-success
                     @elseif($order['status'] == 'pending') text-bg-warning
                     @elseif($order['status'] == 'processing') text-bg-info

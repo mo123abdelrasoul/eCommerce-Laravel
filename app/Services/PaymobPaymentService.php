@@ -5,14 +5,11 @@ namespace App\Services;
 use App\Interfaces\PaymentGatewayInterface;
 use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 
 class PaymobPaymentService extends PaymentService implements PaymentGatewayInterface
 {
     protected $api_key;
     protected $integrations_id;
-    // protected $base_url;
     protected array $header = [];
     protected $auth_token;
     public function __construct()
@@ -23,7 +20,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
         ];
-        // dd($this->base_url, $this->api_key);
         $this->integrations_id = [
             'card' => config('services.paymob.card_integration_id'),
             'wallet' => config('services.paymob.wallet_integration_id'),
@@ -35,7 +31,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
         $authToken = $this->generateToken();
         $integrationId = $this->getIntegrationId($checkoutData['payment_gateway']);
 
-        // 1- Create Order
         $orderPayload = $this->buildOrderPayload($checkoutData['amount_cents'], $authToken);
         $orderResponse = $this->buildRequest('POST', '/api/ecommerce/orders', $orderPayload);
         $orderId = $orderResponse->getData(true)['id'] ?? $orderResponse->getData(true)['data']['id'] ?? null;
@@ -50,7 +45,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
                 ->update(['reference' => $orderId]);
         }
 
-        // 2- Generate Payment Key
         $paymentKeyPayload = $this->buildPaymentKeyPayload($authToken, $checkoutData, $orderId, $integrationId);
         $paymentKeyResponse = $this->buildRequest('POST', '/api/acceptance/payment_keys', $paymentKeyPayload);
         $paymentKeyData = $paymentKeyResponse->getData(true);
@@ -63,7 +57,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
             ];
         }
 
-        // 3- Prepare Payment URL
         $customerIdentifier  = $this->getCustomerIdentifier($checkoutData);
         $paymentUrl = $this->buildPaymentUrl($checkoutData['payment_gateway'], $customerIdentifier, $paymentKey);
         if (!$paymentUrl) {
@@ -175,7 +168,6 @@ class PaymobPaymentService extends PaymentService implements PaymentGatewayInter
     public function callBack(Request $request)
     {
         $response = $request->all();
-        // Storage::put('paymob_response.json', json_encode($request->all()));
         if (isset($response['success']) && $response['success'] === true) {
             return true;
         }

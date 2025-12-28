@@ -16,8 +16,6 @@
 }
 
 
-/* Vendor Chat */
-
 #chat-window {
     display: flex;
     flex-direction: column;
@@ -29,7 +27,6 @@
     word-break: break-word;
 }
 
-/* Dashboard responsiveness fixes */
 .dashboard-container {
     width: 100%;
     padding: 0 12px;
@@ -40,7 +37,6 @@
     padding: 8px 0;
 }
 
-/* Ensure form rows wrap on small screens and inputs take full width */
 .card-body .row > [class*="col-"] {
     min-width: 0;
 }
@@ -64,7 +60,6 @@
     img { max-width: 100%; height: auto; }
 }
 
-/* Avoid horizontal overflow from long text */
 body, .app-wrapper, .app-main { overflow-x: hidden; }
 
 

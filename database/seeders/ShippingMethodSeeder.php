@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\ShippingMethod;
-use Database\Factories\ShippingMethodFactory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder

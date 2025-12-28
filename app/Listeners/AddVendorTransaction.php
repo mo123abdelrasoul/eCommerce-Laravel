@@ -7,8 +7,9 @@ use App\Models\VendorWalletTransaction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class AddVendorTransaction
+class AddVendorTransaction implements ShouldQueue
 {
+    use InteractsWithQueue;
     public function __construct() {}
 
     public function handle(OrderUpdated $event): void

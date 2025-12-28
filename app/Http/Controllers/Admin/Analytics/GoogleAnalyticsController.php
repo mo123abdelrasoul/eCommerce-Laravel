@@ -8,45 +8,51 @@ use Google\Analytics\Data\V1beta\RunReportRequest;
 use Google\Analytics\Data\V1beta\Dimension;
 use Google\Analytics\Data\V1beta\Metric;
 use Google\Analytics\Data\V1beta\DateRange;
-use Illuminate\Http\Request;
 
 class GoogleAnalyticsController extends Controller
 {
     public function dashboard()
     {
-        $propertyId = 513371401;
-        $client = new BetaAnalyticsDataClient([
-            'credentials' => storage_path('app/google-analytics/google-analytics.json'),
-        ]);
+        try {
+            $propertyId = '513371401';
+            $client = new BetaAnalyticsDataClient([
+                'credentials' => storage_path('app/google-analytics/google-analytics.json'),
+            ]);
 
-        $request = new RunReportRequest([
-            'property' => 'properties/' . $propertyId,
-            'dimensions' => [
-                new Dimension(['name' => 'pageTitle']),
-                new Dimension(['name' => 'pagePath']),
-                new Dimension(['name' => 'country']),
-            ],
-            'metrics' => [
-                new Metric(['name' => 'screenPageViews']),
-                new Metric(['name' => 'activeUsers']),
-            ],
-            'date_ranges' => [
-                new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today'])
-            ],
-            'limit' => 100
-        ]);
+            $request = new RunReportRequest([
+                'property' => 'properties/' . $propertyId,
+                'dimensions' => [
+                    new Dimension(['name' => 'pageTitle']),
+                    new Dimension(['name' => 'pagePath']),
+                    new Dimension(['name' => 'country']),
+                ],
+                'metrics' => [
+                    new Metric(['name' => 'screenPageViews']),
+                    new Metric(['name' => 'activeUsers']),
+                ],
+                'date_ranges' => [
+                    new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today'])
+                ],
+                'limit' => 100
+            ]);
 
-        $response = $client->runReport($request);
+            $response = $client->runReport($request);
 
-        $data = [];
-        foreach ($response->getRows() as $row) {
-            $data[] = [
-                'pageTitle' => $row->getDimensionValues()[0]->getValue(),
-                'pagePath'  => $row->getDimensionValues()[1]->getValue(),
-                'country'   => $row->getDimensionValues()[2]->getValue(),
-                'views'     => $row->getMetricValues()[0]->getValue(),
-                'users'     => $row->getMetricValues()[1]->getValue(),
-            ];
+            $data = [];
+            foreach ($response->getRows() as $row) {
+                $data[] = [
+                    'pageTitle' => $row->getDimensionValues()[0]->getValue(),
+                    'pagePath'  => $row->getDimensionValues()[1]->getValue(),
+                    'country'   => $row->getDimensionValues()[2]->getValue(),
+                    'views'     => $row->getMetricValues()[0]->getValue(),
+                    'users'     => $row->getMetricValues()[1]->getValue(),
+                ];
+            }
+        } catch (\Exception $e) {
+            // Log the error or handle it as needed
+            // Log::error('Google Analytics Error: ' . $e->getMessage());
+            $data = [];
+            session()->flash('error', 'Unable to fetch Analytics data: ' . $e->getMessage());
         }
 
         return view('admin.dashboard.analytics', compact('data'));
