@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Chat;
 
-use App\Events\MessageSentWithPusher;
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerChat;
 use App\Models\Message;
@@ -73,7 +73,15 @@ class CustomerChatController extends Controller
                     'is_read' => false
                 ]
             );
-            broadcast(new MessageSentWithPusher($message))->toOthers();
+            
+            // Try to broadcast, but don't fail if Pusher has issues
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $broadcastException) {
+                \Log::warning('Broadcasting failed: ' . $broadcastException->getMessage());
+                // Continue execution - message was saved successfully
+            }
+            
             return response()->json([
                 'success' => true,
                 'message' => $message->message,

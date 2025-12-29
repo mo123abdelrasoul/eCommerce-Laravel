@@ -72,20 +72,7 @@ use Illuminate\Support\Facades\Broadcast;
 Route::get('/{language}/change-language', [LocalizationLanguageController::class, 'changeLanguage'])->name('change.language');
 Broadcast::routes(['middleware' => ['web']]);
 
-// Admin channels
-Broadcast::channel('chat.admin.{adminId}', function ($user, $adminId) {
-    return auth('admins')->check() && auth('admins')->id() == $adminId;
-});
 
-// Vendor channels
-Broadcast::channel('chat.vendor.{vendorId}', function ($user, $vendorId) {
-    return auth('vendors')->check() && auth('vendors')->id() == $vendorId;
-});
-
-// Customer channels
-Broadcast::channel('chat.customer.{customerId}', function ($user, $customerId) {
-    return auth('web')->check() && auth('web')->id() == $customerId;
-});
 
 
 /*

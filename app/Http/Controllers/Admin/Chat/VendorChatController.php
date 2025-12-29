@@ -73,13 +73,22 @@ class VendorChatController extends Controller
                     'is_read' => false
                 ]
             );
-            broadcast(new MessageSent($message))->toOthers();
+            
+            // Try to broadcast, but don't fail if Pusher has issues
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $broadcastException) {
+                \Log::warning('Broadcasting failed: ' . $broadcastException->getMessage());
+                // Continue execution - message was saved successfully
+            }
+            
             return response()->json([
                 'success' => true,
                 'message' => $message->message,
                 'created_at' => $message->created_at->timezone('Africa/Cairo')->format('h:i A')
             ]);
         } catch (\Exception $e) {
+            \Log::error('Message send failed: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
                 'status' => 'error',
                 'error' => $e->getMessage()

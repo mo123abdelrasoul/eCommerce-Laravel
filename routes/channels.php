@@ -2,24 +2,17 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('chat.admin.{adminId}', function ($admin, $adminId) {
-    return (int) $admin->id === (int) $adminId;
+// Admin channels
+Broadcast::channel('chat.admin.{adminId}', function ($user, $adminId) {
+    return auth('admins')->check() && (int) auth('admins')->id() === (int) $adminId;
 });
 
-Broadcast::channel('chat.vendor.{vendorId}', function ($vendor, $vendorId) {
-    return (int) $vendor->id === (int) $vendorId;
+// Vendor channels
+Broadcast::channel('chat.vendor.{vendorId}', function ($user, $vendorId) {
+    return auth('vendors')->check() && (int) auth('vendors')->id() === (int) $vendorId;
 });
 
-
-
-
-
-
-// Pusher
-
-Broadcast::channel('chat.admin.{adminId}', function ($admin, $adminId) {
-    return (int) $admin->id === (int) $adminId;
-});
+// Customer channels
 Broadcast::channel('chat.customer.{customerId}', function ($user, $customerId) {
-    return (int) $user->id === (int) $customerId;
+    return auth('web')->check() && (int) auth('web')->id() === (int) $customerId;
 });

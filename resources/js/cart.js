@@ -305,6 +305,7 @@ async function removeFromSidebar(productId) {
                                 row.remove();
                             }
                         });
+                        // Update grand total if present (use plain text, not template syntax)
                         const mainCartTotal = document.querySelector(".cartTotal h3");
                         if (mainCartTotal && data.formatted && data.formatted.cartTotal) {
                             mainCartTotal.innerHTML = `Grand Total: <span class="text-primary">${data.formatted.cartTotal}</span>`;
@@ -324,6 +325,7 @@ async function removeFromSidebar(productId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const proceedBtn = document.querySelector("#proceed-to-checkout");
+    // Support both legacy and current button classes (some templates use `add-cart-btn`, others `add-to-cart-btn`)
     const addCartBtns = document.querySelectorAll(".add-cart-btn, .add-to-cart-btn");
     const removeBtns = document.querySelectorAll(".remove-cart-item");
 
@@ -351,6 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => removeFromCart(btn.dataset.productId, btn));
     });
 
+    // expose to window (optional)
     window.openCart = openCart;
     window.closeCart = closeCart;
     window.toggleCart = toggleCart;
@@ -361,8 +364,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // Customer Chat Script
-document.addEventListener('DOMContentLoaded', function() {
-    if(document.getElementById('customer-chat-widget')){
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('customer-chat-widget')) {
         const toggleBtn = document.getElementById('customer-chat-toggle');
         const chatWindow = document.getElementById('customer-chat-window');
         const closeBtn = document.getElementById('customer-chat-close');
@@ -372,10 +375,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const customerId = window.Customer.id;
         console.log('Customer ID:', customerId);
-        window.Echo.private('chat.customer.' + customerId)
-            .listen('MessageSentWithPusher', (e) => {
+        window.EchoPusher.private('chat.customer.' + customerId)
+            .listen('MessageSent', (e) => {
                 appendMessageFromAdmin('admin', e.message);
-        });
+            });
 
         toggleBtn.addEventListener('click', () => {
             const isHidden = (chatWindow.style.display === '' && getComputedStyle(chatWindow).display === 'none') || chatWindow.style.display === 'none';
@@ -394,34 +397,35 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleBtn.style.display = 'flex';
         });
 
-        chatForm.addEventListener('submit', function(e) {
+        chatForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const message = chatInput.value.trim();
             sendMessage(message);
         });
 
         function sendMessage(message) {
-            if(message === '') return;
+            if (message === '') return;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             fetch(customerSendMessageUrl, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ message: message })
             })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success'){
-                    appendMessage('customer', data.message.content, data.message.created_at);
-                    chatInput.value = '';
-                } else {
-                    console.error('Error sending message:', data.error);
-                }
-            })
-            .catch(err => {
-                console.error('Fetch error:', err);
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        appendMessage('customer', data.message.content, data.message.created_at);
+                        chatInput.value = '';
+                    } else {
+                        console.error('Error sending message:', data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
         }
 
         function scrollChatToBottom() {

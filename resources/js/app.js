@@ -1,13 +1,15 @@
 import './bootstrap';
+// Js for Create Role Page In Admin Dashboard
 let guardName = document.getElementById('guard_name');
-if(guardName){
-    guardName.addEventListener('change', function() {
+if (guardName) {
+    guardName.addEventListener('change', function () {
         let selectedGuard = this.value;
+        // hide all permission groups
         document.querySelectorAll('.permissions-group').forEach(g => g.style.display = 'none');
-        if(selectedGuard) {
+        if (selectedGuard) {
             document.getElementById('permissions_section').style.display = 'block';
             let target = document.querySelector(`.permissions-group[data-guard="${selectedGuard}"]`);
-            if(target) target.style.display = 'block';
+            if (target) target.style.display = 'block';
         } else {
             document.getElementById('permissions_section').style.display = 'none';
         }
@@ -16,7 +18,7 @@ if(guardName){
 
 // Js for Edit Role Page In Admin Dashboard
 const editGuardName = document.getElementById('edit_guard_name');
-if(editGuardName) {
+if (editGuardName) {
     editGuardName.addEventListener('change', function () {
         let guard = this.value;
 
@@ -47,8 +49,8 @@ if(editGuardName) {
 
 
 // Chat Vendor
-document.addEventListener('DOMContentLoaded', function() {
-    if(document.querySelector('aside.app-sidebar.vendor')){
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.querySelector('aside.app-sidebar.vendor')) {
         const toggleBtn = document.getElementById('chat-toggle');
         const chatWindow = document.getElementById('chat-window');
         const closeBtn = document.getElementById('chat-close');
@@ -56,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const chatInput = document.getElementById('chat-input');
         const chatMessages = document.getElementById('chat-messages');
 
-        window.Echo.private('chat.vendor.' + vendorId)
+        window.EchoPusher.private('chat.vendor.' + vendorId)
             .listen('MessageSent', (e) => {
                 appendMessageFromAdmin('admin', e.message);
             });
@@ -73,34 +75,35 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleBtn.style.display = toggleBtn.style.display === 'none' ? 'block' : 'none';
         });
 
-        chatForm.addEventListener('submit', function(e) {
+        chatForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const message = chatInput.value.trim();
             sendMessage(message);
         });
 
         function sendMessage(message) {
-            if(message === '') return;
+            if (message === '') return;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             fetch(vendorSendMessageUrl, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ message: message })
             })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success'){
-                    appendMessage('vendor', data.message.content, data.message.created_at);
-                    chatInput.value = '';
-                } else {
-                    console.error('Error sending message:', data.error);
-                }
-            })
-            .catch(err => {
-                console.error('Fetch error:', err);
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        appendMessage('vendor', data.message.content, data.message.created_at);
+                        chatInput.value = '';
+                    } else {
+                        console.error('Error sending message:', data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
         }
 
         function scrollChatToBottom() {
@@ -173,97 +176,99 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // Chat Admin
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     if (!document.querySelector('aside.app-sidebar.admin')) return;
-        const chatBody = document.querySelector('.card-body');
-        if (chatBody) {
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-        let chatMessages = document.getElementById('chat-messages');
-        let messageForm = document.getElementById('admin-send-message');
-        let messageFormToCustomer = document.getElementById('admin-send-message-to-customer');
-        let messageInput = document.getElementById('message-input');
+    const chatBody = document.querySelector('.card-body');
+    if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+    let chatMessages = document.getElementById('chat-messages');
+    let messageForm = document.getElementById('admin-send-message');
+    let messageFormToCustomer = document.getElementById('admin-send-message-to-customer');
+    let messageInput = document.getElementById('message-input');
 
-        if(!messageFormToCustomer) {
-            if (typeof senderId !== 'undefined') {
-                window.Echo.private('chat.admin.' + senderId)
-                    .listen('MessageSent', (e) => {
-                        appendMessageFromVendor('vendor', e.message);
-                    });
-            }
-        }else {
-            if (typeof senderId !== 'undefined') {
-                window.Echo.private('chat.admin.' + senderId)
-                    .listen('MessageSentWithPusher', (e) => {
-                        appendMessageFromCustomer('customer', e.message);
-                    });
-            }
+    if (!messageFormToCustomer) {
+        if (typeof senderId !== 'undefined') {
+            window.EchoPusher.private('chat.admin.' + senderId)
+                .listen('MessageSent', (e) => {
+                    appendMessageFromVendor('vendor', e.message);
+                });
         }
-
-        // form admin to vendor
-        if (messageForm && messageInput) {
-            messageForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                sendMessage(messageInput.value);
-            });
+    } else {
+        if (typeof senderId !== 'undefined') {
+            window.EchoPusher.private('chat.admin.' + senderId)
+                .listen('MessageSent', (e) => {
+                    appendMessageFromCustomer('customer', e.message);
+                });
         }
+    }
 
-        // form admin to customer
-        if (messageFormToCustomer && messageInput) {
-            messageFormToCustomer.addEventListener('submit', function (e) {
-                e.preventDefault();
-                sendMessageToCustomer(messageInput.value);
-            });
+    // form admin to vendor
+    if (messageForm && messageInput) {
+        messageForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            sendMessage(messageInput.value);
+        });
+    }
+
+    // form admin to customer
+    if (messageFormToCustomer && messageInput) {
+        messageFormToCustomer.addEventListener('submit', function (e) {
+            e.preventDefault();
+            sendMessageToCustomer(messageInput.value);
+        });
+    }
+
+    function sendMessage(message) {
+        if (message) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            fetch(adminSendMessageUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    message
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        appendMessage('admin', data.message, data.created_at);
+                        messageInput.value = '';
+                    }
+                });
         }
+    }
 
-        function sendMessage(message){
-            if (message) {
-                fetch(adminSendMessageUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            message
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            appendMessage('admin', data.message, data.created_at);
-                            messageInput.value = '';
-                        }
-                    });
-            }
+    function sendMessageToCustomer(message) {
+        if (message) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            fetch(adminSendMessageUrlToCustomer, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    message
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        appendMessage('admin', data.message, data.created_at);
+                        messageInput.value = '';
+                    }
+                });
         }
+    }
 
-        function sendMessageToCustomer(message){
-            if (message) {
-                fetch(adminSendMessageUrlToCustomer, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            message
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            appendMessage('admin', data.message, data.created_at);
-                            messageInput.value = '';
-                        }
-                    });
-            }
-        }
-
-        function appendMessage(sender, content, time = '') {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `mb-3 ${sender === 'admin' ? 'text-end' : 'text-start'}`;
-            msgDiv.innerHTML = `
+    function appendMessage(sender, content, time = '') {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `mb-3 ${sender === 'admin' ? 'text-end' : 'text-start'}`;
+        msgDiv.innerHTML = `
                 <div class="d-inline-block p-2 rounded ${sender === 'admin' ? 'bg-primary text-white' : 'bg-light'}">
                     ${content}
                 </div>
@@ -271,23 +276,23 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${time}
                 </div>
             `;
-            chatMessages.appendChild(msgDiv);
-            scrollChatToBottom();
-        }
+        chatMessages.appendChild(msgDiv);
+        scrollChatToBottom();
+    }
 
-        function appendMessageFromVendor(sender, messageObj, time = '') {
-            const msgDiv = document.createElement('div');
-            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
-            let displayTime = time;
-            if (!displayTime && messageObj && messageObj.created_at) {
-                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                });
-            }
-            msgDiv.className = `mb-3 ${sender === 'vendor' ? 'text-start' : 'text-end'}`;
-            msgDiv.innerHTML = `
+    function appendMessageFromVendor(sender, messageObj, time = '') {
+        const msgDiv = document.createElement('div');
+        const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+        let displayTime = time;
+        if (!displayTime && messageObj && messageObj.created_at) {
+            displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        msgDiv.className = `mb-3 ${sender === 'vendor' ? 'text-start' : 'text-end'}`;
+        msgDiv.innerHTML = `
                 <div class="d-inline-block p-2 rounded ${sender === 'vendor' ? 'bg-light' : 'bg-primary text-white'}">
                     ${content}
                 </div>
@@ -295,24 +300,24 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${displayTime || ''}
                 </div>
             `;
-            chatMessages.appendChild(msgDiv);
-            scrollChatToBottom();
+        chatMessages.appendChild(msgDiv);
+        scrollChatToBottom();
+    }
+
+
+    function appendMessageFromCustomer(sender, messageObj, time = '') {
+        const msgDiv = document.createElement('div');
+        const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
+        let displayTime = time;
+        if (!displayTime && messageObj && messageObj.created_at) {
+            displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
         }
-
-
-        function appendMessageFromCustomer(sender, messageObj, time = '') {
-            const msgDiv = document.createElement('div');
-            const content = typeof messageObj === 'string' ? messageObj : messageObj.message;
-            let displayTime = time;
-            if (!displayTime && messageObj && messageObj.created_at) {
-                displayTime = new Date(messageObj.created_at).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                });
-            }
-            msgDiv.className = `mb-3 ${sender === 'customer' ? 'text-start' : 'text-end'}`;
-            msgDiv.innerHTML = `
+        msgDiv.className = `mb-3 ${sender === 'customer' ? 'text-start' : 'text-end'}`;
+        msgDiv.innerHTML = `
                 <div class="d-inline-block p-2 rounded ${sender === 'vendor' ? 'bg-light' : 'bg-primary text-white'}">
                     ${content}
                 </div>
@@ -320,11 +325,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${displayTime}
                 </div>
             `;
-            chatMessages.appendChild(msgDiv);
-            scrollChatToBottom();
-        }
+        chatMessages.appendChild(msgDiv);
+        scrollChatToBottom();
+    }
 
-        function scrollChatToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    function scrollChatToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 });
